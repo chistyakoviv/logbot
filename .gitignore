@@ -1,0 +1,8 @@
+# runtime data
+/data
+
+# air's build artifacts
+/tmp
+
+# binaries
+/bin
