@@ -55,3 +55,6 @@ tag:
 # tag v1.0.1
 	git tag "${TAG}"
 	git push origin "${TAG}"
+
+local-domain:
+	ngrok http 8080

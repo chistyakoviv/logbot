@@ -6,3 +6,6 @@
 
 # binaries
 /bin
+
+# local config
+/config

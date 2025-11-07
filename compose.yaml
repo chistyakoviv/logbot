@@ -5,11 +5,10 @@ services:
     volumes:
       - ./:/go/src/github.com/chistyakoviv/logbot
     ports:
-      - 80:80 # http
+      - 8080:8080 # bot webhook
       - 6060:6060 # pprof metrics
     environment:
       CONFIG_PATH: config/local.yaml
-      DEFAULTS_PATH: config/defaults.yaml
 
   logbot-pg:
     image: postgres:17.6-alpine3.22

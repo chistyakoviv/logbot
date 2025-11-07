@@ -1,0 +1,75 @@
+package app
+
+import (
+	"log"
+	"log/slog"
+
+	sq "github.com/Masterminds/squirrel"
+	"github.com/chistyakoviv/logbot/internal/config"
+	"github.com/chistyakoviv/logbot/internal/db"
+	"github.com/chistyakoviv/logbot/internal/deferredq"
+	"github.com/chistyakoviv/logbot/internal/di"
+)
+
+// Retrieves the application configuration from the dependency injection container,
+// centralizing error handling to avoid repetitive error checks across the codebase.
+// Logs a fatal error and terminates the program if the configuration cannot be resolved.
+func resolveConfig(c di.Container) *config.Config {
+	cfg, err := di.Resolve[*config.Config](c, "config")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve config definition: %v", err)
+	}
+
+	return cfg
+}
+
+func resolveLogger(c di.Container) *slog.Logger {
+	logger, err := di.Resolve[*slog.Logger](c, "logger")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve logger definition: %v", err)
+	}
+
+	return logger
+}
+
+func resolveDbClient(c di.Container) db.Client {
+	client, err := di.Resolve[db.Client](c, "db")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve db client definition: %v", err)
+	}
+
+	return client
+}
+
+func resolveStatementBuilder(c di.Container) sq.StatementBuilderType {
+	sq, err := di.Resolve[sq.StatementBuilderType](c, "sq")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve statement builder definition: %v", err)
+	}
+
+	return sq
+}
+
+func resolveDeferredQ(c di.Container) deferredq.DQueue {
+	dq, err := di.Resolve[deferredq.DQueue](c, "dq")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve deferred queue definition: %v", err)
+	}
+
+	return dq
+}
+
+func resolveTxManager(c di.Container) db.TxManager {
+	txManager, err := di.Resolve[db.TxManager](c, "txManager")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve tx manager definition: %v", err)
+	}
+
+	return txManager
+}
