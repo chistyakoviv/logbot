@@ -6,6 +6,8 @@ import (
 	"os"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/chistyakoviv/logbot/internal/bot"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot"
 	"github.com/chistyakoviv/logbot/internal/config"
 	"github.com/chistyakoviv/logbot/internal/db"
 	"github.com/chistyakoviv/logbot/internal/db/pg"
@@ -79,5 +81,9 @@ func bootstrap(ctx context.Context, c di.Container) {
 
 	c.RegisterSingleton("txManager", func(c di.Container) db.TxManager {
 		return transaction.NewTransactionManager(resolveDbClient(c).DB())
+	})
+
+	c.RegisterSingleton("tgBot", func(c di.Container) bot.Bot {
+		return tgbot.New(resolveConfig(c), BuildTgCommands(ctx, c))
 	})
 }

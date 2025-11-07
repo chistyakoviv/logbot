@@ -4,7 +4,7 @@ go 1.25.4
 
 require (
 	github.com/Masterminds/squirrel v1.5.4
-	github.com/go-chi/chi/v5 v5.2.3
+	github.com/PaulSonOfLars/gotgbot/v2 v2.0.0-rc.33
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/jackc/pgx/v5 v5.7.6
 	github.com/pkg/errors v0.9.1

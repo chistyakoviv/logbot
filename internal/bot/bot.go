@@ -1,7 +1,11 @@
 package bot
 
-import "context"
+import (
+	"context"
+	"log/slog"
+)
 
 type Bot interface {
-	Run(ctx context.Context) error
+	Start(ctx context.Context, logger *slog.Logger) error
+	Shutdown(ctx context.Context) error
 }

@@ -5,6 +5,7 @@ import (
 	"log/slog"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/chistyakoviv/logbot/internal/bot"
 	"github.com/chistyakoviv/logbot/internal/config"
 	"github.com/chistyakoviv/logbot/internal/db"
 	"github.com/chistyakoviv/logbot/internal/deferredq"
@@ -72,4 +73,14 @@ func resolveTxManager(c di.Container) db.TxManager {
 	}
 
 	return txManager
+}
+
+func resolveTgBot(c di.Container) bot.Bot {
+	bot, err := di.Resolve[bot.Bot](c, "tgBot")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve telegram bot definition: %v", err)
+	}
+
+	return bot
 }
