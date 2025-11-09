@@ -14,6 +14,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/db/transaction"
 	"github.com/chistyakoviv/logbot/internal/deferredq"
 	"github.com/chistyakoviv/logbot/internal/di"
+	"github.com/chistyakoviv/logbot/internal/i18n"
 	"github.com/chistyakoviv/logbot/internal/lib/slogger"
 )
 
@@ -85,5 +86,9 @@ func bootstrap(ctx context.Context, c di.Container) {
 
 	c.RegisterSingleton("tgBot", func(c di.Container) bot.Bot {
 		return tgbot.New(resolveConfig(c), BuildTgCommands(ctx, c))
+	})
+
+	c.RegisterSingleton("i18n", func(c di.Container) *i18n.I18n {
+		return i18n.New()
 	})
 }

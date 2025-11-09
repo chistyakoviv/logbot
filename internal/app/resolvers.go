@@ -10,6 +10,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/db"
 	"github.com/chistyakoviv/logbot/internal/deferredq"
 	"github.com/chistyakoviv/logbot/internal/di"
+	"github.com/chistyakoviv/logbot/internal/i18n"
 )
 
 // Retrieves the application configuration from the dependency injection container,
@@ -83,4 +84,14 @@ func resolveTgBot(c di.Container) bot.Bot {
 	}
 
 	return bot
+}
+
+func resolveI18n(c di.Container) *i18n.I18n {
+	i18n, err := di.Resolve[*i18n.I18n](c, "i18n")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve i18n definition: %v", err)
+	}
+
+	return i18n
 }

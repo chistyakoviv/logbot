@@ -1,4 +1,4 @@
-package tgcommand
+package start
 
 import (
 	"log/slog"
@@ -6,9 +6,19 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
+	"github.com/chistyakoviv/logbot/internal/commands/tgcommand"
+	"github.com/chistyakoviv/logbot/internal/i18n"
 )
 
-func Start(logger *slog.Logger) handlers.Response {
+func New(logger *slog.Logger, i18n *i18n.I18n) *tgcommand.TgCommand {
+	return &tgcommand.TgCommand{
+		Name:    "start",
+		Handler: stage0(logger, i18n),
+		Stages:  []handlers.Response{},
+	}
+}
+
+func stage0(logger *slog.Logger, i18n *i18n.I18n) handlers.Response {
 	return func(b *gotgbot.Bot, ctx *ext.Context) error {
 		// _, err := ctx.EffectiveMessage.Reply(b, "👋 Welcome! I’m your Go webhook bot.\nUse /help for commands.", nil)
 		msg := ctx.EffectiveMessage
@@ -21,7 +31,7 @@ func Start(logger *slog.Logger) handlers.Response {
 		)
 
 		// Send a new message instead of replying
-		_, err := b.SendMessage(msg.Chat.Id, "👋 Welcome! I’m your Go webhook bot.\nUse /help for commands.", nil)
+		_, err := b.SendMessage(msg.Chat.Id, i18n.T("en", "greeting"), nil)
 		return err
 	}
 }

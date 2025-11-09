@@ -6,7 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/chistyakoviv/logbot/internal/bot"
-	"github.com/chistyakoviv/logbot/internal/commands"
+	"github.com/chistyakoviv/logbot/internal/commands/tgcommand"
 	"github.com/chistyakoviv/logbot/internal/config"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
@@ -17,10 +17,10 @@ import (
 type TgBot struct {
 	cfg      *config.Config
 	updater  *ext.Updater
-	commands []*commands.TgCommand
+	commands []*tgcommand.TgCommand
 }
 
-func New(cfg *config.Config, commands []*commands.TgCommand) bot.Bot {
+func New(cfg *config.Config, commands []*tgcommand.TgCommand) bot.Bot {
 	return &TgBot{
 		cfg:      cfg,
 		commands: commands,
@@ -79,7 +79,7 @@ func (b *TgBot) Start(ctx context.Context, logger *slog.Logger) error {
 		log.Fatalf("failed to set webhook: %s", err.Error())
 	}
 
-	logger.Info("Bot has been started...", "bot_username", bot.User.Username)
+	logger.Info("Bot has been started...", "bot_username", bot.Username)
 
 	// Idle, to keep updates coming in, and avoid bot stopping.
 	b.updater.Idle()

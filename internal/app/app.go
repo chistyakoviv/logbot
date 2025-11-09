@@ -71,7 +71,7 @@ func (a *app) Run(ctx context.Context) {
 			return bot.Shutdown(ctx)
 		})
 
-		bot.Start(ctx, logger)
+		_ = bot.Start(ctx, logger)
 		logger.Info("telegram bot stopped")
 	}()
 
