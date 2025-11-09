@@ -6,12 +6,12 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
-	"github.com/chistyakoviv/logbot/internal/commands/tgcommand"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command"
 	"github.com/chistyakoviv/logbot/internal/i18n"
 )
 
-func New(logger *slog.Logger, i18n *i18n.I18n) *tgcommand.TgCommand {
-	return &tgcommand.TgCommand{
+func New(logger *slog.Logger, i18n *i18n.I18n) *command.TgCommand {
+	return &command.TgCommand{
 		Handler: stage0(logger, i18n),
 		Stages:  []handlers.Response{},
 	}

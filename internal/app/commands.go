@@ -3,15 +3,15 @@ package app
 import (
 	"context"
 
-	"github.com/chistyakoviv/logbot/internal/commands/tgcommand"
-	"github.com/chistyakoviv/logbot/internal/commands/tgcommand/start"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/start"
 	"github.com/chistyakoviv/logbot/internal/di"
 )
 
-func BuildTgCommands(ctx context.Context, c di.Container) tgcommand.TgCommands {
+func BuildTgCommands(ctx context.Context, c di.Container) command.TgCommands {
 	logger := resolveLogger(c)
 	i18n := resolveI18n(c)
-	return tgcommand.TgCommands{
+	return command.TgCommands{
 		"start": start.New(logger, i18n),
 	}
 }

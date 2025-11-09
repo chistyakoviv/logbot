@@ -1,4 +1,4 @@
-package tgcommand
+package command
 
 import (
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"

@@ -8,7 +8,8 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/chistyakoviv/logbot/internal/bot"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot"
-	"github.com/chistyakoviv/logbot/internal/commands/tgcommand"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/cmdstage"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command"
 	"github.com/chistyakoviv/logbot/internal/config"
 	"github.com/chistyakoviv/logbot/internal/db"
 	"github.com/chistyakoviv/logbot/internal/db/pg"
@@ -85,12 +86,22 @@ func bootstrap(ctx context.Context, c di.Container) {
 		return transaction.NewTransactionManager(resolveDbClient(c).DB())
 	})
 
-	c.RegisterSingleton("commands", func(c di.Container) tgcommand.TgCommands {
+	c.RegisterSingleton("tgcmdstage", func(c di.Container) *cmdstage.TgCmdstage {
+		logger := resolveLogger(c)
+		i18n := resolveI18n(c)
+		return cmdstage.New(logger, i18n)
+	})
+
+	c.RegisterSingleton("tgcommands", func(c di.Container) command.TgCommands {
 		return BuildTgCommands(ctx, c)
 	})
 
 	c.RegisterSingleton("tgBot", func(c di.Container) bot.Bot {
-		return tgbot.New(resolveConfig(c), resolveCommands(c))
+		return tgbot.New(&tgbot.TgBotSpec{
+			Cfg:      resolveConfig(c),
+			Commands: resolveCommands(c),
+			Cmdstage: resolveCmdstage(c),
+		})
 	})
 
 	c.RegisterSingleton("i18n", func(c di.Container) *i18n.I18n {

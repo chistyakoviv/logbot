@@ -2,28 +2,39 @@ package tgbot
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"log/slog"
 
 	"github.com/chistyakoviv/logbot/internal/bot"
-	"github.com/chistyakoviv/logbot/internal/commands/tgcommand"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/cmdstage"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command"
 	"github.com/chistyakoviv/logbot/internal/config"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
+	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters/message"
 )
 
 type TgBot struct {
 	cfg      *config.Config
 	updater  *ext.Updater
-	commands tgcommand.TgCommands
+	commands command.TgCommands
+	cmdstage *cmdstage.TgCmdstage
 }
 
-func New(cfg *config.Config, commands tgcommand.TgCommands) bot.Bot {
+type TgBotSpec struct {
+	Cfg      *config.Config
+	Commands command.TgCommands
+	Cmdstage *cmdstage.TgCmdstage
+}
+
+func New(spec *TgBotSpec) bot.Bot {
 	return &TgBot{
-		cfg:      cfg,
-		commands: commands,
+		cfg:      spec.Cfg,
+		commands: spec.Commands,
+		cmdstage: spec.Cmdstage,
 	}
 }
 
@@ -55,9 +66,21 @@ func (b *TgBot) Start(ctx context.Context, logger *slog.Logger) error {
 		dispatcher.AddHandler(handlers.NewCommand(name, command.Handler))
 	}
 	// Add message handler to handle command stages.
-	dispatcher.AddHandler(handlers.NewMessage(noCommands, func(b *gotgbot.Bot, ctx *ext.Context) error {
-		_, err := b.SendMessage(ctx.EffectiveMessage.Chat.Id, "No command received", nil)
-		return err
+	dispatcher.AddHandler(handlers.NewMessage(noCommands, b.cmdstage.Handler))
+	// Add new chat member handler to detect the bot is added to a new chat.
+	dispatcher.AddHandler(handlers.NewMessage(message.NewChatMembers, func(b *gotgbot.Bot, ctx *ext.Context) error {
+		msg := ctx.EffectiveMessage
+
+		for _, member := range msg.NewChatMembers {
+			if member.Id == b.Id {
+				// The bot itself was added
+				_, _ = b.SendMessage(msg.Chat.Id,
+					fmt.Sprintf("👋 Hi everyone! I’ve just joined %s.", msg.Chat.Title),
+					nil)
+				break
+			}
+		}
+		return nil
 	}))
 
 	// Start the webhook server. We start the server before we set the webhook itself, so that when telegram starts
