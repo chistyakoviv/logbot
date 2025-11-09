@@ -5,7 +5,8 @@ import (
 )
 
 type TgCommand struct {
-	Name    string
 	Handler handlers.Response
 	Stages  []handlers.Response
 }
+
+type TgCommands map[string]*TgCommand

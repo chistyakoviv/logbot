@@ -12,7 +12,6 @@ import (
 
 func New(logger *slog.Logger, i18n *i18n.I18n) *tgcommand.TgCommand {
 	return &tgcommand.TgCommand{
-		Name:    "start",
 		Handler: stage0(logger, i18n),
 		Stages:  []handlers.Response{},
 	}

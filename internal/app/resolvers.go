@@ -6,6 +6,7 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/chistyakoviv/logbot/internal/bot"
+	"github.com/chistyakoviv/logbot/internal/commands/tgcommand"
 	"github.com/chistyakoviv/logbot/internal/config"
 	"github.com/chistyakoviv/logbot/internal/db"
 	"github.com/chistyakoviv/logbot/internal/deferredq"
@@ -84,6 +85,16 @@ func resolveTgBot(c di.Container) bot.Bot {
 	}
 
 	return bot
+}
+
+func resolveCommands(c di.Container) tgcommand.TgCommands {
+	commands, err := di.Resolve[tgcommand.TgCommands](c, "commands")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve commands definition: %v", err)
+	}
+
+	return commands
 }
 
 func resolveI18n(c di.Container) *i18n.I18n {

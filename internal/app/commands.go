@@ -8,10 +8,10 @@ import (
 	"github.com/chistyakoviv/logbot/internal/di"
 )
 
-func BuildTgCommands(ctx context.Context, c di.Container) []*tgcommand.TgCommand {
+func BuildTgCommands(ctx context.Context, c di.Container) tgcommand.TgCommands {
 	logger := resolveLogger(c)
 	i18n := resolveI18n(c)
-	return []*tgcommand.TgCommand{
-		start.New(logger, i18n),
+	return tgcommand.TgCommands{
+		"start": start.New(logger, i18n),
 	}
 }

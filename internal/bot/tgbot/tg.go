@@ -17,10 +17,10 @@ import (
 type TgBot struct {
 	cfg      *config.Config
 	updater  *ext.Updater
-	commands []*tgcommand.TgCommand
+	commands tgcommand.TgCommands
 }
 
-func New(cfg *config.Config, commands []*tgcommand.TgCommand) bot.Bot {
+func New(cfg *config.Config, commands tgcommand.TgCommands) bot.Bot {
 	return &TgBot{
 		cfg:      cfg,
 		commands: commands,
@@ -51,9 +51,14 @@ func (b *TgBot) Start(ctx context.Context, logger *slog.Logger) error {
 	})
 
 	// Add echo handler to reply to all text messages.
-	for _, command := range b.commands {
-		dispatcher.AddHandler(handlers.NewCommand(command.Name, command.Handler))
+	for name, command := range b.commands {
+		dispatcher.AddHandler(handlers.NewCommand(name, command.Handler))
 	}
+	// Add message handler to handle command stages.
+	dispatcher.AddHandler(handlers.NewMessage(noCommands, func(b *gotgbot.Bot, ctx *ext.Context) error {
+		_, err := b.SendMessage(ctx.EffectiveMessage.Chat.Id, "No command received", nil)
+		return err
+	}))
 
 	// Start the webhook server. We start the server before we set the webhook itself, so that when telegram starts
 	// sending updates, the server is already ready.
