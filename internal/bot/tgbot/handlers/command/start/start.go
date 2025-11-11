@@ -22,7 +22,6 @@ func New(logger *slog.Logger, i18n *i18n.I18n) *command.TgCommand {
 func begin(logger *slog.Logger, i18n *i18n.I18n) handlers.Response {
 	lang := i18n.DefaultLang()
 	return func(b *gotgbot.Bot, ctx *ext.Context) error {
-		// _, err := ctx.EffectiveMessage.Reply(b, "👋 Welcome! I’m your Go webhook bot.\nUse /help for commands.", nil)
 		msg := ctx.EffectiveMessage
 
 		logger.Debug(
