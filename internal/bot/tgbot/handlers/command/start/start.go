@@ -14,12 +14,12 @@ import (
 
 func New(logger *slog.Logger, i18n *i18n.I18n) *command.TgCommand {
 	return &command.TgCommand{
-		Handler: stage0(logger, i18n),
+		Handler: begin(logger, i18n),
 		Stages:  []handlers.Response{},
 	}
 }
 
-func stage0(logger *slog.Logger, i18n *i18n.I18n) handlers.Response {
+func begin(logger *slog.Logger, i18n *i18n.I18n) handlers.Response {
 	lang := i18n.DefaultLang()
 	return func(b *gotgbot.Bot, ctx *ext.Context) error {
 		// _, err := ctx.EffectiveMessage.Reply(b, "👋 Welcome! I’m your Go webhook bot.\nUse /help for commands.", nil)
