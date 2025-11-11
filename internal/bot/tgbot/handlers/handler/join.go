@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"bytes"
+	"fmt"
 	"log/slog"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
@@ -14,6 +16,7 @@ func NewJoin(logger *slog.Logger, i18n *i18n.I18n) handlers.Response {
 }
 
 func joinHandler(logger *slog.Logger, i18n *i18n.I18n) handlers.Response {
+	lang := i18n.DefaultLang()
 	return func(b *gotgbot.Bot, ctx *ext.Context) error {
 		msg := ctx.EffectiveMessage
 
@@ -26,8 +29,14 @@ func joinHandler(logger *slog.Logger, i18n *i18n.I18n) handlers.Response {
 					slog.String("message", msg.Text),
 				)
 
-				// Send a new message instead of replying
-				_, err := b.SendMessage(msg.Chat.Id, i18n.T("en", "greeting"), nil)
+				var message bytes.Buffer
+				fmt.Fprintf(&message, "%s\n\n", i18n.T(lang, "greeting"))
+				fmt.Fprintf(&message, "%s\n\n", i18n.T(lang, "description"))
+				fmt.Fprintf(&message, "%s\n\n", i18n.T(lang, "intro"))
+				fmt.Fprintf(&message, "%s", i18n.T(lang, "help"))
+				_, err := b.SendMessage(msg.Chat.Id, message.String(), &gotgbot.SendMessageOpts{
+					ParseMode: "html",
+				})
 				return err
 			}
 		}

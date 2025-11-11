@@ -15,6 +15,15 @@ func NewCommandStage(logger *slog.Logger, i18n *i18n.I18n) handlers.Response {
 
 func commandStageHandler(logger *slog.Logger, i18n *i18n.I18n) handlers.Response {
 	return func(b *gotgbot.Bot, ctx *ext.Context) error {
+		msg := ctx.EffectiveMessage
+
+		logger.Debug(
+			"text message received",
+			slog.Int64("chat_id", msg.Chat.Id),
+			slog.String("from", msg.From.Username),
+			slog.String("message", msg.Text),
+		)
+
 		_, err := b.SendMessage(ctx.EffectiveMessage.Chat.Id, "No command received", nil)
 		return err
 	}

@@ -50,7 +50,10 @@ func (b *TgBot) Start(ctx context.Context, logger *slog.Logger) error {
 	dispatcher := ext.NewDispatcher(&ext.DispatcherOpts{
 		// If an error is returned by a handler, log it and continue going.
 		Error: func(b *gotgbot.Bot, ctx *ext.Context, err error) ext.DispatcherAction {
-			log.Println("an error occurred while handling update:", err.Error())
+			logger.Error(
+				"an error occurred while handling update",
+				slog.Attr{Key: "error", Value: slog.StringValue(err.Error())},
+			)
 			return ext.DispatcherActionNoop
 		},
 		MaxRoutines: ext.DefaultMaxRoutines,
@@ -62,14 +65,17 @@ func (b *TgBot) Start(ctx context.Context, logger *slog.Logger) error {
 		// Logger: logger,
 	})
 
+	// The order of the handlers is important.
+	// If a handler matches the request, the next handler will not be called.
+
 	// Add all command handlers.
 	for name, command := range b.commands {
 		dispatcher.AddHandler(handlers.NewCommand(name, command.Handler))
 	}
-	// Add no command handler to handle command stages.
-	dispatcher.AddHandler(handlers.NewMessage(noCommand, b.cmdstage))
 	// Add new chat member handler to detect the bot is added to a new chat.
 	dispatcher.AddHandler(handlers.NewMessage(message.NewChatMembers, b.join))
+	// Add no command handler to handle command stages.
+	dispatcher.AddHandler(handlers.NewMessage(noCommand, b.cmdstage))
 
 	// Start the webhook server. We start the server before we set the webhook itself, so that when telegram starts
 	// sending updates, the server is already ready.
