@@ -28,5 +28,5 @@ func initRoutes(ctx context.Context, c di.Container) {
 	// 	resolveTaskService(c),
 	// ))
 
-	router.Post(tgBot.WebhookPath(), tgBot.HandlerFunc())
+	router.Post(tgBot.WebhookPath()+"{token}", tgBot.HandlerFunc())
 }

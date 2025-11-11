@@ -38,7 +38,7 @@ func New(spec *TgBotSpec) bot.Bot {
 		commands:    spec.Commands,
 		cmdstage:    spec.Cmdstage,
 		join:        spec.Join,
-		webhookPath: "/tg/" + spec.Cfg.Token,
+		webhookPath: "/tg/",
 	}
 }
 
@@ -87,18 +87,13 @@ func (b *TgBot) Start(ctx context.Context, logger *slog.Logger) error {
 		SecretToken: b.cfg.Webhook.Secret, // Setting a webhook secret here allows you to ensure the webhook is set by you (must be set here AND in SetWebhook!).
 	}
 
-	// The bot's urlPath can be anything. Here, we use "custom-path/<TOKEN>" as an example.
-	// It can be a good idea for the urlPath to contain the bot token, as that makes it very difficult for outside
-	// parties to find the update endpoint (which would allow them to inject their own updates).
-	// err = b.updater.StartWebhook(bot, b.webhookPath, webhookOpts)
-	// if err != nil {
-	// 	log.Fatalf("failed to start webhook: %s", err.Error())
-	// }
 	// The AddWebhook method is called inside the StartWebhook method,
 	// so we have to call it manually when using an external server.
-	b.updater.AddWebhook(bot, b.webhookPath, &ext.AddWebhookOpts{SecretToken: webhookOpts.SecretToken})
+	// Url is what the route must look like after trimming the prefix specified in the GetHandlerFunc method.
+	// So register each webhook by token to be able to use many bots at the same time.
+	b.updater.AddWebhook(bot, b.cfg.Token, &ext.AddWebhookOpts{SecretToken: webhookOpts.SecretToken})
 
-	err = b.updater.SetAllBotWebhooks(b.cfg.Webhook.Domain, &gotgbot.SetWebhookOpts{
+	err = b.updater.SetAllBotWebhooks(b.cfg.Webhook.Domain+b.webhookPath, &gotgbot.SetWebhookOpts{
 		MaxConnections:     100,
 		DropPendingUpdates: true,
 		SecretToken:        webhookOpts.SecretToken,
@@ -107,10 +102,8 @@ func (b *TgBot) Start(ctx context.Context, logger *slog.Logger) error {
 		log.Fatalf("failed to set webhook: %s", err.Error())
 	}
 
-	// logger.Info("Bot has been started...", "bot_username", bot.Username)
-
-	// Idle, to keep updates coming in, and avoid bot stopping.
-	// b.updater.Idle()
+	// TODO: initialize bot after the http server
+	logger.Info("Bot has been started...", "bot_username", bot.Username)
 
 	return nil
 }
@@ -120,7 +113,7 @@ func (b *TgBot) Shutdown(ctx context.Context) error {
 }
 
 func (b *TgBot) HandlerFunc() http.HandlerFunc {
-	return b.updater.GetHandlerFunc("/")
+	return b.updater.GetHandlerFunc(b.webhookPath)
 }
 
 func (b *TgBot) WebhookPath() string {
