@@ -2,7 +2,9 @@ package app
 
 import (
 	"context"
+	"errors"
 	"log/slog"
+	"net/http"
 
 	// _ "net/http/pprof"
 	"os"
@@ -10,6 +12,7 @@ import (
 	"syscall"
 
 	"github.com/chistyakoviv/logbot/internal/di"
+	"github.com/chistyakoviv/logbot/internal/lib/slogger"
 )
 
 type Application interface {
@@ -44,8 +47,12 @@ func (a *app) Run(ctx context.Context) {
 	cfg := resolveConfig(a.container)
 	logger := resolveLogger(a.container)
 	dq := resolveDeferredQ(a.container)
+	tgBot := resolveTgBot(a.container)
+	tgBot.Start(ctx, logger)
 
 	logger.Debug("Application is running in DEBUG mode")
+
+	initRoutes(ctx, a.container)
 
 	// Exec the command to empty the memory buffer: echo 3 | sudo tee /proc/sys/vm/drop_caches
 	// see https://medium.com/@bobzsj87/demist-the-memory-ghost-d6b7cf45dd2a
@@ -57,23 +64,40 @@ func (a *app) Run(ctx context.Context) {
 	// 	}()
 	// }
 
-	// tg bot
+	// http server
 	go func() {
-		logger.Info(
-			"starting telegram bot",
-			slog.String("address", cfg.ListenAddr),
-			slog.String("domain", cfg.Webhook.Domain),
-			slog.String("env", cfg.Env),
-		)
+		logger.Info("starting http server", slog.String("address", cfg.HTTPServer.Address), slog.String("env", cfg.Env))
 
-		bot := resolveTgBot(a.container)
+		srv := resolveHttpServer(a.container)
 		dq.Add(func() error {
-			return bot.Shutdown(ctx)
+			return srv.Shutdown(ctx)
 		})
 
-		_ = bot.Start(ctx, logger)
-		logger.Info("telegram bot stopped")
+		// ListenAndServe always returns a non-nil error. After [Server.Shutdown] or [Server.Close], the returned error is [ErrServerClosed]
+		err := srv.ListenAndServe()
+		if !errors.Is(err, http.ErrServerClosed) {
+			logger.Error("http server error", slogger.Err(err))
+		}
+		logger.Info("http server stopped")
 	}()
+
+	// tg bot
+	// go func() {
+	// 	logger.Info(
+	// 		"starting telegram bot",
+	// 		slog.String("address", cfg.HTTPServer.Address),
+	// 		slog.String("domain", cfg.Webhook.Domain),
+	// 		slog.String("env", cfg.Env),
+	// 	)
+
+	// 	bot := resolveTgBot(a.container)
+	// 	dq.Add(func() error {
+	// 		return bot.Shutdown(ctx)
+	// 	})
+
+	// 	_ = bot.Start(ctx, logger)
+	// 	logger.Info("telegram bot stopped")
+	// }()
 
 	// Graceful Shutdown
 	select {

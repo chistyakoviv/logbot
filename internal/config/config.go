@@ -3,20 +3,28 @@ package config
 import (
 	"log"
 	"os"
+	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
 type Config struct {
-	Env        string   `yaml:"env" env:"ENV" env-required:"true"`
-	Token      string   `yaml:"token" env:"TOKEN" env-required:"true" yaml-required:"true"`
-	ListenAddr string   `yaml:"listen_addr" env:"LISTEN_ADDR" env-default:"0.0.0.0:8080"`
-	Postgres   Postgres `yaml:"database"`
-	Webhook    Webhook  `yaml:"webhook"`
+	Env        string     `yaml:"env" env:"ENV" env-required:"true"`
+	Token      string     `yaml:"token" env:"TOKEN" env-required:"true" yaml-required:"true"`
+	HTTPServer HTTPServer `yaml:"http_server"`
+	Postgres   Postgres   `yaml:"database"`
+	Webhook    Webhook    `yaml:"webhook"`
 }
 
 type Postgres struct {
 	Dsn string `yaml:"dsn" env:"POSTGRES_DSN" env-required:"true"`
+}
+
+type HTTPServer struct {
+	Address      string        `yaml:"address" env:"ADDRESS" env-default:"0.0.0.0:8080"`
+	ReadTimeout  time.Duration `yaml:"read_timeout" env:"READ_TIMEOUT" env-required:"true"`
+	WriteTimeout time.Duration `yaml:"write_timeout" env:"WRITE_TIMEOUT" env-required:"true"`
+	IdleTimeout  time.Duration `yaml:"idle_timeout" env:"IDLE_TIMEOUT" env-required:"true"`
 }
 
 type Webhook struct {

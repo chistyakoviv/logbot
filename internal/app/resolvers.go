@@ -3,6 +3,7 @@ package app
 import (
 	"log"
 	"log/slog"
+	"net/http"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
@@ -13,6 +14,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/deferredq"
 	"github.com/chistyakoviv/logbot/internal/di"
 	"github.com/chistyakoviv/logbot/internal/i18n"
+	"github.com/go-chi/chi/v5"
 )
 
 // Retrieves the application configuration from the dependency injection container,
@@ -56,6 +58,26 @@ func resolveStatementBuilder(c di.Container) sq.StatementBuilderType {
 	}
 
 	return sq
+}
+
+func resolveRouter(c di.Container) *chi.Mux {
+	router, err := di.Resolve[*chi.Mux](c, "router")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve router definition: %v", err)
+	}
+
+	return router
+}
+
+func resolveHttpServer(c di.Container) *http.Server {
+	srv, err := di.Resolve[*http.Server](c, "httpServer")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve http server definition: %v", err)
+	}
+
+	return srv
 }
 
 func resolveDeferredQ(c di.Container) deferredq.DQueue {

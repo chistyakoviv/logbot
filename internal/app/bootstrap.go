@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"log/slog"
+	"net/http"
 	"os"
 
 	sq "github.com/Masterminds/squirrel"
@@ -17,8 +18,11 @@ import (
 	"github.com/chistyakoviv/logbot/internal/db/transaction"
 	"github.com/chistyakoviv/logbot/internal/deferredq"
 	"github.com/chistyakoviv/logbot/internal/di"
+	mwLogger "github.com/chistyakoviv/logbot/internal/http/middleware/logger"
 	"github.com/chistyakoviv/logbot/internal/i18n"
 	"github.com/chistyakoviv/logbot/internal/lib/slogger"
+	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/chi/v5"
 )
 
 func bootstrap(ctx context.Context, c di.Container) {
@@ -77,6 +81,35 @@ func bootstrap(ctx context.Context, c di.Container) {
 
 	c.RegisterSingleton("sq", func(c di.Container) sq.StatementBuilderType {
 		return sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+	})
+
+	c.RegisterSingleton("router", func(c di.Container) *chi.Mux {
+		router := chi.NewRouter()
+		logger := resolveLogger(c)
+
+		router.Use(middleware.RequestID)
+		// Replace middleware.Logger with custom logger middleware to keep logs consistent with the rest of the application
+		// router.Use(middleware.Logger)
+		router.Use(mwLogger.New(logger))
+		// router.Use(middleware.Heartbeat("/ping"))
+		router.Use(middleware.Recoverer)
+		router.Use(middleware.URLFormat)
+		router.Use(middleware.NoCache)
+
+		return router
+	})
+
+	c.RegisterSingleton("httpServer", func(c di.Container) *http.Server {
+		cfg := resolveConfig(c)
+		router := resolveRouter(c)
+
+		return &http.Server{
+			Addr:         cfg.HTTPServer.Address,
+			Handler:      router,
+			ReadTimeout:  cfg.HTTPServer.ReadTimeout,
+			WriteTimeout: cfg.HTTPServer.WriteTimeout,
+			IdleTimeout:  cfg.HTTPServer.IdleTimeout,
+		}
 	})
 
 	c.RegisterSingleton("dq", func(c di.Container) deferredq.DQueue {
