@@ -89,7 +89,7 @@ func resolveTgBot(c di.Container) bot.Bot {
 }
 
 func resolveTgCommands(c di.Container) command.TgCommands {
-	commands, err := di.Resolve[command.TgCommands](c, "tgcommands")
+	commands, err := di.Resolve[command.TgCommands](c, "tgCommands")
 
 	if err != nil {
 		log.Fatalf("Couldn't resolve commands definition: %v", err)
@@ -99,7 +99,7 @@ func resolveTgCommands(c di.Container) command.TgCommands {
 }
 
 func resolveTgCommandStage(c di.Container) handlers.Response {
-	cmdstage, err := di.Resolve[handlers.Response](c, "tgcmdstage")
+	cmdstage, err := di.Resolve[handlers.Response](c, "tgCmdstage")
 
 	if err != nil {
 		log.Fatalf("Couldn't resolve command stage definition: %v", err)
@@ -109,7 +109,7 @@ func resolveTgCommandStage(c di.Container) handlers.Response {
 }
 
 func resolveTgJoin(c di.Container) handlers.Response {
-	join, err := di.Resolve[handlers.Response](c, "tgjoin")
+	join, err := di.Resolve[handlers.Response](c, "tgJoin")
 
 	if err != nil {
 		log.Fatalf("Couldn't resolve join definition: %v", err)

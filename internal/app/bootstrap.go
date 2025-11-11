@@ -87,19 +87,19 @@ func bootstrap(ctx context.Context, c di.Container) {
 		return transaction.NewTransactionManager(resolveDbClient(c).DB())
 	})
 
-	c.RegisterSingleton("tgcmdstage", func(c di.Container) handlers.Response {
+	c.RegisterSingleton("tgCmdstage", func(c di.Container) handlers.Response {
 		logger := resolveLogger(c)
 		i18n := resolveI18n(c)
 		return handler.NewCommandStage(logger, i18n)
 	})
 
-	c.RegisterSingleton("tgjoin", func(c di.Container) handlers.Response {
+	c.RegisterSingleton("tgJoin", func(c di.Container) handlers.Response {
 		logger := resolveLogger(c)
 		i18n := resolveI18n(c)
 		return handler.NewJoin(logger, i18n)
 	})
 
-	c.RegisterSingleton("tgcommands", func(c di.Container) command.TgCommands {
+	c.RegisterSingleton("tgCommands", func(c di.Container) command.TgCommands {
 		return BuildTgCommands(ctx, c)
 	})
 
