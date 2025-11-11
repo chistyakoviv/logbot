@@ -5,8 +5,8 @@ import (
 	"log/slog"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
 	"github.com/chistyakoviv/logbot/internal/bot"
-	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/cmdstage"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command"
 	"github.com/chistyakoviv/logbot/internal/config"
 	"github.com/chistyakoviv/logbot/internal/db"
@@ -88,7 +88,7 @@ func resolveTgBot(c di.Container) bot.Bot {
 	return bot
 }
 
-func resolveCommands(c di.Container) command.TgCommands {
+func resolveTgCommands(c di.Container) command.TgCommands {
 	commands, err := di.Resolve[command.TgCommands](c, "tgcommands")
 
 	if err != nil {
@@ -98,14 +98,24 @@ func resolveCommands(c di.Container) command.TgCommands {
 	return commands
 }
 
-func resolveCmdstage(c di.Container) *cmdstage.TgCmdstage {
-	cmdstage, err := di.Resolve[*cmdstage.TgCmdstage](c, "tgcmdstage")
+func resolveTgCommandStage(c di.Container) handlers.Response {
+	cmdstage, err := di.Resolve[handlers.Response](c, "tgcmdstage")
 
 	if err != nil {
 		log.Fatalf("Couldn't resolve command stage definition: %v", err)
 	}
 
 	return cmdstage
+}
+
+func resolveTgJoin(c di.Container) handlers.Response {
+	join, err := di.Resolve[handlers.Response](c, "tgjoin")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve join definition: %v", err)
+	}
+
+	return join
 }
 
 func resolveI18n(c di.Container) *i18n.I18n {

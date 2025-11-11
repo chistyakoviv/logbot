@@ -6,6 +6,6 @@ import (
 )
 
 // Create a matcher which only matches text which is not a command.
-func noCommands(msg *gotgbot.Message) bool {
+func noCommand(msg *gotgbot.Message) bool {
 	return message.Text(msg) && !message.Command(msg)
 }

@@ -2,12 +2,10 @@ package tgbot
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"log/slog"
 
 	"github.com/chistyakoviv/logbot/internal/bot"
-	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/cmdstage"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command"
 	"github.com/chistyakoviv/logbot/internal/config"
 
@@ -21,13 +19,15 @@ type TgBot struct {
 	cfg      *config.Config
 	updater  *ext.Updater
 	commands command.TgCommands
-	cmdstage *cmdstage.TgCmdstage
+	cmdstage handlers.Response
+	join     handlers.Response
 }
 
 type TgBotSpec struct {
 	Cfg      *config.Config
 	Commands command.TgCommands
-	Cmdstage *cmdstage.TgCmdstage
+	Cmdstage handlers.Response
+	Join     handlers.Response
 }
 
 func New(spec *TgBotSpec) bot.Bot {
@@ -35,6 +35,7 @@ func New(spec *TgBotSpec) bot.Bot {
 		cfg:      spec.Cfg,
 		commands: spec.Commands,
 		cmdstage: spec.Cmdstage,
+		join:     spec.Join,
 	}
 }
 
@@ -61,27 +62,14 @@ func (b *TgBot) Start(ctx context.Context, logger *slog.Logger) error {
 		// Logger: logger,
 	})
 
-	// Add echo handler to reply to all text messages.
+	// Add all command handlers.
 	for name, command := range b.commands {
 		dispatcher.AddHandler(handlers.NewCommand(name, command.Handler))
 	}
-	// Add message handler to handle command stages.
-	dispatcher.AddHandler(handlers.NewMessage(noCommands, b.cmdstage.Handler))
+	// Add no command handler to handle command stages.
+	dispatcher.AddHandler(handlers.NewMessage(noCommand, b.cmdstage))
 	// Add new chat member handler to detect the bot is added to a new chat.
-	dispatcher.AddHandler(handlers.NewMessage(message.NewChatMembers, func(b *gotgbot.Bot, ctx *ext.Context) error {
-		msg := ctx.EffectiveMessage
-
-		for _, member := range msg.NewChatMembers {
-			if member.Id == b.Id {
-				// The bot itself was added
-				_, _ = b.SendMessage(msg.Chat.Id,
-					fmt.Sprintf("👋 Hi everyone! I’ve just joined %s.", msg.Chat.Title),
-					nil)
-				break
-			}
-		}
-		return nil
-	}))
+	dispatcher.AddHandler(handlers.NewMessage(message.NewChatMembers, b.join))
 
 	// Start the webhook server. We start the server before we set the webhook itself, so that when telegram starts
 	// sending updates, the server is already ready.
