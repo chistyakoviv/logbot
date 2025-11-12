@@ -68,7 +68,7 @@ func (a *app) Run(ctx context.Context) {
 	go func() {
 		logger.Info(
 			"starting http server",
-			slog.String("address", cfg.HTTPServer.Address+":"+cfg.HTTPServer.Port),
+			slog.String("address", cfg.HTTPServer.Host+":"+cfg.HTTPServer.Port),
 			slog.String("env", cfg.Env),
 		)
 
@@ -89,7 +89,7 @@ func (a *app) Run(ctx context.Context) {
 	go func() {
 		logger.Info(
 			"starting telegram bot",
-			slog.String("address", cfg.HTTPServer.Address+":"+cfg.HTTPServer.Port),
+			slog.String("address", cfg.HTTPServer.Host+":"+cfg.HTTPServer.Port),
 			slog.String("domain", cfg.Webhook.Domain),
 			slog.String("env", cfg.Env),
 		)
