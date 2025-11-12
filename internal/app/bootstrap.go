@@ -104,7 +104,7 @@ func bootstrap(ctx context.Context, c di.Container) {
 		router := resolveRouter(c)
 
 		return &http.Server{
-			Addr:         cfg.HTTPServer.Address,
+			Addr:         cfg.HTTPServer.Address + ":" + cfg.HTTPServer.Port,
 			Handler:      router,
 			ReadTimeout:  cfg.HTTPServer.ReadTimeout,
 			WriteTimeout: cfg.HTTPServer.WriteTimeout,
@@ -142,6 +142,7 @@ func bootstrap(ctx context.Context, c di.Container) {
 			Commands: resolveTgCommands(c),
 			Cmdstage: resolveTgCommandStage(c),
 			Join:     resolveTgJoin(c),
+			Logger:   resolveLogger(c),
 		})
 	})
 

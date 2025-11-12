@@ -2,12 +2,11 @@ package bot
 
 import (
 	"context"
-	"log/slog"
 	"net/http"
 )
 
 type Bot interface {
-	Start(ctx context.Context, logger *slog.Logger) error
+	Start(ctx context.Context)
 	Shutdown(ctx context.Context) error
 	HandlerFunc() http.HandlerFunc
 	WebhookPath() string

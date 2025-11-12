@@ -20,13 +20,5 @@ func initRoutes(ctx context.Context, c di.Container) {
 		}
 	})
 
-	// router.Post("/convert", convert.New(
-	// 	ctx,
-	// 	resolveLogger(c),
-	// 	resolveValidator(c),
-	// 	resolveConversionQueueService(c),
-	// 	resolveTaskService(c),
-	// ))
-
 	router.Post(tgBot.WebhookPath()+"{token}", tgBot.HandlerFunc())
 }

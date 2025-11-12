@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"time"
 
 	// _ "net/http/pprof"
 	"os"
@@ -47,8 +48,7 @@ func (a *app) Run(ctx context.Context) {
 	cfg := resolveConfig(a.container)
 	logger := resolveLogger(a.container)
 	dq := resolveDeferredQ(a.container)
-	tgBot := resolveTgBot(a.container)
-	tgBot.Start(ctx, logger)
+	bot := resolveTgBot(a.container)
 
 	logger.Debug("Application is running in DEBUG mode")
 
@@ -66,7 +66,11 @@ func (a *app) Run(ctx context.Context) {
 
 	// http server
 	go func() {
-		logger.Info("starting http server", slog.String("address", cfg.HTTPServer.Address), slog.String("env", cfg.Env))
+		logger.Info(
+			"starting http server",
+			slog.String("address", cfg.HTTPServer.Address+":"+cfg.HTTPServer.Port),
+			slog.String("env", cfg.Env),
+		)
 
 		srv := resolveHttpServer(a.container)
 		dq.Add(func() error {
@@ -82,22 +86,61 @@ func (a *app) Run(ctx context.Context) {
 	}()
 
 	// tg bot
-	// go func() {
-	// 	logger.Info(
-	// 		"starting telegram bot",
-	// 		slog.String("address", cfg.HTTPServer.Address),
-	// 		slog.String("domain", cfg.Webhook.Domain),
-	// 		slog.String("env", cfg.Env),
-	// 	)
+	go func() {
+		logger.Info(
+			"starting telegram bot",
+			slog.String("address", cfg.HTTPServer.Address+":"+cfg.HTTPServer.Port),
+			slog.String("domain", cfg.Webhook.Domain),
+			slog.String("env", cfg.Env),
+		)
 
-	// 	bot := resolveTgBot(a.container)
-	// 	dq.Add(func() error {
-	// 		return bot.Shutdown(ctx)
-	// 	})
+		dq.Add(func() error {
+			return bot.Shutdown(ctx)
+		})
 
-	// 	_ = bot.Start(ctx, logger)
-	// 	logger.Info("telegram bot stopped")
-	// }()
+		// Wait for the server to be ready
+		url := "http://127.0.0.1" + ":" + cfg.HTTPServer.Port + "/healthcheck"
+		interval := 1 * time.Second // how often to poll
+		timeout := 1 * time.Second  // per-request timeout
+		startTime := time.Now()
+
+		logger.Info(
+			"waiting for the http server to be ready",
+			slog.String("url", url),
+			slog.String("interval", interval.String()),
+			slog.String("timeout", timeout.String()),
+		)
+
+		client := &http.Client{Timeout: timeout}
+
+		for {
+			// Check if the application is terminated
+			select {
+			case <-ctx.Done():
+				return
+			default:
+			}
+			resp, err := client.Get(url)
+			if err != nil {
+				// logger.Info("healthcheck failed", slogger.Err(err))
+			} else {
+				resp.Body.Close()
+				if resp.StatusCode == http.StatusOK {
+					break
+				}
+				logger.Info("healthcheck failed", slog.Int("status", resp.StatusCode))
+			}
+
+			time.Sleep(interval)
+		}
+
+		logger.Info(
+			"http server is ready",
+			slog.String("duration", time.Since(startTime).String()),
+		)
+
+		bot.Start(ctx)
+	}()
 
 	// Graceful Shutdown
 	select {
@@ -108,11 +151,11 @@ func (a *app) Run(ctx context.Context) {
 		logger.Info("terminating: via signal")
 	}
 
+	cancel()
+
 	// Call all deferred functions and wait them to be done
 	dq.Release()
 	dq.Wait()
-
-	cancel()
 }
 
 func waitSignal() chan os.Signal {
