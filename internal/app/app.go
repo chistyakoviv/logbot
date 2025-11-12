@@ -136,7 +136,7 @@ func (a *app) Run(ctx context.Context) {
 
 		logger.Info(
 			"http server is ready",
-			slog.String("duration", time.Since(startTime).String()),
+			slog.String("delay", time.Since(startTime).String()),
 		)
 
 		bot.Start(ctx)
@@ -146,7 +146,6 @@ func (a *app) Run(ctx context.Context) {
 	select {
 	case <-ctx.Done():
 		logger.Info("terminating: context canceled")
-	// No need for a wait group until the application is blocked, waiting for an OS signal
 	case <-waitSignal():
 		logger.Info("terminating: via signal")
 	}
