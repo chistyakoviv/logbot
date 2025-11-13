@@ -7,13 +7,18 @@ const (
 	Ru
 )
 
+const (
+	en = "en"
+	ru = "ru"
+)
+
 func (lang Language) String() string {
-	const en = "en"
+
 	switch lang {
 	case En:
 		return en
 	case Ru:
-		return "ru"
+		return ru
 	default:
 		return en
 	}
