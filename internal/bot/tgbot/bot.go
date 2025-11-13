@@ -95,7 +95,10 @@ func (tgb *TgBot) init() {
 	// so we have to call it manually when using an external server.
 	// Url is what the route must look like after trimming the prefix specified in the GetHandlerFunc method.
 	// So register each webhook by token to be able to use many bots at the same time.
-	tgb.updater.AddWebhook(tgb.bot, tgb.cfg.Token, &ext.AddWebhookOpts{SecretToken: tgb.cfg.Webhook.Secret})
+	err = tgb.updater.AddWebhook(tgb.bot, tgb.cfg.Token, &ext.AddWebhookOpts{SecretToken: tgb.cfg.Webhook.Secret})
+	if err != nil {
+		log.Fatalf("failed to add webhook: %s", err.Error())
+	}
 }
 
 func (tgb *TgBot) Start(ctx context.Context) {

@@ -6,6 +6,9 @@ import (
 	"github.com/chistyakoviv/logbot/internal/utils"
 )
 
+const errLanguageNotSupported = "{{language not supported}}"
+const errNoTranslationSpecified = "{{no translation specified}}"
+
 type messages map[string][]string
 
 type I18n struct {
@@ -34,16 +37,16 @@ func (i *I18n) T(lang string, key string) string {
 	if !ok {
 		translation, ok = i.data[i.DefaultLang()]
 		if !ok {
-			return "{{language not supported}}"
+			return errLanguageNotSupported
 		}
 		_, ok = translation[key]
 		if !ok {
-			return "{{no translation specified}}"
+			return errNoTranslationSpecified
 		}
 	}
 	msgs, ok := translation[key]
 	if !ok {
-		return "{{no translation specified}}"
+		return errNoTranslationSpecified
 	}
 	return utils.RandFromSlice(msgs)
 }

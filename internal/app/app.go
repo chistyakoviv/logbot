@@ -124,7 +124,10 @@ func (a *app) Run(ctx context.Context) {
 			if err != nil {
 				// logger.Info("healthcheck failed", slogger.Err(err))
 			} else {
-				resp.Body.Close()
+				berr := resp.Body.Close()
+				if berr != nil {
+					logger.Info("failed to close response body", slogger.Err(berr))
+				}
 				if resp.StatusCode == http.StatusOK {
 					break
 				}
