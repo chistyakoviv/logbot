@@ -16,3 +16,10 @@ type Repository struct {
 	db db.DB
 	sq sq.StatementBuilderType
 }
+
+func NewRepository(db db.DB, sq sq.StatementBuilderType) *Repository {
+	return &Repository{
+		db: db,
+		sq: sq,
+	}
+}
