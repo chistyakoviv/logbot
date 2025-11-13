@@ -14,6 +14,7 @@ type Config struct {
 	HTTPServer HTTPServer `yaml:"http_server"`
 	Postgres   Postgres   `yaml:"database"`
 	Webhook    Webhook    `yaml:"webhook"`
+	Superuser  string     `yaml:"superuser" env:"SUPERUSER" env-required:"true" yaml-required:"true"`
 }
 
 type Postgres struct {
@@ -21,7 +22,7 @@ type Postgres struct {
 }
 
 type HTTPServer struct {
-	Host         string        `yaml:"host" env:"Host" env-default:"0.0.0.0"`
+	Host         string        `yaml:"host" env:"HOST" env-default:"0.0.0.0"`
 	Port         string        `yaml:"port" env:"PORT" env-default:"8080"`
 	ReadTimeout  time.Duration `yaml:"read_timeout" env:"READ_TIMEOUT" env-required:"true"`
 	WriteTimeout time.Duration `yaml:"write_timeout" env:"WRITE_TIMEOUT" env-required:"true"`
