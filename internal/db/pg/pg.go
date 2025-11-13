@@ -2,9 +2,11 @@ package pg
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 
 	"github.com/chistyakoviv/logbot/internal/db"
+	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -30,37 +32,109 @@ func NewDB(name string, dbc *pgxpool.Pool, logger *slog.Logger) db.DB {
 	}
 }
 
-func (p *pg) Exec(ctx context.Context, q db.Query, args ...interface{}) (pgconn.CommandTag, error) {
-	p.logger.Debug("query debug", slog.Attr{Key: "name", Value: slog.StringValue(q.Name)}, slog.Attr{Key: "sql", Value: slog.StringValue(q.QueryRaw)})
-
-	tx, ok := ctx.Value(TxKey).(pgx.Tx)
-	if ok {
-		return tx.Exec(ctx, q.QueryRaw, args...)
+func (p *pg) Exec(ctx context.Context, q db.Query) (pgconn.CommandTag, error) {
+	query, args, err := q.Sqlizer.ToSql()
+	if err != nil {
+		return pgconn.CommandTag{}, fmt.Errorf("postgres: to sql: %w", err)
 	}
 
-	return p.dbc.Exec(ctx, q.QueryRaw, args...)
+	p.logger.Debug(
+		"query debug",
+		slog.Attr{Key: "name", Value: slog.StringValue(q.Name)},
+		slog.Attr{Key: "sql", Value: slog.StringValue(query)},
+	)
+
+	// A transaction is initiated by calling txManager.ReadCommitted(ctx, func(ctx context.Context) error).
+	tx, ok := ctx.Value(TxKey).(pgx.Tx)
+	if ok {
+		return tx.Exec(ctx, query, args...)
+	}
+
+	return p.dbc.Exec(ctx, query, args...)
 }
 
-func (p *pg) Query(ctx context.Context, q db.Query, args ...interface{}) (pgx.Rows, error) {
-	p.logger.Debug("query debug", slog.Attr{Key: "name", Value: slog.StringValue(q.Name)}, slog.Attr{Key: "sql", Value: slog.StringValue(q.QueryRaw)})
-
-	tx, ok := ctx.Value(TxKey).(pgx.Tx)
-	if ok {
-		return tx.Query(ctx, q.QueryRaw, args...)
+func (p *pg) Query(ctx context.Context, q db.Query) (pgx.Rows, error) {
+	query, args, err := q.Sqlizer.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("postgres: to sql: %w", err)
 	}
 
-	return p.dbc.Query(ctx, q.QueryRaw, args...)
+	p.logger.Debug(
+		"query debug",
+		slog.Attr{Key: "name", Value: slog.StringValue(q.Name)},
+		slog.Attr{Key: "sql", Value: slog.StringValue(query)},
+	)
+
+	// A transaction is initiated by calling txManager.ReadCommitted(ctx, func(ctx context.Context) error).
+	tx, ok := ctx.Value(TxKey).(pgx.Tx)
+	if ok {
+		return tx.Query(ctx, query, args...)
+	}
+
+	return p.dbc.Query(ctx, query, args...)
 }
 
-func (p *pg) QueryRow(ctx context.Context, q db.Query, args ...interface{}) pgx.Row {
-	p.logger.Debug("query debug", slog.Attr{Key: "name", Value: slog.StringValue(q.Name)}, slog.Attr{Key: "sql", Value: slog.StringValue(q.QueryRaw)})
-
-	tx, ok := ctx.Value(TxKey).(pgx.Tx)
-	if ok {
-		return tx.QueryRow(ctx, q.QueryRaw, args...)
+func (p *pg) QueryRow(ctx context.Context, q db.Query) (pgx.Row, error) {
+	query, args, err := q.Sqlizer.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("postgres: to sql: %w", err)
 	}
 
-	return p.dbc.QueryRow(ctx, q.QueryRaw, args...)
+	p.logger.Debug(
+		"query debug",
+		slog.Attr{Key: "name", Value: slog.StringValue(q.Name)},
+		slog.Attr{Key: "sql", Value: slog.StringValue(query)},
+	)
+
+	// A transaction is initiated by calling txManager.ReadCommitted(ctx, func(ctx context.Context) error).
+	tx, ok := ctx.Value(TxKey).(pgx.Tx)
+	if ok {
+		return tx.QueryRow(ctx, query, args...), nil
+	}
+
+	return p.dbc.QueryRow(ctx, query, args...), nil
+}
+
+func (p *pg) Getx(ctx context.Context, dest interface{}, q db.Query) error {
+	query, args, err := q.Sqlizer.ToSql()
+	if err != nil {
+		return fmt.Errorf("postgres: to sql: %w", err)
+	}
+
+	p.logger.Debug(
+		"query debug",
+		slog.Attr{Key: "name", Value: slog.StringValue(q.Name)},
+		slog.Attr{Key: "sql", Value: slog.StringValue(query)},
+	)
+
+	// A transaction is initiated by calling txManager.ReadCommitted(ctx, func(ctx context.Context) error).
+	tx, ok := ctx.Value(TxKey).(pgx.Tx)
+	if ok {
+		return pgxscan.Get(ctx, tx, dest, query, args...)
+	}
+
+	return pgxscan.Get(ctx, p.dbc, dest, query, args...)
+}
+
+func (p *pg) Selectx(ctx context.Context, dest interface{}, q db.Query) error {
+	query, args, err := q.Sqlizer.ToSql()
+	if err != nil {
+		return fmt.Errorf("postgres: to sql: %w", err)
+	}
+
+	p.logger.Debug(
+		"query debug",
+		slog.Attr{Key: "name", Value: slog.StringValue(q.Name)},
+		slog.Attr{Key: "sql", Value: slog.StringValue(query)},
+	)
+
+	// A transaction is initiated by calling txManager.ReadCommitted(ctx, func(ctx context.Context) error).
+	tx, ok := ctx.Value(TxKey).(pgx.Tx)
+	if ok {
+		return pgxscan.Get(ctx, tx, dest, query, args...)
+	}
+
+	return pgxscan.Select(ctx, p.dbc, dest, query, args...)
 }
 
 /**

@@ -71,7 +71,7 @@ func (m *manager) transaction(ctx context.Context, opts pgx.TxOptions, fn db.TxH
 	return err
 }
 
-func (m *manager) ReadCommitted(ctx context.Context, f db.TxHandler) error {
+func (m *manager) ReadCommitted(ctx context.Context, fn db.TxHandler) error {
 	txOpts := pgx.TxOptions{IsoLevel: pgx.ReadCommitted}
-	return m.transaction(ctx, txOpts, f)
+	return m.transaction(ctx, txOpts, fn)
 }
