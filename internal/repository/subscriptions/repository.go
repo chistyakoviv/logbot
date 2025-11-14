@@ -1,17 +1,17 @@
-package groups
+package subscriptions
 
 import (
 	"context"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/chistyakoviv/logbot/internal/db"
-	"github.com/chistyakoviv/logbot/internal/models"
+	"github.com/chistyakoviv/logbot/internal/model"
 )
 
 type IRepository interface {
-	Create(ctx context.Context, in *models.Group) (*models.Group, error)
-	FindByToken(ctx context.Context, token string) (*models.Group, error)
-	DeleteByToken(ctx context.Context, token string) (*models.Group, error)
+	Create(ctx context.Context, in *model.Subscription) (*model.Subscription, error)
+	FindByToken(ctx context.Context, token string) (*model.Subscription, error)
+	DeleteByToken(ctx context.Context, token string) (*model.Subscription, error)
 }
 
 type repository struct {

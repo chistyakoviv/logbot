@@ -1,4 +1,4 @@
-package models
+package model
 
 import (
 	"time"
@@ -6,9 +6,14 @@ import (
 	"github.com/google/uuid"
 )
 
-type Group struct {
+type Subscription struct {
 	ID        uuid.UUID
 	ChatID    int64
 	Token     string
 	CreatedAt time.Time
+}
+
+type SubscriptionInfo struct {
+	ChatID int64
+	Token  string
 }

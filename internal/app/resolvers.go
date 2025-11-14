@@ -14,7 +14,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/deferredq"
 	"github.com/chistyakoviv/logbot/internal/di"
 	"github.com/chistyakoviv/logbot/internal/i18n"
-	"github.com/chistyakoviv/logbot/internal/repository/groups"
+	"github.com/chistyakoviv/logbot/internal/repository/subscriptions"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -152,11 +152,11 @@ func resolveI18n(c di.Container) *i18n.I18n {
 }
 
 // Repositories
-func resolveGroupsRepository(c di.Container) groups.IRepository {
-	repo, err := di.Resolve[groups.IRepository](c, "groupsRepository")
+func resolveSubscriptionsRepository(c di.Container) subscriptions.IRepository {
+	repo, err := di.Resolve[subscriptions.IRepository](c, "subscriptionsRepository")
 
 	if err != nil {
-		log.Fatalf("Couldn't resolve groups repository definition: %v", err)
+		log.Fatalf("Couldn't resolve subscriptions repository definition: %v", err)
 	}
 
 	return repo

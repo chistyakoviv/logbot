@@ -1,20 +1,20 @@
-package groups
+package subscriptions
 
 import (
 	"time"
 
-	"github.com/chistyakoviv/logbot/internal/models"
+	"github.com/chistyakoviv/logbot/internal/model"
 	"github.com/google/uuid"
 )
 
-type GroupRow struct {
+type SubscriptionRow struct {
 	ID        uuid.UUID `db:"id"`
 	ChatID    int64     `db:"chat_id"`
 	Token     string    `db:"token"`
 	CreatedAt time.Time `db:"created_at"`
 }
 
-func (r *GroupRow) Values() []any {
+func (r *SubscriptionRow) Values() []any {
 	return []any{
 		r.ID,
 		r.ChatID,
@@ -23,11 +23,11 @@ func (r *GroupRow) Values() []any {
 	}
 }
 
-func ToModel(r *GroupRow) *models.Group {
+func ToModel(r *SubscriptionRow) *model.Subscription {
 	if r == nil {
 		return nil
 	}
-	return &models.Group{
+	return &model.Subscription{
 		ID:        r.ID,
 		ChatID:    r.ChatID,
 		Token:     r.Token,
@@ -36,11 +36,11 @@ func ToModel(r *GroupRow) *models.Group {
 }
 
 // The object exists inside a repository method for a short time, no need to keep a reference.
-func FromModel(m *models.Group) GroupRow {
+func FromModel(m *model.Subscription) SubscriptionRow {
 	if m == nil {
-		return GroupRow{}
+		return SubscriptionRow{}
 	}
-	return GroupRow{
+	return SubscriptionRow{
 		ID:        m.ID,
 		ChatID:    m.ChatID,
 		Token:     m.Token,
