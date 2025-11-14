@@ -2,28 +2,27 @@ package groups
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/chistyakoviv/logbot/internal/db"
 	"github.com/chistyakoviv/logbot/internal/models"
 )
 
-func (r *Repository) Create(ctx context.Context, in *models.Group) (*models.Group, error) {
+func (r *repository) Create(ctx context.Context, in *models.Group) (*models.Group, error) {
 	row := FromModel(in)
 
-	builder := r.sq.Insert(groupsTable).
-		Columns(groupsTableColumns...).
-		Values(row.Values()...).
-		Suffix("RETURNING " + strings.Join(groupsTableColumns, ","))
-
 	q := db.Query{
-		Name:    "repository.groups.create",
-		Sqlizer: builder,
+		Name: "repository.groups.create",
+		Sqlizer: r.sq.Insert(groupsTable).
+			Columns(groupsTableColumns...).
+			Values(row.Values()...).
+			Suffix("RETURNING " + strings.Join(groupsTableColumns, ",")),
 	}
 
 	var out GroupRow
-	if err := r.db.Getx(ctx, &out, q); err != nil {
-		return nil, err
+	if err := r.db.DB().Getx(ctx, &out, q); err != nil {
+		return nil, fmt.Errorf("%s: %w", q.Name, err)
 	}
 
 	return ToModel(&out), nil

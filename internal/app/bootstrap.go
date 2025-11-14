@@ -21,6 +21,7 @@ import (
 	mwLogger "github.com/chistyakoviv/logbot/internal/http/middleware/logger"
 	"github.com/chistyakoviv/logbot/internal/i18n"
 	"github.com/chistyakoviv/logbot/internal/lib/slogger"
+	"github.com/chistyakoviv/logbot/internal/repository/groups"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
 )
@@ -148,5 +149,10 @@ func bootstrap(ctx context.Context, c di.Container) {
 
 	c.RegisterSingleton("i18n", func(c di.Container) *i18n.I18n {
 		return i18n.New()
+	})
+
+	// Repositories
+	c.RegisterSingleton("groupsRepository", func(c di.Container) groups.IRepository {
+		return groups.NewRepository(resolveDbClient(c), resolveStatementBuilder(c))
 	})
 }

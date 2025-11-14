@@ -1,24 +1,26 @@
 package groups
 
 import (
+	"context"
+
 	sq "github.com/Masterminds/squirrel"
 	"github.com/chistyakoviv/logbot/internal/db"
 	"github.com/chistyakoviv/logbot/internal/models"
 )
 
-type GroupsRepository interface {
-	Create(chatID int64, token string) (*models.Group, error)
-	FindByToken(token string) (*models.Group, error)
-	DeleteByToken(token string) error
+type IRepository interface {
+	Create(ctx context.Context, in *models.Group) (*models.Group, error)
+	FindByToken(ctx context.Context, token string) (*models.Group, error)
+	DeleteByToken(ctx context.Context, token string) (*models.Group, error)
 }
 
-type Repository struct {
-	db db.DB
+type repository struct {
+	db db.Client
 	sq sq.StatementBuilderType
 }
 
-func NewRepository(db db.DB, sq sq.StatementBuilderType) *Repository {
-	return &Repository{
+func NewRepository(db db.Client, sq sq.StatementBuilderType) IRepository {
+	return &repository{
 		db: db,
 		sq: sq,
 	}

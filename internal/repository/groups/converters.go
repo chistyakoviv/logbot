@@ -35,6 +35,7 @@ func ToModel(r *GroupRow) *models.Group {
 	}
 }
 
+// The object exists inside a repository method for a short time, no need to keep a reference.
 func FromModel(m *models.Group) GroupRow {
 	if m == nil {
 		return GroupRow{}
