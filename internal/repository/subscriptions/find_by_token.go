@@ -9,7 +9,6 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/chistyakoviv/logbot/internal/db"
 	"github.com/chistyakoviv/logbot/internal/model"
-	"github.com/jackc/pgx/v5"
 )
 
 func (r *repository) FindByToken(ctx context.Context, token string) (*model.Subscription, error) {
@@ -27,8 +26,8 @@ func (r *repository) FindByToken(ctx context.Context, token string) (*model.Subs
 
 	var row SubscriptionRow
 	if err := r.db.DB().Getx(ctx, &row, q); err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, db.ErrNotFound
+		if errors.Is(err, db.ErrNotFound) {
+			return nil, err
 		}
 		return nil, fmt.Errorf("%s: %w", q.Name, err)
 	}

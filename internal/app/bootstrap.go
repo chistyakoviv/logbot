@@ -21,7 +21,10 @@ import (
 	mwLogger "github.com/chistyakoviv/logbot/internal/http/middleware/logger"
 	"github.com/chistyakoviv/logbot/internal/i18n"
 	"github.com/chistyakoviv/logbot/internal/lib/slogger"
+	"github.com/chistyakoviv/logbot/internal/repository/commands"
 	"github.com/chistyakoviv/logbot/internal/repository/subscriptions"
+	srvCommands "github.com/chistyakoviv/logbot/internal/service/commands"
+	srvSubscriptions "github.com/chistyakoviv/logbot/internal/service/subscriptions"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
 )
@@ -124,7 +127,8 @@ func bootstrap(ctx context.Context, c di.Container) {
 	c.RegisterSingleton("tgCmdstage", func(c di.Container) handlers.Response {
 		logger := resolveLogger(c)
 		i18n := resolveI18n(c)
-		return handler.NewCommandStage(logger, i18n)
+		tgCommands := resolveTgCommands(c)
+		return handler.NewCommandStage(ctx, logger, i18n, resolveCommandsService(c), tgCommands)
 	})
 
 	c.RegisterSingleton("tgJoin", func(c di.Container) handlers.Response {
@@ -154,5 +158,18 @@ func bootstrap(ctx context.Context, c di.Container) {
 	// Repositories
 	c.RegisterSingleton("subscriptionsRepository", func(c di.Container) subscriptions.IRepository {
 		return subscriptions.NewRepository(resolveDbClient(c), resolveStatementBuilder(c))
+	})
+
+	c.RegisterSingleton("commandsRepository", func(c di.Container) commands.IRepository {
+		return commands.NewRepository(resolveDbClient(c), resolveStatementBuilder(c))
+	})
+
+	// Services
+	c.RegisterSingleton("subscriptionsService", func(c di.Container) srvSubscriptions.IService {
+		return srvSubscriptions.NewService(resolveSubscriptionsRepository(c), resolveTxManager(c))
+	})
+
+	c.RegisterSingleton("commandsService", func(c di.Container) srvCommands.IService {
+		return srvCommands.NewService(resolveCommandsRepository(c), resolveTxManager(c))
 	})
 }

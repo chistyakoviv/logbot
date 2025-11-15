@@ -12,6 +12,8 @@ import (
 	"github.com/chistyakoviv/logbot/internal/i18n"
 )
 
+const CommandName string = "start"
+
 func New(logger *slog.Logger, i18n *i18n.I18n) *command.TgCommand {
 	return &command.TgCommand{
 		Handler: begin(logger, i18n),

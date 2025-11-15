@@ -32,7 +32,7 @@ db-connect:
 	docker compose exec logbot-pg psql postgres://app:secret@logbot-pg/app
 
 db-purge:
-	docker compose exec logbot-pg sh -c "psql postgres://app:secret@logbot-pg/app -t -c \"SELECT 'DROP TABLE \\\"' || tablename || '\\\" CASCADE;' FROM pg_tables WHERE schemaname = 'public'\" | psql postgres://app:secret@logbot-pg/app"
+	docker compose run --rm go-cli make logbot-db-purge
 
 wait-db:
 	wait-for-it logbot-pg:5432 -t 60
@@ -46,6 +46,11 @@ logbot-migrate-up: wait-db
 
 logbot-migrate-down: wait-db
 	goose postgres "${PG_DSN}" down -v
+
+logbot-db-purge: wait-db
+	psql ${PG_DSN} -t -c "SELECT 'DROP TABLE \"' || tablename || '\" CASCADE;' FROM pg_tables WHERE schemaname = 'public'" | \
+	psql ${PG_DSN}
+
 
 logbot-lint:
 	golangci-lint run -v ./... --config .golangci.pipeline.yaml

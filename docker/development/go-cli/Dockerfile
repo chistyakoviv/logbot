@@ -6,7 +6,9 @@ ENV MOCKERY_INSTALL_VERSION=3.5.5
 RUN apk add --no-cache \
     curl \
     make \
-    git
+    git \
+    bash \
+    postgresql-client
 
 RUN mkdir -p /tmp/mockery && \
     curl -L -o /tmp/mockery/mockery.tar.gz "https://github.com/vektra/mockery/releases/download/v${MOCKERY_INSTALL_VERSION}/mockery_${MOCKERY_INSTALL_VERSION}_Linux_x86_64.tar.gz" && \

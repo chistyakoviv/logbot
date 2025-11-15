@@ -10,10 +10,16 @@ import (
 
 func (s *service) Subscribe(ctx context.Context, in *model.SubscriptionInfo) (*model.Subscription, error) {
 	sub := &model.Subscription{
-		ID:        uuid.New(),
-		ChatID:    in.ChatID,
+		Id:        uuid.New(),
+		ChatId:    in.ChatId,
 		Token:     in.Token,
 		CreatedAt: time.Now(),
 	}
-	return s.subscriptionsRepository.Create(ctx, sub)
+	out, err := s.subscriptionsRepository.Create(ctx, sub)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return out, nil
 }

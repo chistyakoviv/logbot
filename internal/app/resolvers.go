@@ -14,7 +14,10 @@ import (
 	"github.com/chistyakoviv/logbot/internal/deferredq"
 	"github.com/chistyakoviv/logbot/internal/di"
 	"github.com/chistyakoviv/logbot/internal/i18n"
+	"github.com/chistyakoviv/logbot/internal/repository/commands"
 	"github.com/chistyakoviv/logbot/internal/repository/subscriptions"
+	srvCommands "github.com/chistyakoviv/logbot/internal/service/commands"
+	srvSubscriptions "github.com/chistyakoviv/logbot/internal/service/subscriptions"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -160,4 +163,35 @@ func resolveSubscriptionsRepository(c di.Container) subscriptions.IRepository {
 	}
 
 	return repo
+}
+
+func resolveCommandsRepository(c di.Container) commands.IRepository {
+	repo, err := di.Resolve[commands.IRepository](c, "commandsRepository")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve commands repository definition: %v", err)
+	}
+
+	return repo
+}
+
+// Services
+func resolveSubscriptionsService(c di.Container) srvSubscriptions.IService {
+	service, err := di.Resolve[srvSubscriptions.IService](c, "subscriptionsService")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve subscriptions service definition: %v", err)
+	}
+
+	return service
+}
+
+func resolveCommandsService(c di.Container) srvCommands.IService {
+	service, err := di.Resolve[srvCommands.IService](c, "commandsService")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve commands service definition: %v", err)
+	}
+
+	return service
 }

@@ -110,10 +110,16 @@ func (p *pg) Getx(ctx context.Context, dest interface{}, q db.Query) error {
 	// A transaction is initiated by calling txManager.ReadCommitted(ctx, func(ctx context.Context) error).
 	tx, ok := ctx.Value(TxKey).(pgx.Tx)
 	if ok {
-		return pgxscan.Get(ctx, tx, dest, query, args...)
+		err = pgxscan.Get(ctx, tx, dest, query, args...)
+	} else {
+		err = pgxscan.Get(ctx, p.dbc, dest, query, args...)
 	}
 
-	return pgxscan.Get(ctx, p.dbc, dest, query, args...)
+	if pgxscan.NotFound(err) {
+		return db.ErrNotFound
+	}
+
+	return err
 }
 
 func (p *pg) Selectx(ctx context.Context, dest interface{}, q db.Query) error {
@@ -131,7 +137,7 @@ func (p *pg) Selectx(ctx context.Context, dest interface{}, q db.Query) error {
 	// A transaction is initiated by calling txManager.ReadCommitted(ctx, func(ctx context.Context) error).
 	tx, ok := ctx.Value(TxKey).(pgx.Tx)
 	if ok {
-		return pgxscan.Get(ctx, tx, dest, query, args...)
+		return pgxscan.Select(ctx, tx, dest, query, args...)
 	}
 
 	return pgxscan.Select(ctx, p.dbc, dest, query, args...)

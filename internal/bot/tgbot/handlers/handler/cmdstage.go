@@ -1,30 +1,69 @@
 package handler
 
 import (
+	"context"
+	"errors"
 	"log/slog"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command"
+	"github.com/chistyakoviv/logbot/internal/db"
 	"github.com/chistyakoviv/logbot/internal/i18n"
+	"github.com/chistyakoviv/logbot/internal/model"
+	"github.com/chistyakoviv/logbot/internal/service/commands"
 )
 
-func NewCommandStage(logger *slog.Logger, i18n *i18n.I18n) handlers.Response {
-	return commandStageHandler(logger, i18n)
+func NewCommandStage(
+	ctx context.Context,
+	logger *slog.Logger,
+	i18n *i18n.I18n,
+	commands commands.IService,
+	tgCommands command.TgCommands,
+) handlers.Response {
+	return commandStageHandler(ctx, logger, i18n, commands, tgCommands)
 }
 
-func commandStageHandler(logger *slog.Logger, i18n *i18n.I18n) handlers.Response {
-	return func(b *gotgbot.Bot, ctx *ext.Context) error {
-		msg := ctx.EffectiveMessage
+func commandStageHandler(ctx context.Context,
+	logger *slog.Logger,
+	i18n *i18n.I18n,
+	commands commands.IService,
+	tgCommands command.TgCommands,
+) handlers.Response {
+	return func(b *gotgbot.Bot, ectx *ext.Context) error {
+		msg := ectx.EffectiveMessage
 
 		logger.Debug(
-			"text message received",
-			slog.Int64("chat_id", msg.Chat.Id),
+			"try to find ongoing command",
+			slog.String("chat", msg.Chat.Title),
 			slog.String("from", msg.From.Username),
-			slog.String("message", msg.Text),
 		)
 
-		_, err := b.SendMessage(ctx.EffectiveMessage.Chat.Id, "No command received", nil)
-		return err
+		command, err := commands.FindByKey(ctx, &model.CommandKey{
+			ChatId: msg.Chat.Id,
+			UserId: msg.From.Id,
+		})
+		if errors.Is(err, db.ErrNotFound) || (command != nil && command.Stage == model.NoStage) {
+			logger.Debug("no ongoing command")
+			return nil
+		}
+		if err != nil {
+			logger.Error("error occurred while trying to process a command stage", err)
+			return err
+		}
+
+		tgCommand, ok := tgCommands[command.Name]
+		if !ok {
+			logger.Error("command not found", slog.String("name", command.Name))
+			return nil
+		}
+
+		if command.Stage < 0 || command.Stage >= len(tgCommand.Stages) {
+			logger.Error("command stage is out of range", slog.Int("stage", command.Stage))
+			return nil
+		}
+
+		return tgCommand.Stages[command.Stage](b, ectx)
 	}
 }
