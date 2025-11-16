@@ -3,7 +3,7 @@
 CREATE TABLE IF NOT EXISTS subscriptions (
     id UUID NOT NULL DEFAULT gen_random_uuid(),
     chat_id BIGINT NOT NULL,
-    token VARCHAR(255) NOT NULL,
+    token UUID NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     PRIMARY KEY (id),
     UNIQUE (token)
