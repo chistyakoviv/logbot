@@ -11,6 +11,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command"
 	"github.com/chistyakoviv/logbot/internal/db"
 	"github.com/chistyakoviv/logbot/internal/i18n"
+	"github.com/chistyakoviv/logbot/internal/lib/slogger"
 	"github.com/chistyakoviv/logbot/internal/model"
 	"github.com/chistyakoviv/logbot/internal/service/commands"
 )
@@ -49,7 +50,7 @@ func commandStageHandler(ctx context.Context,
 			return nil
 		}
 		if err != nil {
-			logger.Error("error occurred while trying to process a command stage", err)
+			logger.Error("error occurred while trying to process a command stage", slogger.Err(err))
 			return err
 		}
 
