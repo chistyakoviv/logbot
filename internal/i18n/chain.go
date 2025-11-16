@@ -25,3 +25,8 @@ func (c *I18nChain) T(lang string, key string, opts ...Option) II18nChain {
 func (c *I18nChain) String() string {
 	return c.buf.String()
 }
+
+func (c *I18nChain) Append(s string) II18nChain {
+	c.buf.WriteString(s)
+	return c
+}

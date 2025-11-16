@@ -42,12 +42,12 @@ func stage0(
 					T(
 						"en",
 						"mention",
-						I18n.WithSuffix("\n"),
 						I18n.WithArgs([]any{
 							msg.From.Id,
 							msg.From.Username,
 						}),
 					).
+					Append("\n").
 					T("en", "subscribe_invalid_token").
 					String(),
 				&gotgbot.SendMessageOpts{
@@ -74,12 +74,12 @@ func stage0(
 					T(
 						"en",
 						"mention",
-						I18n.WithSuffix("\n"),
 						I18n.WithArgs([]any{
 							msg.From.Id,
 							msg.From.Username,
 						}),
 					).
+					Append("\n").
 					T("en", "subscribe_error").
 					String(),
 				&gotgbot.SendMessageOpts{
@@ -102,12 +102,12 @@ func stage0(
 					T(
 						"en",
 						"mention",
-						I18n.WithSuffix("\n"),
 						I18n.WithArgs([]any{
 							msg.From.Id,
 							msg.From.Username,
 						}),
 					).
+					Append("\n").
 					T("en", "subscribe_error").
 					String(),
 				&gotgbot.SendMessageOpts{
@@ -124,12 +124,12 @@ func stage0(
 				T(
 					"en",
 					"mention",
-					I18n.WithSuffix("\n"),
 					I18n.WithArgs([]any{
 						msg.From.Id,
 						msg.From.Username,
 					}),
 				).
+				Append("\n").
 				T(
 					"en",
 					"subscribe_complete",

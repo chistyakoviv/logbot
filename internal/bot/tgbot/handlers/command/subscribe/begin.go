@@ -41,14 +41,19 @@ func begin(
 			logger.Error("error occurred while subscribing", slogger.Err(err))
 			_, err = b.SendMessage(
 				msg.Chat.Id,
-				i18n.T(
-					"en",
-					"subscribe_error",
-					I18n.WithArgs([]any{
-						msg.From.Id,
-						msg.From.Username,
-					}),
-				),
+				i18n.
+					Chain().
+					T(
+						"en",
+						"mention",
+						I18n.WithArgs([]any{
+							msg.From.Id,
+							msg.From.Username,
+						}),
+					).
+					Append("\n").
+					T("en", "subscribe_error").
+					String(),
 				&gotgbot.SendMessageOpts{
 					ParseMode: "html",
 				},
@@ -64,12 +69,12 @@ func begin(
 				T(
 					"en",
 					"mention",
-					I18n.WithSuffix("\n"),
 					I18n.WithArgs([]any{
 						msg.From.Id,
 						msg.From.Username,
 					}),
 				).
+				Append("\n").
 				T("en", "subscribe_begin").
 				String(),
 			&gotgbot.SendMessageOpts{

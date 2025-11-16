@@ -12,8 +12,7 @@ const errLanguageNotSupported = "{{language not supported}}"
 const errNoTranslationSpecified = "{{no translation specified}}"
 
 type I18nOpts struct {
-	Suffix string
-	Args   []any
+	Args []any
 }
 
 func NewI18nOpts(opts ...Option) *I18nOpts {
@@ -70,7 +69,7 @@ func (i *I18n) T(lang string, key string, opts ...Option) string {
 	opts = append(opts, WithDefaultArgs())
 	o := NewI18nOpts(opts...)
 
-	return fmt.Sprintf(utils.RandFromSlice(msgs), o.Args...) + o.Suffix
+	return fmt.Sprintf(utils.RandFromSlice(msgs), o.Args...)
 }
 
 func (i *I18n) Chain() II18nChain {
@@ -92,11 +91,5 @@ func WithDefaultArgs() Option {
 		if o.Args == nil {
 			o.Args = []any{}
 		}
-	}
-}
-
-func WithSuffix(suffix string) Option {
-	return func(o *I18nOpts) {
-		o.Suffix = suffix
 	}
 }

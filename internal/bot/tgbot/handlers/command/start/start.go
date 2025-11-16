@@ -33,10 +33,13 @@ func begin(logger *slog.Logger, i18n *I18n.I18n) handlers.Response {
 
 		message := i18n.
 			Chain().
-			T(lang, "greeting", I18n.WithSuffix("\n\n")).
-			T(lang, "description", I18n.WithSuffix("\n\n")).
-			T(lang, "intro", I18n.WithSuffix("\n\n")).
-			T(lang, "help", I18n.WithSuffix("\n\n")).
+			T(lang, "greeting").
+			Append("\n\n").
+			T(lang, "description").
+			Append("\n\n").
+			T(lang, "intro").
+			Append("\n\n").
+			T(lang, "help").
 			String()
 		// fmt.Fprintf(&message, "%s", "<pre language=\"typescript\">console.log('Hello, world!')</pre>")
 		_, err := b.SendMessage(msg.Chat.Id, message, &gotgbot.SendMessageOpts{
