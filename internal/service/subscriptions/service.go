@@ -10,8 +10,8 @@ import (
 
 type IService interface {
 	Subscribe(ctx context.Context, in *model.SubscriptionInfo) (*model.Subscription, error)
-	FindByToken(ctx context.Context, token string) (*model.Subscription, error)
-	Unsubscribe(ctx context.Context, token string) (*model.Subscription, error)
+	FindByTokenAndChat(ctx context.Context, token string, chatId int64) (*model.Subscription, error)
+	Unsubscribe(ctx context.Context, token string, chatId int64) (*model.Subscription, error)
 }
 
 type service struct {

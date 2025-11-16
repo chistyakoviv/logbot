@@ -6,6 +6,6 @@ import (
 	"github.com/chistyakoviv/logbot/internal/model"
 )
 
-func (s *service) Unsubscribe(ctx context.Context, token string) (*model.Subscription, error) {
-	return s.subscriptionsRepository.DeleteByToken(ctx, token)
+func (s *service) Unsubscribe(ctx context.Context, token string, chatId int64) (*model.Subscription, error) {
+	return s.subscriptionsRepository.DeleteByTokenAndChat(ctx, token, chatId)
 }

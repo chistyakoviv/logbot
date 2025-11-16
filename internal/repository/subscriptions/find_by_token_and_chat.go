@@ -4,24 +4,25 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/chistyakoviv/logbot/internal/db"
 	"github.com/chistyakoviv/logbot/internal/model"
 )
 
-func (r *repository) FindByToken(ctx context.Context, token string) (*model.Subscription, error) {
+func (r *repository) FindByTokenAndChat(ctx context.Context, token string, chatId int64) (*model.Subscription, error) {
 	if token == "" {
 		return nil, errors.New("token is empty")
 	}
 
 	q := db.Query{
-		Name: "repository.subscriptions.find_by_token",
+		Name: "repository.subscriptions.find_by_token_and_chat",
 		Sqlizer: r.sq.Select(subscriptionsTableColumns...).
 			From(subscriptionsTable).
-			Where(sq.Eq{subscriptionsTableColumnToken: token}).
-			Suffix("RETURNING " + strings.Join(subscriptionsTableColumns, ",")),
+			Where(sq.Eq{
+				subscriptionsTableColumnToken:  token,
+				subscriptionsTableColumnChatId: chatId,
+			}),
 	}
 
 	var row SubscriptionRow

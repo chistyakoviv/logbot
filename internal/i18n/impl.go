@@ -37,6 +37,7 @@ func New() *I18n {
 				"description":             en.Description,
 				"subscribe_begin":         en.SubscribeBegin,
 				"subscribe_invalid_token": en.SubscribeInvalidToken,
+				"subscribe_token_exists":  en.SubscribeTokenExists,
 				"subscribe_error":         en.SubscribeError,
 				"subscribe_complete":      en.SubscribeComplete,
 				"mention":                 en.Mention,

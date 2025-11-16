@@ -2,12 +2,14 @@ package subscribe
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"strings"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
+	"github.com/chistyakoviv/logbot/internal/db"
 	I18n "github.com/chistyakoviv/logbot/internal/i18n"
 	"github.com/chistyakoviv/logbot/internal/lib/slogger"
 	"github.com/chistyakoviv/logbot/internal/model"
@@ -56,7 +58,29 @@ func stage0(
 			)
 			return err
 		}
-		// TODO: check if token is unique
+		_, tokExistsErr := subscriptions.FindByTokenAndChat(ctx, token, msg.Chat.Id)
+		if tokExistsErr == nil {
+			_, err := b.SendMessage(
+				msg.Chat.Id,
+				i18n.
+					Chain().
+					T(
+						"en",
+						"mention",
+						I18n.WithArgs([]any{
+							msg.From.Id,
+							msg.From.Username,
+						}),
+					).
+					Append("\n").
+					T("en", "subscribe_token_exists").
+					String(),
+				&gotgbot.SendMessageOpts{
+					ParseMode: "html",
+				},
+			)
+			return err
+		}
 
 		_, err := commands.CompleteByKey(
 			ctx,
@@ -65,9 +89,9 @@ func stage0(
 				UserId: msg.From.Id,
 			},
 		)
-		if err != nil {
+		if err != nil || !errors.Is(tokExistsErr, db.ErrNotFound) {
 			logger.Error("error occurred while subscribing", slogger.Err(err))
-			_, err = b.SendMessage(
+			_, err := b.SendMessage(
 				msg.Chat.Id,
 				i18n.
 					Chain().
@@ -95,7 +119,7 @@ func stage0(
 		})
 		if err != nil {
 			logger.Error("error occurred while subscribing", slogger.Err(err))
-			_, err = b.SendMessage(
+			_, err := b.SendMessage(
 				msg.Chat.Id,
 				i18n.
 					Chain().

@@ -9,7 +9,11 @@ var SubscribeComplete = []string{
 }
 
 var SubscribeInvalidToken = []string{
-	"Token is invalid.",
+	"Token is invalid. Try a different one.",
+}
+
+var SubscribeTokenExists = []string{
+	"Subscription already exists for this chat. Try a different token.",
 }
 
 var SubscribeError = []string{

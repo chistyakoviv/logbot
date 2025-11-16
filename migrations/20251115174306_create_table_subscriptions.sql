@@ -5,8 +5,7 @@ CREATE TABLE IF NOT EXISTS subscriptions (
     chat_id BIGINT NOT NULL,
     token UUID NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-    PRIMARY KEY (id),
-    UNIQUE (token)
+    PRIMARY KEY (id)
 );
 
 COMMENT ON TABLE subscriptions IS 'Subscriptions the chat will receive logs from';
