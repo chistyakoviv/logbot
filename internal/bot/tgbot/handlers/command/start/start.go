@@ -1,27 +1,25 @@
 package start
 
 import (
-	"bytes"
-	"fmt"
 	"log/slog"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command"
-	"github.com/chistyakoviv/logbot/internal/i18n"
+	I18n "github.com/chistyakoviv/logbot/internal/i18n"
 )
 
 const CommandName string = "start"
 
-func New(logger *slog.Logger, i18n *i18n.I18n) *command.TgCommand {
+func New(logger *slog.Logger, i18n *I18n.I18n) *command.TgCommand {
 	return &command.TgCommand{
 		Handler: begin(logger, i18n),
 		Stages:  []handlers.Response{},
 	}
 }
 
-func begin(logger *slog.Logger, i18n *i18n.I18n) handlers.Response {
+func begin(logger *slog.Logger, i18n *I18n.I18n) handlers.Response {
 	lang := i18n.DefaultLang()
 	return func(b *gotgbot.Bot, ctx *ext.Context) error {
 		msg := ctx.EffectiveMessage
@@ -33,13 +31,15 @@ func begin(logger *slog.Logger, i18n *i18n.I18n) handlers.Response {
 			slog.String("message", msg.Text),
 		)
 
-		var message bytes.Buffer
-		fmt.Fprintf(&message, "%s\n\n", i18n.T(lang, "greeting"))
-		fmt.Fprintf(&message, "%s\n\n", i18n.T(lang, "description"))
-		fmt.Fprintf(&message, "%s\n\n", i18n.T(lang, "intro"))
-		fmt.Fprintf(&message, "%s", i18n.T(lang, "help"))
+		message := i18n.
+			Chain().
+			T(lang, "greeting", I18n.WithSuffix("\n\n")).
+			T(lang, "description", I18n.WithSuffix("\n\n")).
+			T(lang, "intro", I18n.WithSuffix("\n\n")).
+			T(lang, "help", I18n.WithSuffix("\n\n")).
+			String()
 		// fmt.Fprintf(&message, "%s", "<pre language=\"typescript\">console.log('Hello, world!')</pre>")
-		_, err := b.SendMessage(msg.Chat.Id, message.String(), &gotgbot.SendMessageOpts{
+		_, err := b.SendMessage(msg.Chat.Id, message, &gotgbot.SendMessageOpts{
 			ParseMode: "html",
 		})
 		return err

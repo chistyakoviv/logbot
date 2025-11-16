@@ -7,7 +7,7 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
-	"github.com/chistyakoviv/logbot/internal/i18n"
+	I18n "github.com/chistyakoviv/logbot/internal/i18n"
 	"github.com/chistyakoviv/logbot/internal/lib/slogger"
 	"github.com/chistyakoviv/logbot/internal/model"
 	"github.com/chistyakoviv/logbot/internal/service/commands"
@@ -16,7 +16,7 @@ import (
 func begin(
 	ctx context.Context,
 	logger *slog.Logger,
-	i18n *i18n.I18n,
+	i18n *I18n.I18n,
 	commands commands.IService,
 ) handlers.Response {
 	return func(b *gotgbot.Bot, ectx *ext.Context) error {
@@ -39,16 +39,43 @@ func begin(
 		)
 		if err != nil {
 			logger.Error("error occurred while subscribing", slogger.Err(err))
-			_, err = b.SendMessage(msg.Chat.Id, i18n.T("en", "subscribe_error"), &gotgbot.SendMessageOpts{
-				ParseMode: "html",
-			})
+			_, err = b.SendMessage(
+				msg.Chat.Id,
+				i18n.T(
+					"en",
+					"subscribe_error",
+					I18n.WithArgs([]any{
+						msg.From.Id,
+						msg.From.Username,
+					}),
+				),
+				&gotgbot.SendMessageOpts{
+					ParseMode: "html",
+				},
+			)
 			return err
 		}
 
 		// TODO: implement user settings service to obtain current language
-		_, err = b.SendMessage(msg.Chat.Id, i18n.T("en", "subscribe_begin"), &gotgbot.SendMessageOpts{
-			ParseMode: "html",
-		})
+		_, err = b.SendMessage(
+			msg.Chat.Id,
+			i18n.
+				Chain().
+				T(
+					"en",
+					"mention",
+					I18n.WithSuffix("\n"),
+					I18n.WithArgs([]any{
+						msg.From.Id,
+						msg.From.Username,
+					}),
+				).
+				T("en", "subscribe_begin").
+				String(),
+			&gotgbot.SendMessageOpts{
+				ParseMode: "html",
+			},
+		)
 		return err
 	}
 }

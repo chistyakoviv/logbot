@@ -1,17 +1,17 @@
 package en
 
 var SubscribeBegin = []string{
-	"Enter your token:",
+	"Enter your token.",
 }
 
 var SubscribeComplete = []string{
-	"Subscribtion has been added: %s",
+	"Subscription succeeded: <code>%s</code>.",
 }
 
-var SubscribeEmptyToken = []string{
-	"Token can't be empty",
+var SubscribeInvalidToken = []string{
+	"Token is invalid.",
 }
 
 var SubscribeError = []string{
-	"Subscription has failed. Check log for details.",
+	"Subscription failed. Please check the log for more information. The command was canceled.",
 }

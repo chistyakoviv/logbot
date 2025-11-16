@@ -8,17 +8,18 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
-	"github.com/chistyakoviv/logbot/internal/i18n"
+	I18n "github.com/chistyakoviv/logbot/internal/i18n"
 	"github.com/chistyakoviv/logbot/internal/lib/slogger"
 	"github.com/chistyakoviv/logbot/internal/model"
 	"github.com/chistyakoviv/logbot/internal/service/commands"
 	"github.com/chistyakoviv/logbot/internal/service/subscriptions"
+	"github.com/google/uuid"
 )
 
 func stage0(
 	ctx context.Context,
 	logger *slog.Logger,
-	i18n *i18n.I18n,
+	i18n *I18n.I18n,
 	subscriptions subscriptions.IService,
 	commands commands.IService,
 ) handlers.Response {
@@ -33,12 +34,29 @@ func stage0(
 			slog.String("token", token),
 		)
 
-		if token == "" {
-			_, err := b.SendMessage(msg.Chat.Id, i18n.T("en", "subscribe_empty_token"), &gotgbot.SendMessageOpts{
-				ParseMode: "html",
-			})
+		if err := uuid.Validate(token); err != nil {
+			_, err := b.SendMessage(
+				msg.Chat.Id,
+				i18n.
+					Chain().
+					T(
+						"en",
+						"mention",
+						I18n.WithSuffix("\n"),
+						I18n.WithArgs([]any{
+							msg.From.Id,
+							msg.From.Username,
+						}),
+					).
+					T("en", "subscribe_invalid_token").
+					String(),
+				&gotgbot.SendMessageOpts{
+					ParseMode: "html",
+				},
+			)
 			return err
 		}
+		// TODO: check if token is unique
 
 		_, err := commands.CompleteByKey(
 			ctx,
@@ -49,9 +67,25 @@ func stage0(
 		)
 		if err != nil {
 			logger.Error("error occurred while subscribing", slogger.Err(err))
-			_, err = b.SendMessage(msg.Chat.Id, i18n.T("en", "subscribe_error"), &gotgbot.SendMessageOpts{
-				ParseMode: "html",
-			})
+			_, err = b.SendMessage(
+				msg.Chat.Id,
+				i18n.
+					Chain().
+					T(
+						"en",
+						"mention",
+						I18n.WithSuffix("\n"),
+						I18n.WithArgs([]any{
+							msg.From.Id,
+							msg.From.Username,
+						}),
+					).
+					T("en", "subscribe_error").
+					String(),
+				&gotgbot.SendMessageOpts{
+					ParseMode: "html",
+				},
+			)
 			return err
 		}
 
@@ -61,15 +95,53 @@ func stage0(
 		})
 		if err != nil {
 			logger.Error("error occurred while subscribing", slogger.Err(err))
-			_, err = b.SendMessage(msg.Chat.Id, i18n.T("en", "subscribe_error"), &gotgbot.SendMessageOpts{
-				ParseMode: "html",
-			})
+			_, err = b.SendMessage(
+				msg.Chat.Id,
+				i18n.
+					Chain().
+					T(
+						"en",
+						"mention",
+						I18n.WithSuffix("\n"),
+						I18n.WithArgs([]any{
+							msg.From.Id,
+							msg.From.Username,
+						}),
+					).
+					T("en", "subscribe_error").
+					String(),
+				&gotgbot.SendMessageOpts{
+					ParseMode: "html",
+				},
+			)
 			return err
 		}
 
-		_, err = b.SendMessage(msg.Chat.Id, i18n.T("en", "subscribe_complete", token), &gotgbot.SendMessageOpts{
-			ParseMode: "html",
-		})
+		_, err = b.SendMessage(
+			msg.Chat.Id,
+			i18n.
+				Chain().
+				T(
+					"en",
+					"mention",
+					I18n.WithSuffix("\n"),
+					I18n.WithArgs([]any{
+						msg.From.Id,
+						msg.From.Username,
+					}),
+				).
+				T(
+					"en",
+					"subscribe_complete",
+					I18n.WithArgs([]any{
+						token,
+					}),
+				).
+				String(),
+			&gotgbot.SendMessageOpts{
+				ParseMode: "html",
+			},
+		)
 		return err
 	}
 }
