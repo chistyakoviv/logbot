@@ -35,7 +35,7 @@ func begin(
 			logger.Error("error occurred while getting the user's language", slogger.Err(err))
 			_, err := b.SendMessage(
 				msg.Chat.Id,
-				"Failed to get the user's language",
+				"Failed to get the user's language. Please check the log for more information.",
 				&gotgbot.SendMessageOpts{
 					ParseMode: "html",
 				},
