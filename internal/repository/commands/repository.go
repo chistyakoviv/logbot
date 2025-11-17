@@ -9,7 +9,8 @@ import (
 )
 
 type IRepository interface {
-	UpdateOrCreate(ctx context.Context, in *model.Command) (*model.Command, error)
+	Create(ctx context.Context, in *model.Command) (*model.Command, error)
+	Update(ctx context.Context, in *model.Command) (*model.Command, error)
 	FindByKey(ctx context.Context, in *model.CommandKey) (*model.Command, error)
 }
 

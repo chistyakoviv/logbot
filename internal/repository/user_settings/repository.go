@@ -9,7 +9,8 @@ import (
 )
 
 type IRepository interface {
-	UpdateOrCreate(ctx context.Context, in *model.UserSettings) (*model.UserSettings, error)
+	Create(ctx context.Context, in *model.UserSettings) (*model.UserSettings, error)
+	Update(ctx context.Context, in *model.UserSettings) (*model.UserSettings, error)
 	Find(ctx context.Context, id int64) (*model.UserSettings, error)
 }
 
