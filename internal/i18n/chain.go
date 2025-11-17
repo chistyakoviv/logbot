@@ -2,7 +2,6 @@ package i18n
 
 import (
 	"bytes"
-	"fmt"
 )
 
 type i18nChain struct {
@@ -18,7 +17,7 @@ func NewI18nChain(i18n II18n) II18nChain {
 }
 
 func (c *i18nChain) T(lang string, key string, opts ...Option) II18nChain {
-	fmt.Fprintf(&c.buf, "%s", c.i18n.T(lang, key, opts...))
+	c.buf.WriteString(c.i18n.T(lang, key, opts...))
 	return c
 }
 
