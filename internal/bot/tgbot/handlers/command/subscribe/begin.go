@@ -11,6 +11,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/lib/slogger"
 	"github.com/chistyakoviv/logbot/internal/model"
 	"github.com/chistyakoviv/logbot/internal/service/commands"
+	"github.com/chistyakoviv/logbot/internal/service/user_settings"
 )
 
 func begin(
@@ -18,6 +19,7 @@ func begin(
 	logger *slog.Logger,
 	i18n *I18n.I18n,
 	commands commands.IService,
+	userSettings user_settings.IService,
 ) handlers.Response {
 	return func(b *gotgbot.Bot, ectx *ext.Context) error {
 		msg := ectx.EffectiveMessage
@@ -28,7 +30,14 @@ func begin(
 			slog.String("from", msg.From.Username),
 		)
 
-		_, err := commands.ResetByKey(
+		uSettings, err := userSettings.Find(ctx, msg.From.Id)
+		if err != nil {
+			logger.Error("error occurred while finding user settings", slogger.Err(err))
+			return err
+		}
+		lang := uSettings.Language()
+
+		_, err = commands.ResetByKey(
 			ctx,
 			&model.CommandKey{
 				ChatId: msg.Chat.Id,
@@ -44,7 +53,7 @@ func begin(
 				i18n.
 					Chain().
 					T(
-						"en",
+						lang,
 						"mention",
 						I18n.WithArgs([]any{
 							msg.From.Id,
@@ -52,7 +61,7 @@ func begin(
 						}),
 					).
 					Append("\n").
-					T("en", "subscribe_error").
+					T(lang, "subscribe_error").
 					String(),
 				&gotgbot.SendMessageOpts{
 					ParseMode: "html",
@@ -67,7 +76,7 @@ func begin(
 			i18n.
 				Chain().
 				T(
-					"en",
+					lang,
 					"mention",
 					I18n.WithArgs([]any{
 						msg.From.Id,
@@ -75,7 +84,7 @@ func begin(
 					}),
 				).
 				Append("\n").
-				T("en", "subscribe_begin").
+				T(lang, "subscribe_begin").
 				String(),
 			&gotgbot.SendMessageOpts{
 				ParseMode: "html",

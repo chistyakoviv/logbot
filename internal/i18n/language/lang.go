@@ -3,7 +3,7 @@ package language
 type Language int
 
 const (
-	En = iota
+	En = iota + 1
 	Ru
 )
 
@@ -25,5 +25,5 @@ func (lang Language) String() string {
 }
 
 func Default() string {
-	return Language(0).String()
+	return Language(En).String()
 }

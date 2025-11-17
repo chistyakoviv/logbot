@@ -23,8 +23,10 @@ import (
 	"github.com/chistyakoviv/logbot/internal/lib/slogger"
 	"github.com/chistyakoviv/logbot/internal/repository/commands"
 	"github.com/chistyakoviv/logbot/internal/repository/subscriptions"
+	"github.com/chistyakoviv/logbot/internal/repository/user_settings"
 	srvCommands "github.com/chistyakoviv/logbot/internal/service/commands"
 	srvSubscriptions "github.com/chistyakoviv/logbot/internal/service/subscriptions"
+	srvUserSettings "github.com/chistyakoviv/logbot/internal/service/user_settings"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
 )
@@ -164,6 +166,10 @@ func bootstrap(ctx context.Context, c di.Container) {
 		return commands.NewRepository(resolveDbClient(c), resolveStatementBuilder(c))
 	})
 
+	c.RegisterSingleton("userSettingsRepository", func(c di.Container) user_settings.IRepository {
+		return user_settings.NewRepository(resolveDbClient(c), resolveStatementBuilder(c))
+	})
+
 	// Services
 	c.RegisterSingleton("subscriptionsService", func(c di.Container) srvSubscriptions.IService {
 		return srvSubscriptions.NewService(resolveSubscriptionsRepository(c), resolveTxManager(c))
@@ -172,4 +178,9 @@ func bootstrap(ctx context.Context, c di.Container) {
 	c.RegisterSingleton("commandsService", func(c di.Container) srvCommands.IService {
 		return srvCommands.NewService(resolveCommandsRepository(c), resolveTxManager(c))
 	})
+
+	c.RegisterSingleton("userSettingsService", func(c di.Container) srvUserSettings.IService {
+		return srvUserSettings.NewService(resolveUserSettingsRepository(c), resolveTxManager(c))
+	})
+
 }

@@ -15,6 +15,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/model"
 	"github.com/chistyakoviv/logbot/internal/service/commands"
 	"github.com/chistyakoviv/logbot/internal/service/subscriptions"
+	"github.com/chistyakoviv/logbot/internal/service/user_settings"
 	"github.com/google/uuid"
 )
 
@@ -24,6 +25,7 @@ func stage0(
 	i18n *I18n.I18n,
 	subscriptions subscriptions.IService,
 	commands commands.IService,
+	userSettings user_settings.IService,
 ) handlers.Response {
 	return func(b *gotgbot.Bot, ectx *ext.Context) error {
 		msg := ectx.EffectiveMessage
@@ -36,13 +38,20 @@ func stage0(
 			slog.String("token", token),
 		)
 
+		uSettings, err := userSettings.Find(ctx, msg.From.Id)
+		if err != nil {
+			logger.Error("error occurred while finding user settings", slogger.Err(err))
+			return err
+		}
+		lang := uSettings.Language()
+
 		if err := uuid.Validate(token); err != nil {
 			_, err := b.SendMessage(
 				msg.Chat.Id,
 				i18n.
 					Chain().
 					T(
-						"en",
+						lang,
 						"mention",
 						I18n.WithArgs([]any{
 							msg.From.Id,
@@ -50,7 +59,7 @@ func stage0(
 						}),
 					).
 					Append("\n").
-					T("en", "subscribe_invalid_token").
+					T(lang, "subscribe_invalid_token").
 					String(),
 				&gotgbot.SendMessageOpts{
 					ParseMode: "html",
@@ -65,7 +74,7 @@ func stage0(
 				i18n.
 					Chain().
 					T(
-						"en",
+						lang,
 						"mention",
 						I18n.WithArgs([]any{
 							msg.From.Id,
@@ -73,7 +82,7 @@ func stage0(
 						}),
 					).
 					Append("\n").
-					T("en", "subscribe_token_exists").
+					T(lang, "subscribe_token_exists").
 					String(),
 				&gotgbot.SendMessageOpts{
 					ParseMode: "html",
@@ -82,7 +91,7 @@ func stage0(
 			return err
 		}
 
-		_, err := commands.CompleteByKey(
+		_, err = commands.CompleteByKey(
 			ctx,
 			&model.CommandKey{
 				ChatId: msg.Chat.Id,
@@ -96,7 +105,7 @@ func stage0(
 				i18n.
 					Chain().
 					T(
-						"en",
+						lang,
 						"mention",
 						I18n.WithArgs([]any{
 							msg.From.Id,
@@ -104,7 +113,7 @@ func stage0(
 						}),
 					).
 					Append("\n").
-					T("en", "subscribe_error").
+					T(lang, "subscribe_error").
 					String(),
 				&gotgbot.SendMessageOpts{
 					ParseMode: "html",
@@ -124,7 +133,7 @@ func stage0(
 				i18n.
 					Chain().
 					T(
-						"en",
+						lang,
 						"mention",
 						I18n.WithArgs([]any{
 							msg.From.Id,
@@ -132,7 +141,7 @@ func stage0(
 						}),
 					).
 					Append("\n").
-					T("en", "subscribe_error").
+					T(lang, "subscribe_error").
 					String(),
 				&gotgbot.SendMessageOpts{
 					ParseMode: "html",
@@ -146,7 +155,7 @@ func stage0(
 			i18n.
 				Chain().
 				T(
-					"en",
+					lang,
 					"mention",
 					I18n.WithArgs([]any{
 						msg.From.Id,
@@ -155,7 +164,7 @@ func stage0(
 				).
 				Append("\n").
 				T(
-					"en",
+					lang,
 					"subscribe_complete",
 					I18n.WithArgs([]any{
 						token,

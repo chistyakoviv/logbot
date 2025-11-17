@@ -13,7 +13,7 @@ import (
 
 // TODO: execute in transaction to avoid concurrent creation
 func (r *repository) UpdateOrCreate(ctx context.Context, in *model.Command) (*model.Command, error) {
-	newRow := FromModel(in)
+	row := FromModel(in)
 
 	// Try to find the command
 	_, err := r.FindByKey(ctx, &model.CommandKey{
@@ -32,7 +32,7 @@ func (r *repository) UpdateOrCreate(ctx context.Context, in *model.Command) (*mo
 			Name: "repository.commands.create",
 			Sqlizer: r.sq.Insert(commandsTable).
 				Columns(commandsTableColumns...).
-				Values(newRow.Values()...).
+				Values(row.Values()...).
 				Suffix("RETURNING " + strings.Join(commandsTableColumns, ",")),
 		}
 
@@ -47,19 +47,19 @@ func (r *repository) UpdateOrCreate(ctx context.Context, in *model.Command) (*mo
 	// The command already exists, so update it
 	builder := r.sq.Update(commandsTable).
 		Where(sq.Eq{
-			commandsTableColumnUserId: newRow.UserId,
-			commandsTableColumnChatId: newRow.ChatId,
+			commandsTableColumnUserId: row.UserId,
+			commandsTableColumnChatId: row.ChatId,
 		}).
-		Set(commandsTableColumnStage, newRow.Stage).
-		Set(commandsTableColumnUpdatedAt, newRow.UpdatedAt).
+		Set(commandsTableColumnStage, row.Stage).
+		Set(commandsTableColumnUpdatedAt, row.UpdatedAt).
 		Suffix("RETURNING " + strings.Join(commandsTableColumns, ","))
 
-	if newRow.Data != nil {
-		builder = builder.Set(commandsTableColumnData, newRow.Data)
+	if row.Data != nil {
+		builder = builder.Set(commandsTableColumnData, row.Data)
 	}
 
-	if newRow.Name != "" {
-		builder = builder.Set(commandsTableColumnName, newRow.Name)
+	if row.Name != "" {
+		builder = builder.Set(commandsTableColumnName, row.Name)
 	}
 
 	q := db.Query{

@@ -16,8 +16,10 @@ import (
 	"github.com/chistyakoviv/logbot/internal/i18n"
 	"github.com/chistyakoviv/logbot/internal/repository/commands"
 	"github.com/chistyakoviv/logbot/internal/repository/subscriptions"
+	"github.com/chistyakoviv/logbot/internal/repository/user_settings"
 	srvCommands "github.com/chistyakoviv/logbot/internal/service/commands"
 	srvSubscriptions "github.com/chistyakoviv/logbot/internal/service/subscriptions"
+	srvUserSettings "github.com/chistyakoviv/logbot/internal/service/user_settings"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -175,6 +177,16 @@ func resolveCommandsRepository(c di.Container) commands.IRepository {
 	return repo
 }
 
+func resolveUserSettingsRepository(c di.Container) user_settings.IRepository {
+	repo, err := di.Resolve[user_settings.IRepository](c, "userSettingsRepository")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve user settings repository definition: %v", err)
+	}
+
+	return repo
+}
+
 // Services
 func resolveSubscriptionsService(c di.Container) srvSubscriptions.IService {
 	service, err := di.Resolve[srvSubscriptions.IService](c, "subscriptionsService")
@@ -191,6 +203,16 @@ func resolveCommandsService(c di.Container) srvCommands.IService {
 
 	if err != nil {
 		log.Fatalf("Couldn't resolve commands service definition: %v", err)
+	}
+
+	return service
+}
+
+func resolveUserSettingsService(c di.Container) srvUserSettings.IService {
+	service, err := di.Resolve[srvUserSettings.IService](c, "userSettingsService")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve user settings service definition: %v", err)
 	}
 
 	return service

@@ -9,6 +9,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/i18n"
 	"github.com/chistyakoviv/logbot/internal/service/commands"
 	"github.com/chistyakoviv/logbot/internal/service/subscriptions"
+	"github.com/chistyakoviv/logbot/internal/service/user_settings"
 )
 
 const CommandName string = "subscribe"
@@ -19,11 +20,12 @@ func New(
 	i18n *i18n.I18n,
 	subscriptions subscriptions.IService,
 	commands commands.IService,
+	settings user_settings.IService,
 ) *command.TgCommand {
 	return &command.TgCommand{
-		Handler: begin(ctx, logger, i18n, commands),
+		Handler: begin(ctx, logger, i18n, commands, settings),
 		Stages: []handlers.Response{
-			stage0(ctx, logger, i18n, subscriptions, commands),
+			stage0(ctx, logger, i18n, subscriptions, commands, settings),
 		},
 	}
 }

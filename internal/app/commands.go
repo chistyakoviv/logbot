@@ -17,6 +17,7 @@ func BuildTgCommands(
 	i18n := resolveI18n(c)
 	srvCommands := resolveCommandsService(c)
 	srvSubscriptions := resolveSubscriptionsService(c)
+	srvUserSettings := resolveUserSettingsService(c)
 	return command.TgCommands{
 		start.CommandName: start.New(logger, i18n),
 		subscribe.CommandName: subscribe.New(
@@ -25,6 +26,7 @@ func BuildTgCommands(
 			i18n,
 			srvSubscriptions,
 			srvCommands,
+			srvUserSettings,
 		),
 	}
 }
