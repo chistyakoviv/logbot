@@ -11,14 +11,16 @@ import (
 )
 
 func (r *respository) Update(ctx context.Context, in *model.UserSettings) (*model.UserSettings, error) {
+	row := FromModel(in)
+
 	builder := r.sq.Update(userSettingsTable).
 		Where(sq.Eq{
-			userSettingsTableColumnUserId: in.UserId,
+			userSettingsTableColumnUserId: row.UserId,
 		}).
 		Suffix("RETURNING " + strings.Join(userSettingsTableColumns, ","))
 
 	if in.Lang != 0 {
-		builder = builder.Set(userSettingsTableColumnLang, in.Lang)
+		builder = builder.Set(userSettingsTableColumnLang, row.Lang)
 	}
 
 	q := db.Query{
