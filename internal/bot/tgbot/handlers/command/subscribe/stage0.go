@@ -38,12 +38,11 @@ func stage0(
 			slog.String("token", token),
 		)
 
-		uSettings, err := userSettings.Find(ctx, msg.From.Id)
+		lang, err := userSettings.GetLang(ctx, msg.From.Id)
 		if err != nil {
-			logger.Error("error occurred while finding user settings", slogger.Err(err))
+			logger.Error("error occurred while getting the user's language", slogger.Err(err))
 			return err
 		}
-		lang := uSettings.Language()
 
 		if err := uuid.Validate(token); err != nil {
 			_, err := b.SendMessage(
@@ -67,8 +66,8 @@ func stage0(
 			)
 			return err
 		}
-		_, tokExistsErr := subscriptions.FindByTokenAndChat(ctx, token, msg.Chat.Id)
-		if tokExistsErr == nil {
+		_, subErr := subscriptions.FindByTokenAndChat(ctx, token, msg.Chat.Id)
+		if subErr == nil {
 			_, err := b.SendMessage(
 				msg.Chat.Id,
 				i18n.
@@ -98,7 +97,7 @@ func stage0(
 				UserId: msg.From.Id,
 			},
 		)
-		if err != nil || !errors.Is(tokExistsErr, db.ErrNotFound) {
+		if err != nil || !errors.Is(subErr, db.ErrNotFound) {
 			logger.Error("error occurred while subscribing", slogger.Err(err))
 			_, err := b.SendMessage(
 				msg.Chat.Id,

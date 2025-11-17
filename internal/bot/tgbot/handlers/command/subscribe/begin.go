@@ -30,12 +30,11 @@ func begin(
 			slog.String("from", msg.From.Username),
 		)
 
-		uSettings, err := userSettings.Find(ctx, msg.From.Id)
+		lang, err := userSettings.GetLang(ctx, msg.From.Id)
 		if err != nil {
-			logger.Error("error occurred while finding user settings", slogger.Err(err))
+			logger.Error("error occurred while getting the user's language", slogger.Err(err))
 			return err
 		}
-		lang := uSettings.Language()
 
 		_, err = commands.ResetByKey(
 			ctx,
