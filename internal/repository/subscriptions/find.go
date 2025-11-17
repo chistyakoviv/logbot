@@ -10,7 +10,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/model"
 )
 
-func (r *repository) FindByTokenAndChat(ctx context.Context, token string, chatId int64) (*model.Subscription, error) {
+func (r *repository) Find(ctx context.Context, token string, chatId int64) (*model.Subscription, error) {
 	if token == "" {
 		return nil, errors.New("token is empty")
 	}

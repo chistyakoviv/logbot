@@ -7,6 +7,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/cancel"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/start"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/subscribe"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/unsubscribe"
 	"github.com/chistyakoviv/logbot/internal/di"
 )
 
@@ -29,6 +30,14 @@ func BuildTgCommands(
 			srvUserSettings,
 		),
 		subscribe.CommandName: subscribe.New(
+			ctx,
+			logger,
+			i18n,
+			srvSubscriptions,
+			srvCommands,
+			srvUserSettings,
+		),
+		unsubscribe.CommandName: unsubscribe.New(
 			ctx,
 			logger,
 			i18n,

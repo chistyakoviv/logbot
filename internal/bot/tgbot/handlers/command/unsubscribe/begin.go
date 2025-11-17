@@ -1,4 +1,4 @@
-package subscribe
+package unsubscribe
 
 import (
 	"context"
@@ -25,7 +25,7 @@ func begin(
 		msg := ectx.EffectiveMessage
 
 		logger.Debug(
-			"subscribe command: initiate",
+			"unsubscribe command: initiate",
 			slog.Int64("chat_id", msg.Chat.Id),
 			slog.String("from", msg.From.Username),
 		)
@@ -35,7 +35,7 @@ func begin(
 			logger.Error("error occurred while getting the user's language", slogger.Err(err))
 			_, err := b.SendMessage(
 				msg.Chat.Id,
-				"Failed to get the user's language",
+				"Failed to get the user's language. Please check the log for more information.",
 				&gotgbot.SendMessageOpts{
 					ParseMode: "html",
 				},
@@ -53,7 +53,7 @@ func begin(
 			nil,
 		)
 		if err != nil {
-			logger.Error("error occurred while subscribing", slogger.Err(err))
+			logger.Error("error occurred while unsubscribing", slogger.Err(err))
 			_, err = b.SendMessage(
 				msg.Chat.Id,
 				i18n.
@@ -67,7 +67,7 @@ func begin(
 						}),
 					).
 					Append("\n").
-					T(lang, "subscribe_error").
+					T(lang, "unsubscribe_error").
 					String(),
 				&gotgbot.SendMessageOpts{
 					ParseMode: "html",
@@ -89,7 +89,7 @@ func begin(
 					}),
 				).
 				Append("\n").
-				T(lang, "subscribe_begin").
+				T(lang, "unsubscribe_begin").
 				String(),
 			&gotgbot.SendMessageOpts{
 				ParseMode: "html",

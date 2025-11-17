@@ -1,9 +1,10 @@
-package cancel
+package unsubscribe
 
 import (
 	"context"
 	"errors"
 	"log/slog"
+	"strings"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
@@ -13,24 +14,28 @@ import (
 	"github.com/chistyakoviv/logbot/internal/lib/slogger"
 	"github.com/chistyakoviv/logbot/internal/model"
 	"github.com/chistyakoviv/logbot/internal/service/commands"
+	"github.com/chistyakoviv/logbot/internal/service/subscriptions"
 	"github.com/chistyakoviv/logbot/internal/service/user_settings"
+	"github.com/google/uuid"
 )
 
-func begin(
+func stage0(
 	ctx context.Context,
 	logger *slog.Logger,
 	i18n *I18n.I18n,
+	subscriptions subscriptions.IService,
 	commands commands.IService,
 	userSettings user_settings.IService,
 ) handlers.Response {
 	return func(b *gotgbot.Bot, ectx *ext.Context) error {
 		msg := ectx.EffectiveMessage
+		token := strings.Trim(msg.Text, " ")
 
 		logger.Debug(
-			"cancel current command",
+			"unsubscribe command: retrieve token",
 			slog.Int64("chat_id", msg.Chat.Id),
-			slog.String("from", msg.From.Username),
-			slog.String("message", msg.Text),
+			slog.String("user", msg.From.Username),
+			slog.String("token", token),
 		)
 
 		lang, err := userSettings.GetLang(ctx, msg.From.Id)
@@ -46,25 +51,21 @@ func begin(
 			return err
 		}
 
-		currCommand, err := commands.FindByKey(
-			ctx,
-			&model.CommandKey{
-				ChatId: msg.Chat.Id,
-				UserId: msg.From.Id,
-			},
-		)
-		if err != nil && !errors.Is(err, db.ErrNotFound) {
-			logger.Error("error occurred while finding a command", slogger.Err(err))
+		if err := uuid.Validate(token); err != nil {
 			_, err := b.SendMessage(
 				msg.Chat.Id,
 				i18n.
 					Chain().
-					T(lang, "mention", I18n.WithArgs([]any{
-						msg.From.Id,
-						msg.From.Username,
-					})).
+					T(
+						lang,
+						"mention",
+						I18n.WithArgs([]any{
+							msg.From.Id,
+							msg.From.Username,
+						}),
+					).
 					Append("\n").
-					T(lang, "cancel_command_error").
+					T(lang, "unsubscribe_invalid_token").
 					String(),
 				&gotgbot.SendMessageOpts{
 					ParseMode: "html",
@@ -72,17 +73,22 @@ func begin(
 			)
 			return err
 		}
-		if errors.Is(err, db.ErrNotFound) || currCommand.Stage == model.NoStage {
+		_, unsubErr := subscriptions.Find(ctx, token, msg.Chat.Id)
+		if errors.Is(unsubErr, db.ErrNotFound) {
 			_, err := b.SendMessage(
 				msg.Chat.Id,
 				i18n.
 					Chain().
-					T(lang, "mention", I18n.WithArgs([]any{
-						msg.From.Id,
-						msg.From.Username,
-					})).
+					T(
+						lang,
+						"mention",
+						I18n.WithArgs([]any{
+							msg.From.Id,
+							msg.From.Username,
+						}),
+					).
 					Append("\n").
-					T(lang, "cancel_no_current_command").
+					T(lang, "unsubscribe_token_not_exists").
 					String(),
 				&gotgbot.SendMessageOpts{
 					ParseMode: "html",
@@ -98,8 +104,8 @@ func begin(
 				UserId: msg.From.Id,
 			},
 		)
-		if err != nil {
-			logger.Error("error occurred while canceling command", slogger.Err(err))
+		if err != nil || unsubErr != nil {
+			logger.Error("error occurred while unsubscribing", slogger.Err(err))
 			_, err := b.SendMessage(
 				msg.Chat.Id,
 				i18n.
@@ -113,7 +119,7 @@ func begin(
 						}),
 					).
 					Append("\n").
-					T(lang, "cancel_command_error").
+					T(lang, "unsubscribe_error").
 					String(),
 				&gotgbot.SendMessageOpts{
 					ParseMode: "html",
@@ -122,22 +128,56 @@ func begin(
 			return err
 		}
 
-		message := i18n.
-			Chain().
-			T(
-				lang,
-				"mention",
-				I18n.WithArgs([]any{
-					msg.From.Id,
-					msg.From.Username,
-				}),
-			).
-			Append("\n").
-			T(lang, "cancel_command").
-			String()
-		_, err = b.SendMessage(msg.Chat.Id, message, &gotgbot.SendMessageOpts{
-			ParseMode: "html",
-		})
+		_, err = subscriptions.Unsubscribe(ctx, token, msg.Chat.Id)
+		if err != nil {
+			logger.Error("error occurred while unsubscribing", slogger.Err(err))
+			_, err := b.SendMessage(
+				msg.Chat.Id,
+				i18n.
+					Chain().
+					T(
+						lang,
+						"mention",
+						I18n.WithArgs([]any{
+							msg.From.Id,
+							msg.From.Username,
+						}),
+					).
+					Append("\n").
+					T(lang, "unsubscribe_error").
+					String(),
+				&gotgbot.SendMessageOpts{
+					ParseMode: "html",
+				},
+			)
+			return err
+		}
+
+		_, err = b.SendMessage(
+			msg.Chat.Id,
+			i18n.
+				Chain().
+				T(
+					lang,
+					"mention",
+					I18n.WithArgs([]any{
+						msg.From.Id,
+						msg.From.Username,
+					}),
+				).
+				Append("\n").
+				T(
+					lang,
+					"unsubscribe_complete",
+					I18n.WithArgs([]any{
+						token,
+					}),
+				).
+				String(),
+			&gotgbot.SendMessageOpts{
+				ParseMode: "html",
+			},
+		)
 		return err
 	}
 }

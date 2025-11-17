@@ -10,7 +10,7 @@ import (
 
 type IService interface {
 	Subscribe(ctx context.Context, in *model.SubscriptionInfo) (*model.Subscription, error)
-	FindByTokenAndChat(ctx context.Context, token string, chatId int64) (*model.Subscription, error)
+	Find(ctx context.Context, token string, chatId int64) (*model.Subscription, error)
 	Unsubscribe(ctx context.Context, token string, chatId int64) (*model.Subscription, error)
 }
 

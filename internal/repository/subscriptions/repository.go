@@ -10,8 +10,8 @@ import (
 
 type IRepository interface {
 	Create(ctx context.Context, in *model.Subscription) (*model.Subscription, error)
-	FindByTokenAndChat(ctx context.Context, token string, chatId int64) (*model.Subscription, error)
-	DeleteByTokenAndChat(ctx context.Context, token string, chatId int64) (*model.Subscription, error)
+	Find(ctx context.Context, token string, chatId int64) (*model.Subscription, error)
+	Delete(ctx context.Context, token string, chatId int64) (*model.Subscription, error)
 }
 
 type repository struct {

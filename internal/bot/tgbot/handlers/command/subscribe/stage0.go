@@ -41,6 +41,13 @@ func stage0(
 		lang, err := userSettings.GetLang(ctx, msg.From.Id)
 		if err != nil {
 			logger.Error("error occurred while getting the user's language", slogger.Err(err))
+			_, err := b.SendMessage(
+				msg.Chat.Id,
+				"Failed to get the user's language",
+				&gotgbot.SendMessageOpts{
+					ParseMode: "html",
+				},
+			)
 			return err
 		}
 
@@ -66,7 +73,7 @@ func stage0(
 			)
 			return err
 		}
-		_, subErr := subscriptions.FindByTokenAndChat(ctx, token, msg.Chat.Id)
+		_, subErr := subscriptions.Find(ctx, token, msg.Chat.Id)
 		if subErr == nil {
 			_, err := b.SendMessage(
 				msg.Chat.Id,

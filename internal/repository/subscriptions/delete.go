@@ -10,7 +10,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/model"
 )
 
-func (r *repository) DeleteByTokenAndChat(ctx context.Context, token string, chatId int64) (*model.Subscription, error) {
+func (r *repository) Delete(ctx context.Context, token string, chatId int64) (*model.Subscription, error) {
 	q := db.Query{
 		Name: "repository.subscriptions.delete_by_token",
 		Sqlizer: r.sq.Delete(subscriptionsTable).
