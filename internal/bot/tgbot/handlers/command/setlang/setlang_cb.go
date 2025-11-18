@@ -26,7 +26,7 @@ func setlangCb(
 	userSettings user_settings.IService,
 ) handlers.Response {
 	return func(b *gotgbot.Bot, ectx *ext.Context) error {
-		cb := ectx.Update.CallbackQuery
+		cb := ectx.CallbackQuery
 
 		logger.Debug(
 			"set language command: button clicked",
