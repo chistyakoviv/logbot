@@ -12,6 +12,8 @@ const (
 	ru = "ru"
 )
 
+const UnknownLanguage = 0
+
 func (lang Language) String() string {
 	switch lang {
 	case En:
@@ -38,6 +40,6 @@ func GetCode(lang string) int {
 	case ru:
 		return Ru
 	default:
-		return En
+		return UnknownLanguage
 	}
 }

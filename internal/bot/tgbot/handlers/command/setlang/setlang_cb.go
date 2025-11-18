@@ -2,12 +2,16 @@ package setlang
 
 import (
 	"context"
+	"errors"
 	"log/slog"
+	"net/url"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
+	"github.com/chistyakoviv/logbot/internal/db"
 	I18n "github.com/chistyakoviv/logbot/internal/i18n"
+	"github.com/chistyakoviv/logbot/internal/i18n/language"
 	"github.com/chistyakoviv/logbot/internal/lib/slogger"
 	"github.com/chistyakoviv/logbot/internal/model"
 	"github.com/chistyakoviv/logbot/internal/service/commands"
@@ -22,20 +26,19 @@ func setlangCb(
 	userSettings user_settings.IService,
 ) handlers.Response {
 	return func(b *gotgbot.Bot, ectx *ext.Context) error {
-		msg := ectx.EffectiveMessage
 		cb := ectx.Update.CallbackQuery
 
 		logger.Debug(
 			"set language command: button clicked",
-			slog.Int64("chat_id", msg.Chat.Id),
-			slog.String("from", msg.From.Username),
+			slog.Int64("chat_id", cb.Message.GetChat().Id),
+			slog.String("from", cb.From.Username),
 		)
 
-		lang, err := userSettings.GetLang(ctx, msg.From.Id)
-		if err != nil {
-			logger.Error("error occurred while getting the user's language", slogger.Err(err))
+		lang, currLangErr := userSettings.GetLang(ctx, cb.From.Id)
+		if currLangErr != nil && !errors.Is(currLangErr, db.ErrNotFound) {
+			logger.Error("error occurred while getting the user's language", slogger.Err(currLangErr))
 			_, err := b.SendMessage(
-				msg.Chat.Id,
+				cb.Message.GetChat().Id,
 				"Failed to get the user's language. Please check the log for more information.",
 				&gotgbot.SendMessageOpts{
 					ParseMode: "html",
@@ -44,13 +47,62 @@ func setlangCb(
 			return err
 		}
 
-		newLang := cb.Data[len(setLangCallbackPrefix):]
+		query, err := url.Parse(cb.Data)
+		if err != nil {
+			logger.Error("error occurred while parsing the callback data", slogger.Err(err))
+			_, err := b.SendMessage(
+				cb.Message.GetChat().Id,
+				"Failed to parse the callback data. Please check the log for more information.",
+				&gotgbot.SendMessageOpts{
+					ParseMode: "html",
+				},
+			)
+			return err
+		}
+		queryParams := query.Query()
+		newLang := queryParams.Get(langParam)
+		// Check if the selected language is the same as the current language
+		if newLang == lang && !errors.Is(currLangErr, db.ErrNotFound) {
+			_, err = cb.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
+				Text: i18n.T(lang, "setlang_same_language"),
+			})
+			if err != nil {
+				logger.Error("failed to answer callback", slogger.Err(err))
+				_, err := b.SendMessage(
+					cb.Message.GetChat().Id,
+					"Failed to answer callback. Please check the log for more information.",
+					&gotgbot.SendMessageOpts{
+						ParseMode: "html",
+					},
+				)
+				return err
+			}
+			return err
+		}
 		newLangCode := i18n.GetLangCode(newLang)
-		_, err = userSettings.Update(ctx, msg.From.Id, &model.UserSettingsInfo{Lang: newLangCode})
+		// Check if the selected language is supported
+		if newLangCode == language.UnknownLanguage {
+			_, err = cb.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
+				Text: i18n.T(lang, "setlang_unknown_language"),
+			})
+			if err != nil {
+				logger.Error("failed to answer callback", slogger.Err(err))
+				_, err := b.SendMessage(
+					cb.Message.GetChat().Id,
+					"Failed to answer callback. Please check the log for more information.",
+					&gotgbot.SendMessageOpts{
+						ParseMode: "html",
+					},
+				)
+				return err
+			}
+			return err
+		}
+		_, err = userSettings.Update(ctx, cb.From.Id, &model.UserSettingsInfo{Lang: newLangCode})
 		if err != nil {
 			logger.Error("error occurred while setting the user's language", slogger.Err(err))
 			_, err := b.SendMessage(
-				msg.Chat.Id,
+				cb.Message.GetChat().Id,
 				"Failed to set the user's language. Please check the log for more information.",
 				&gotgbot.SendMessageOpts{
 					ParseMode: "html",
@@ -65,7 +117,7 @@ func setlangCb(
 		if err != nil {
 			logger.Error("failed to answer callback", slogger.Err(err))
 			_, err := b.SendMessage(
-				msg.Chat.Id,
+				cb.Message.GetChat().Id,
 				"Failed to answer callback. Please check the log for more information.",
 				&gotgbot.SendMessageOpts{
 					ParseMode: "html",

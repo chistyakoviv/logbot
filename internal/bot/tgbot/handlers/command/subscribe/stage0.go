@@ -39,7 +39,7 @@ func stage0(
 		)
 
 		lang, err := userSettings.GetLang(ctx, msg.From.Id)
-		if err != nil {
+		if err != nil && !errors.Is(err, db.ErrNotFound) {
 			logger.Error("error occurred while getting the user's language", slogger.Err(err))
 			_, err := b.SendMessage(
 				msg.Chat.Id,

@@ -31,26 +31,33 @@ func New() *I18n {
 	return &I18n{
 		data: map[string]messages{
 			"en": {
-				"greeting":                     en.Greeting,
-				"help":                         en.Help,
-				"intro":                        en.Intro,
-				"description":                  en.Description,
-				"subscribe_begin":              en.SubscribeBegin,
-				"subscribe_invalid_token":      en.SubscribeInvalidToken,
-				"subscribe_token_exists":       en.SubscribeTokenExists,
-				"subscribe_error":              en.SubscribeError,
-				"subscribe_complete":           en.SubscribeComplete,
-				"mention":                      en.Mention,
-				"cancel_command":               en.CancelCommand,
-				"cancel_command_error":         en.CancelCommandError,
-				"cancel_no_current_command":    en.CancelNoCurrentCommand,
+				"greeting":    en.Greeting,
+				"help":        en.Help,
+				"intro":       en.Intro,
+				"description": en.Description,
+
+				"subscribe_begin":         en.SubscribeBegin,
+				"subscribe_invalid_token": en.SubscribeInvalidToken,
+				"subscribe_token_exists":  en.SubscribeTokenExists,
+				"subscribe_error":         en.SubscribeError,
+				"subscribe_complete":      en.SubscribeComplete,
+
+				"mention": en.Mention,
+
+				"cancel_command":            en.CancelCommand,
+				"cancel_command_error":      en.CancelCommandError,
+				"cancel_no_current_command": en.CancelNoCurrentCommand,
+
 				"unsubscribe_begin":            en.UnsubscribeBegin,
 				"unsubscribe_invalid_token":    en.UnsubscribeInvalidToken,
 				"unsubscribe_token_not_exists": en.UnsubscribeTokenNotExists,
 				"unsubscribe_error":            en.UnsubscribeError,
 				"unsubscribe_complete":         en.UnsubscribeComplete,
-				"setlang_select_language":      en.SetLangSelectLanguage,
-				"setlang_success":              en.SetLangSuccess,
+
+				"setlang_select_language":  en.SetLangSelectLanguage,
+				"setlang_success":          en.SetLangSuccess,
+				"setlang_unknown_language": en.SetLangUnknownLanguage,
+				"setlang_same_language":    en.SetLangSameLanguage,
 			},
 		},
 	}

@@ -2,11 +2,15 @@ package setlang
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"log/slog"
+	"net/url"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
+	"github.com/chistyakoviv/logbot/internal/db"
 	I18n "github.com/chistyakoviv/logbot/internal/i18n"
 	"github.com/chistyakoviv/logbot/internal/lib/slogger"
 	"github.com/chistyakoviv/logbot/internal/service/commands"
@@ -30,7 +34,7 @@ func begin(
 		)
 
 		lang, err := userSettings.GetLang(ctx, msg.From.Id)
-		if err != nil {
+		if err != nil && !errors.Is(err, db.ErrNotFound) {
 			logger.Error("error occurred while getting the user's language", slogger.Err(err))
 			_, err := b.SendMessage(
 				msg.Chat.Id,
@@ -44,9 +48,11 @@ func begin(
 
 		var langs []gotgbot.InlineKeyboardButton
 		for _, lang := range i18n.GetLangs() {
+			queryParams := url.Values{}
+			queryParams.Add(langParam, lang)
 			langs = append(langs, gotgbot.InlineKeyboardButton{
 				Text:         lang,
-				CallbackData: setLangCallbackPrefix + lang,
+				CallbackData: fmt.Sprintf("%s?%s", CommandName, queryParams.Encode()),
 			})
 		}
 

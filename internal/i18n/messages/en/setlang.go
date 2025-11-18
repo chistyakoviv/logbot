@@ -5,5 +5,13 @@ var SetLangSelectLanguage = []string{
 }
 
 var SetLangSuccess = []string{
-	"Language was changed.",
+	"Language was set.",
+}
+
+var SetLangUnknownLanguage = []string{
+	"Unknown language.",
+}
+
+var SetLangSameLanguage = []string{
+	"You are already using this language.",
 }

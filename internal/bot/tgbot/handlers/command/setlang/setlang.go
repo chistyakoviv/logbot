@@ -12,7 +12,7 @@ import (
 )
 
 const CommandName string = "setlang"
-const setLangCallbackPrefix string = "setlang?"
+const langParam = "lang"
 
 func New(
 	ctx context.Context,

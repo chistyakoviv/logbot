@@ -14,7 +14,7 @@ func (s *service) GetLang(ctx context.Context, id int64) (string, error) {
 		if errors.Is(err, db.ErrNotFound) {
 			// Create a model with default values and return the default language
 			settings := &model.UserSettings{}
-			return settings.Language(), nil
+			return settings.Language(), db.ErrNotFound
 		}
 		return "", err
 	}
