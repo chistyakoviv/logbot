@@ -11,7 +11,8 @@ import (
 	"github.com/chistyakoviv/logbot/internal/service/user_settings"
 )
 
-const CommandName string = "setlang"
+const CommandName = "setlang"
+const SetLangCbName = "setlang"
 const langParam = "lang"
 
 func New(
@@ -25,7 +26,7 @@ func New(
 		Handler: begin(ctx, logger, i18n, commands, userSettings),
 		Stages:  []handlers.Response{},
 		Callbacks: map[string]handlers.Response{
-			"setlang": setlangCb(ctx, logger, i18n, commands, userSettings),
+			SetLangCbName: setlangCb(ctx, logger, i18n, commands, userSettings),
 		},
 	}
 }

@@ -12,7 +12,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/service/user_settings"
 )
 
-const CommandName string = "unsubscribe"
+const CommandName = "unsubscribe"
 
 func New(
 	ctx context.Context,

@@ -52,7 +52,7 @@ func begin(
 			queryParams.Add(langParam, lang)
 			langs = append(langs, gotgbot.InlineKeyboardButton{
 				Text:         lang,
-				CallbackData: fmt.Sprintf("%s?%s", CommandName, queryParams.Encode()),
+				CallbackData: fmt.Sprintf("%s?%s", SetLangCbName, queryParams.Encode()),
 			})
 		}
 

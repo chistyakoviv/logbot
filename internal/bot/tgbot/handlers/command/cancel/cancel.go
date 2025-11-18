@@ -11,7 +11,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/service/user_settings"
 )
 
-const CommandName string = "cancel"
+const CommandName = "cancel"
 
 func New(
 	ctx context.Context,

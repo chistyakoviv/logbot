@@ -10,7 +10,7 @@ import (
 	I18n "github.com/chistyakoviv/logbot/internal/i18n"
 )
 
-const CommandName string = "start"
+const CommandName = "start"
 
 func New(logger *slog.Logger, i18n *I18n.I18n) *command.TgCommand {
 	return &command.TgCommand{
