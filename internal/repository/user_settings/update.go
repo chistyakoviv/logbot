@@ -17,6 +17,7 @@ func (r *respository) Update(ctx context.Context, in *model.UserSettings) (*mode
 		Where(sq.Eq{
 			userSettingsTableColumnUserId: row.UserId,
 		}).
+		Set(userSettingsTableColumnUpdatedAt, row.UpdatedAt).
 		Suffix("RETURNING " + strings.Join(userSettingsTableColumns, ","))
 
 	if in.Lang != 0 {

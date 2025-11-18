@@ -49,6 +49,8 @@ func New() *I18n {
 				"unsubscribe_token_not_exists": en.UnsubscribeTokenNotExists,
 				"unsubscribe_error":            en.UnsubscribeError,
 				"unsubscribe_complete":         en.UnsubscribeComplete,
+				"setlang_select_language":      en.SetLangSelectLanguage,
+				"setlang_success":              en.SetLangSuccess,
 			},
 		},
 	}
@@ -87,6 +89,14 @@ func (i *I18n) Chain() II18nChain {
 
 func (i *I18n) DefaultLang() string {
 	return language.Default()
+}
+
+func (i *I18n) GetLangs() []string {
+	return language.GetAll()
+}
+
+func (i *I18n) GetLangCode(lang string) int {
+	return language.GetCode(lang)
 }
 
 func WithArgs(args []any) Option {

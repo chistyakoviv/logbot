@@ -15,4 +15,5 @@ type II18n interface {
 	T(lang string, key string, opts ...Option) string
 	DefaultLang() string
 	Chain() II18nChain
+	GetLangs() []string
 }

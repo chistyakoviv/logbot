@@ -13,7 +13,6 @@ const (
 )
 
 func (lang Language) String() string {
-
 	switch lang {
 	case En:
 		return en
@@ -26,4 +25,19 @@ func (lang Language) String() string {
 
 func Default() string {
 	return Language(En).String()
+}
+
+func GetAll() []string {
+	return []string{ru, en}
+}
+
+func GetCode(lang string) int {
+	switch lang {
+	case en:
+		return En
+	case ru:
+		return Ru
+	default:
+		return En
+	}
 }

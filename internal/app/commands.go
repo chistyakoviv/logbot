@@ -5,6 +5,7 @@ import (
 
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/cancel"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/setlang"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/start"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/subscribe"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/unsubscribe"
@@ -42,6 +43,13 @@ func BuildTgCommands(
 			logger,
 			i18n,
 			srvSubscriptions,
+			srvCommands,
+			srvUserSettings,
+		),
+		setlang.CommandName: setlang.New(
+			ctx,
+			logger,
+			i18n,
 			srvCommands,
 			srvUserSettings,
 		),

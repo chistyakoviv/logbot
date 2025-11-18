@@ -3,6 +3,7 @@ package user_settings
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/chistyakoviv/logbot/internal/db"
@@ -21,9 +22,10 @@ func (r *respository) Find(ctx context.Context, id int64) (*model.UserSettings, 
 
 	var row UserSettingsRow
 	if err := r.db.DB().Getx(ctx, &row, q); err != nil {
-		if !errors.Is(err, db.ErrNotFound) {
+		if errors.Is(err, db.ErrNotFound) {
 			return nil, err
 		}
+		return nil, fmt.Errorf("%s: %w", q.Name, err)
 	}
 
 	return ToModel(&row), nil

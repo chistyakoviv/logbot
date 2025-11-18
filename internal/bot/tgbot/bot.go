@@ -13,6 +13,7 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
+	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters/callbackquery"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters/message"
 )
 
@@ -85,6 +86,10 @@ func (tgb *TgBot) init() {
 	// Add all command handlers.
 	for name, command := range tgb.commands {
 		dispatcher.AddHandler(handlers.NewCommand(name, command.Handler))
+		// Register all the callbacks the command provides
+		for cbName, cb := range command.Callbacks {
+			dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix(cbName), cb))
+		}
 	}
 	// Add new chat member handler to detect the bot is added to a new chat.
 	dispatcher.AddHandler(handlers.NewMessage(message.NewChatMembers, tgb.join))
