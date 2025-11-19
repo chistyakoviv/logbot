@@ -17,19 +17,24 @@ func NewAssignment(userId any, itemName string) *Assignment {
 	}
 }
 
-func (a *Assignment) UserId() any {
+func (a *Assignment) GetUserId() any {
 	return a.userId
 }
 
-func (a *Assignment) ItemName() string {
+func (a *Assignment) GetItemName() string {
 	return a.itemName
 }
 
-func (a *Assignment) CreatedAt() time.Time {
+func (a Assignment) WithItemName(itemName string) Assignment {
+	a.itemName = itemName
+	return a
+}
+
+func (a *Assignment) GetCreatedAt() time.Time {
 	return a.createdAt
 }
 
-func (a *Assignment) Attributes() map[string]any {
+func (a *Assignment) GetAttributes() map[string]any {
 	return map[string]any{
 		"user_id":    a.userId,
 		"item_name":  a.itemName,

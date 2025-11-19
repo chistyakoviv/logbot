@@ -2,10 +2,10 @@ package rbac
 
 type AssignmentStorageInterface interface {
 	// Returns all role and permission assignment information.
-	GetAll() []*Assignment
+	GetAll() map[any]map[string]*Assignment
 
 	// Returns all role or permission assignment information for the specified user.
-	GetByUserId(userId any) []*Assignment
+	GetByUserId(userId any) map[string]*Assignment
 
 	// Returns all role or permission assignment information by the specified item names' list.
 	GetByItemNames(itemNames []string) []*Assignment
@@ -41,5 +41,5 @@ type AssignmentStorageInterface interface {
 	RemoveByItemName(itemName string)
 
 	// Removes all role and permission assignments.
-	RemoveAll()
+	Clear()
 }
