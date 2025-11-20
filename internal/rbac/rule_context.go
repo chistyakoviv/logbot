@@ -29,6 +29,6 @@ func (r *RuleContext) HasParameter(name string) bool {
 	return ok
 }
 
-func (r *RuleContext) CreateRule(name string) RuleInterface {
-	return r.ruleFactory.Create(name)
+func (r *RuleContext) CreateRule(fn RuleConstructor) RuleInterface {
+	return r.ruleFactory.Create(fn)
 }

@@ -1,22 +1,20 @@
 package rbac
 
-type AssignmentsStorageInMemory struct {
+type assignmentsStorageInMemory struct {
 	assignments map[any]map[string]*Assignment
 }
 
-var _ AssignmentStorageInterface = (*AssignmentsStorageInMemory)(nil)
-
-func NewAssignmentsStorageInMemory() *AssignmentsStorageInMemory {
-	return &AssignmentsStorageInMemory{
+func NewAssignmentsStorageInMemory() AssignmentStorageInterface {
+	return &assignmentsStorageInMemory{
 		assignments: make(map[any]map[string]*Assignment),
 	}
 }
 
-func (a *AssignmentsStorageInMemory) GetAll() map[any]map[string]*Assignment {
+func (a *assignmentsStorageInMemory) GetAll() map[any]map[string]*Assignment {
 	return a.assignments
 }
 
-func (a *AssignmentsStorageInMemory) GetByUserId(userId any) map[string]*Assignment {
+func (a *assignmentsStorageInMemory) GetByUserId(userId any) map[string]*Assignment {
 	_, ok := a.assignments[userId]
 	if !ok {
 		// Return empty map so that we don't have to check for nil
@@ -25,7 +23,7 @@ func (a *AssignmentsStorageInMemory) GetByUserId(userId any) map[string]*Assignm
 	return a.assignments[userId]
 }
 
-func (a *AssignmentsStorageInMemory) GetByItemNames(itemNames []string) []*Assignment {
+func (a *assignmentsStorageInMemory) GetByItemNames(itemNames []string) []*Assignment {
 	assignments := make([]*Assignment, 0)
 	for _, assignment := range a.assignments {
 		for _, itemName := range itemNames {
@@ -37,7 +35,7 @@ func (a *AssignmentsStorageInMemory) GetByItemNames(itemNames []string) []*Assig
 	return assignments
 }
 
-func (a *AssignmentsStorageInMemory) Get(userId any, itemName string) *Assignment {
+func (a *assignmentsStorageInMemory) Get(userId any, itemName string) *Assignment {
 	assigments, ok := a.assignments[userId]
 	if !ok {
 		return nil
@@ -45,7 +43,7 @@ func (a *AssignmentsStorageInMemory) Get(userId any, itemName string) *Assignmen
 	return assigments[itemName]
 }
 
-func (a *AssignmentsStorageInMemory) Exists(userId any, itemName string) bool {
+func (a *assignmentsStorageInMemory) Exists(userId any, itemName string) bool {
 	assigments, ok := a.assignments[userId]
 	if !ok {
 		return false
@@ -54,7 +52,7 @@ func (a *AssignmentsStorageInMemory) Exists(userId any, itemName string) bool {
 	return ok
 }
 
-func (a *AssignmentsStorageInMemory) UserHasItem(userId any, itemNames []string) bool {
+func (a *assignmentsStorageInMemory) UserHasItem(userId any, itemNames []string) bool {
 	assigments, ok := a.assignments[userId]
 	if !ok {
 		return false
@@ -68,7 +66,7 @@ func (a *AssignmentsStorageInMemory) UserHasItem(userId any, itemNames []string)
 	return false
 }
 
-func (a *AssignmentsStorageInMemory) FilterUserItemNames(userId any, itemNames []string) []string {
+func (a *assignmentsStorageInMemory) FilterUserItemNames(userId any, itemNames []string) []string {
 	result := make([]string, 0)
 	assigments, ok := a.assignments[userId]
 	if !ok {
@@ -83,7 +81,7 @@ func (a *AssignmentsStorageInMemory) FilterUserItemNames(userId any, itemNames [
 	return result
 }
 
-func (a *AssignmentsStorageInMemory) Add(assignment *Assignment) {
+func (a *assignmentsStorageInMemory) Add(assignment *Assignment) {
 	_, ok := a.assignments[assignment.GetUserId()]
 	if !ok {
 		a.assignments[assignment.GetUserId()] = make(map[string]*Assignment)
@@ -91,7 +89,7 @@ func (a *AssignmentsStorageInMemory) Add(assignment *Assignment) {
 	a.assignments[assignment.GetUserId()][assignment.GetItemName()] = assignment
 }
 
-func (a *AssignmentsStorageInMemory) HasItem(itemName string) bool {
+func (a *assignmentsStorageInMemory) HasItem(itemName string) bool {
 	for _, assigments := range a.assignments {
 		_, ok := assigments[itemName]
 		if ok {
@@ -101,7 +99,7 @@ func (a *AssignmentsStorageInMemory) HasItem(itemName string) bool {
 	return false
 }
 
-func (a *AssignmentsStorageInMemory) RenameItem(oldName string, newName string) {
+func (a *assignmentsStorageInMemory) RenameItem(oldName string, newName string) {
 	if oldName == newName {
 		return
 	}
@@ -114,7 +112,7 @@ func (a *AssignmentsStorageInMemory) RenameItem(oldName string, newName string) 
 	}
 }
 
-func (a *AssignmentsStorageInMemory) Remove(userId any, itemName string) {
+func (a *assignmentsStorageInMemory) Remove(userId any, itemName string) {
 	assigments, ok := a.assignments[userId]
 	if !ok {
 		return
@@ -122,16 +120,16 @@ func (a *AssignmentsStorageInMemory) Remove(userId any, itemName string) {
 	delete(assigments, itemName)
 }
 
-func (a *AssignmentsStorageInMemory) RemoveByUserId(userId any) {
+func (a *assignmentsStorageInMemory) RemoveByUserId(userId any) {
 	delete(a.assignments, userId)
 }
 
-func (a *AssignmentsStorageInMemory) RemoveByItemName(itemName string) {
+func (a *assignmentsStorageInMemory) RemoveByItemName(itemName string) {
 	for _, assigments := range a.assignments {
 		delete(assigments, itemName)
 	}
 }
 
-func (a *AssignmentsStorageInMemory) Clear() {
+func (a *assignmentsStorageInMemory) Clear() {
 	a.assignments = make(map[any]map[string]*Assignment)
 }

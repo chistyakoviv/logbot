@@ -1,5 +1,7 @@
 package rbac
 
+type RuleConstructor func() RuleInterface
+
 type RuleFactoryInterface interface {
-	Create(name string) RuleInterface
+	Create(fn RuleConstructor) RuleInterface
 }

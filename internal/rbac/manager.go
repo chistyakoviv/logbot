@@ -31,19 +31,19 @@ type ManagerInterface interface {
 	RevokeAll(userId any)
 
 	// Returns the items that are assigned to the user via assign().
-	GetItemsByUserId(userId any) []StorableItemInterface
+	GetItemsByUserId(userId any) []*Item
 
 	// Returns the roles that are assigned to the user via assign().
-	GetRolesByUserId(userId any) []StorableItemInterface
+	GetRolesByUserId(userId any) []*Item
 
 	// Returns child roles of the role specified. Depth isn't limited.
-	GetChildRoles(name string) []StorableItemInterface
+	GetChildRoles(name string) []*Item
 
 	// Returns all permissions that the specified role represents.
-	GetPermissionsByRoleName(name string) []StorableItemInterface
+	GetPermissionsByRoleName(name string) []*Item
 
 	// Returns all permissions that the user has.
-	GetPermissionsByUserId(userId any) []StorableItemInterface
+	GetPermissionsByUserId(userId any) []*Item
 
 	// Returns all user IDs assigned to the role specified.
 	GetUserIdsByRoleName(name string) []string
