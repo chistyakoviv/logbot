@@ -263,14 +263,14 @@ func (i *itemsStorageInMemory) Clear() {
 }
 
 func (i *itemsStorageInMemory) ClearPermissions() {
-	for permName, _ := range i.permissions {
+	for permName := range i.permissions {
 		delete(i.items, permName)
 	}
 	i.permissions = make(map[string]*Permission, 0)
 }
 
 func (i *itemsStorageInMemory) ClearRoles() {
-	for roleName, _ := range i.roles {
+	for roleName := range i.roles {
 		delete(i.items, roleName)
 	}
 	i.roles = make(map[string]*Role, 0)
@@ -325,7 +325,7 @@ func (i *itemsStorageInMemory) fillChildrenRecursive(
 	result map[string]StorableItemInterface,
 	baseNames []string,
 ) {
-	for childName, _ := range i.children[name] {
+	for childName := range i.children[name] {
 		if slices.Contains(baseNames, childName) {
 			continue
 		}
