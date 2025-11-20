@@ -58,11 +58,11 @@ func (i *itemsStorageInMemory) RoleExists(name string) bool {
 
 func (i *itemsStorageInMemory) Add(item StorableItemInterface) {
 	i.items[item.GetName()] = item
-	switch item.(type) {
+	switch item := item.(type) {
 	case *Permission:
-		i.permissions[item.GetName()] = item.(*Permission)
+		i.permissions[item.GetName()] = item
 	case *Role:
-		i.roles[item.GetName()] = item.(*Role)
+		i.roles[item.GetName()] = item
 	}
 }
 
