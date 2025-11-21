@@ -2,17 +2,19 @@ package rbac
 
 type RuleContext struct {
 	ruleFactory RuleFactoryInterface
-	parameters  map[string]any
+	parameters  RuleContextParameters
 }
 
-func NewRuleContext(ruleFactory RuleFactoryInterface, parameters map[string]any) RuleContext {
+type RuleContextParameters map[string]any
+
+func NewRuleContext(ruleFactory RuleFactoryInterface, parameters RuleContextParameters) RuleContext {
 	return RuleContext{
 		ruleFactory: ruleFactory,
 		parameters:  parameters,
 	}
 }
 
-func (r *RuleContext) GetParameters() map[string]any {
+func (r *RuleContext) GetParameters() RuleContextParameters {
 	return r.parameters
 }
 
@@ -29,6 +31,6 @@ func (r *RuleContext) HasParameter(name string) bool {
 	return ok
 }
 
-func (r *RuleContext) CreateRule(fn RuleConstructor) RuleInterface {
-	return r.ruleFactory.Create(fn)
+func (r *RuleContext) CreateRule(name string) RuleInterface {
+	return r.ruleFactory.Create(name)
 }

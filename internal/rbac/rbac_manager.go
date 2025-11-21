@@ -2,12 +2,12 @@ package rbac
 
 import "time"
 
-type ManagerInterface interface {
+type RBACManagerInterface interface {
 	// Checks the possibility of adding a child to a parent.
 	CanAddChild(parentName string, childName string) bool
 
 	// Adds an item as a child of another item.
-	AddChild(parentName string, childName string)
+	AddChild(parentName string, childName string) error
 
 	// Removes a child from its parent.
 	RemoveChild(parentName string, childName string)
@@ -22,7 +22,7 @@ type ManagerInterface interface {
 	HasChildren(name string) bool
 
 	// Assigns a role or permission to a user.
-	Assign(userId any, itemName string, createdAt time.Time)
+	Assign(userId any, itemName string, createdAt time.Time) error
 
 	// Revokes a role or a permission from a user.
 	Revoke(userId any, itemName string)
@@ -31,7 +31,7 @@ type ManagerInterface interface {
 	RevokeAll(userId any)
 
 	// Returns the items that are assigned to the user via assign().
-	GetItemsByUserId(userId any) []*Item
+	GetItemsByUserId(userId any) ([]*Item, error)
 
 	// Returns the roles that are assigned to the user via assign().
 	GetRolesByUserId(userId any) []*Item
@@ -53,7 +53,7 @@ type ManagerInterface interface {
 	AddRole(role Role)
 
 	// Gets role by name.
-	GetRole(name string) (*Role, error)
+	GetRole(name string) (ItemInterface, error)
 
 	// Updates role in RBAC system.
 	UpdateRole(name string, role Role)
@@ -81,7 +81,7 @@ type ManagerInterface interface {
 	GetDefaultRoleNames() []string
 
 	// Returns default roles.
-	GetDefaultRoles() ([]*Role, error)
+	GetDefaultRoles() ([]ItemInterface, error)
 
 	// Set guest role name.
 	SetGuestRoleName(roleName string)
@@ -90,5 +90,5 @@ type ManagerInterface interface {
 	GetGuestRoleName() string
 
 	// Get a guest role.
-	GetGuestRole() (*Role, error)
+	GetGuestRole() (ItemInterface, error)
 }

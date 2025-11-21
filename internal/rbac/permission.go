@@ -42,6 +42,7 @@ func (p Permission) WithCreatedAt(createdAt time.Time) ItemInterface {
 	return &p
 }
 
-func (p *Permission) GetType() string {
-	return TypePermission
+func IsPermission(item ItemInterface) bool {
+	_, ok := item.(*Permission)
+	return ok
 }

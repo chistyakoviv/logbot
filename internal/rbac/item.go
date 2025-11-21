@@ -2,13 +2,7 @@ package rbac
 
 import "time"
 
-const (
-	TypeRole       = "role"
-	TypePermission = "permission"
-)
-
 type ItemInterface interface {
-	GetType() string
 	GetName() string
 	WithName(name string) ItemInterface
 	GetDescription() string
@@ -39,10 +33,6 @@ func NewItem(name string) ItemInterface {
 }
 
 // Use only value receivers for consistency
-func (i Item) GetType() string {
-	return ""
-}
-
 func (i Item) GetName() string {
 	return i.name
 }

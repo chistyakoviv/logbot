@@ -4,7 +4,7 @@ type assignmentsStorageInMemory struct {
 	assignments map[any]map[string]*Assignment
 }
 
-func NewAssignmentsStorageInMemory() AssignmentStorageInterface {
+func NewAssignmentsStorageInMemory() AssignmentsStorageInterface {
 	return &assignmentsStorageInMemory{
 		assignments: make(map[any]map[string]*Assignment),
 	}

@@ -9,11 +9,11 @@ type Assignment struct {
 	createdAt time.Time
 }
 
-func NewAssignment(userId any, itemName string) *Assignment {
+func NewAssignment(userId any, itemName string, createdAt time.Time) *Assignment {
 	return &Assignment{
 		userId:    userId,
 		itemName:  itemName,
-		createdAt: time.Now(),
+		createdAt: createdAt,
 	}
 }
 

@@ -3,5 +3,6 @@ package rbac
 type RuleConstructor func() RuleInterface
 
 type RuleFactoryInterface interface {
-	Create(fn RuleConstructor) RuleInterface
+	Create(name string) RuleInterface
+	Add(name string, fn RuleConstructor) RuleFactoryInterface
 }

@@ -1,22 +1,22 @@
 package rbac
 
-type StorableItemInterface interface {
-	GetName() string
-	GetAttributes() map[string]any
+type TreeNode struct {
+	Item     ItemInterface
+	Children map[string]ItemInterface
 }
 
-type ItemStorageInterface interface {
+type ItemsStorageInterface interface {
 	// Removes all roles and permissions.
 	Clear()
 
 	// Returns all roles and permissions in the system.
-	GetAll() map[string]StorableItemInterface
+	GetAll() map[string]ItemInterface
 
 	// Returns roles and permission by the given names' list.
-	GetByNames(names []string) map[string]StorableItemInterface
+	GetByNames(names []string) map[string]ItemInterface
 
 	// Returns the named role or permission.
-	Get(name string) (StorableItemInterface, error)
+	Get(name string) (ItemInterface, error)
 
 	// Whether a named role or permission exists.
 	Exists(name string) bool
@@ -25,56 +25,56 @@ type ItemStorageInterface interface {
 	RoleExists(name string) bool
 
 	// Adds the role or the permission to RBAC system.
-	Add(item StorableItemInterface)
+	Add(item ItemInterface)
 
 	// Updates the specified role or permission in the system.
-	Update(name string, item StorableItemInterface)
+	Update(name string, item ItemInterface)
 
 	// Removes a role or permission from the RBAC system.
 	Remove(name string)
 
 	// Returns all roles in the system.
-	GetRoles() map[string]*Role
+	GetRoles() map[string]ItemInterface
 
 	// Returns roles by the given names' list.
-	GetRolesByNames(names []string) map[string]*Role
+	GetRolesByNames(names []string) map[string]ItemInterface
 
 	// Returns the named role.
-	GetRole(name string) (*Role, error)
+	GetRole(name string) (ItemInterface, error)
 
 	// Removes all roles.
 	ClearRoles()
 
 	// Returns all permissions in the system.
-	GetPermissions() map[string]*Permission
+	GetPermissions() map[string]ItemInterface
 
 	// Returns permissions by the given names' list.
-	GetPermissionsByNames(names []string) map[string]*Permission
+	GetPermissionsByNames(names []string) map[string]ItemInterface
 
 	// Returns the named permission.
-	GetPermission(name string) (*Permission, error)
+	GetPermission(name string) (ItemInterface, error)
 
 	// Removes all permissions.
 	ClearPermissions()
 
 	// Returns the parent permissions and/or roles.
-	GetParents(name string) map[string]StorableItemInterface
+	GetParents(name string) map[string]ItemInterface
 
 	// Returns the parents tree for a single item which additionally contains children for each parent (only among the
 	// found items). The base item is included too, its children list is always empty.
-	GetHierarchy(name string) map[string]map[string]map[string]StorableItemInterface
+	GetHierarchy(name string) map[string]TreeNode
 
 	// Returns direct child permissions and/or roles.
-	GetDirectChildren(name string) map[string]StorableItemInterface
+	GetDirectChildren(name string) map[string]ItemInterface
 
 	// Returns all child permissions and/or roles.
-	GetAllChildren(names []string) map[string]StorableItemInterface
+	GetAllChildren(names []string) map[string]ItemInterface
 
 	// Returns all child roles.
-	GetAllChildRoles(names []string) map[string]*Role
+	GetAllChildRoles(names []string) map[string]ItemInterface
 
 	// Returns all child permissions.
-	GetAllChildPermissions(names []string) map[string]*Permission
+	GetAllChildPermissions(names []string) map[string]ItemInterface
 
 	// Returns whether named parent has children.
 	HasChildren(name string) bool

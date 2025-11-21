@@ -1,6 +1,6 @@
 package rbac
 
-type AssignmentStorageInterface interface {
+type AssignmentsStorageInterface interface {
 	// Returns all role and permission assignment information.
 	GetAll() map[any]map[string]*Assignment
 

@@ -42,6 +42,7 @@ func (r Role) WithCreatedAt(createdAt time.Time) ItemInterface {
 	return &r
 }
 
-func (r *Role) GetType() string {
-	return TypeRole
+func IsRole(item ItemInterface) bool {
+	_, ok := item.(*Role)
+	return ok
 }
