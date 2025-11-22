@@ -140,7 +140,7 @@ func (r *rbacManager) Assign(userId any, itemName string, createdAt time.Time) e
 	}
 
 	if !r.enableDirectPermissions && IsPermission(item) {
-		return fmt.Errorf("Assigning permissions directly is disabled. Prefer assigning roles only.")
+		return fmt.Errorf("assigning permissions directly is disabled. Prefer assigning roles only")
 	}
 
 	if r.assignmentsStorage.Exists(userId, itemName) {
@@ -362,7 +362,7 @@ func (r *rbacManager) assertItemNameForUpdate(name string, item ItemInterface) e
 	}
 
 	return fmt.Errorf(
-		"Unable to change the role or the permission name. The name %s is already used by another role or permission.",
+		"unable to change the role or the permission name, the name %s is already used by another role or permission",
 		item.GetName(),
 	)
 }
@@ -399,7 +399,7 @@ func (r *rbacManager) filterStoredRoles(roleNames []string) (map[string]ItemInte
 	}
 
 	if len(missingRoles) > 0 {
-		return nil, fmt.Errorf("The following default roles were not found: %s", strings.Join(missingRoles, ", "))
+		return nil, fmt.Errorf("the following default roles were not found: %s", strings.Join(missingRoles, ", "))
 	}
 
 	return storedRoles, nil
@@ -407,29 +407,29 @@ func (r *rbacManager) filterStoredRoles(roleNames []string) (map[string]ItemInte
 
 func (r *rbacManager) assertFutureChild(parentName string, childName string) error {
 	if parentName == childName {
-		return fmt.Errorf("Cannot add %s as a child of itself.", parentName)
+		return fmt.Errorf("cannot add %s as a child of itself", parentName)
 	}
 
 	parent, err := r.itemsStorage.Get(parentName)
 	if err != nil {
-		return fmt.Errorf("Parent %s does not exist.", parentName)
+		return fmt.Errorf("parent %s does not exist", parentName)
 	}
 
 	child, err := r.itemsStorage.Get(childName)
 	if err != nil {
-		return fmt.Errorf("Child %s does not exist.", childName)
+		return fmt.Errorf("child %s does not exist", childName)
 	}
 
 	if IsPermission(parent) && IsRole(child) {
-		return fmt.Errorf("Can not add %s role as a child of %s permission.", childName, parentName)
+		return fmt.Errorf("can not add %s role as a child of %s permission", childName, parentName)
 	}
 
 	if r.itemsStorage.HasDirectChild(parentName, childName) {
-		return fmt.Errorf("The item %s already has a child %s.", parentName, childName)
+		return fmt.Errorf("the item %s already has a child %s", parentName, childName)
 	}
 
 	if r.itemsStorage.HasChild(parentName, childName) {
-		return fmt.Errorf("Cannot add %s as a child of %s. A loop has been detected.", childName, parentName)
+		return fmt.Errorf("cannot add %s as a child of %s. A loop has been detected", childName, parentName)
 	}
 
 	return nil
