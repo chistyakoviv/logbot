@@ -56,7 +56,7 @@ func (r *rbacManager) UserHasPermission(
 		return false
 	}
 
-	var guestRole *Role = nil
+	var guestRole ItemInterface = nil
 	var guestRoleErr error
 	if utils.IsEmpty(userId) {
 		guestRole, guestRoleErr = r.GetGuestRole()
@@ -177,13 +177,42 @@ func (r *rbacManager) GetItemsByUserId(userId any) (map[string]ItemInterface, er
 		return nil, err
 	}
 
+	itemsByNames := r.itemsStorage.GetByNames(assignmentNames)
+	children := r.itemsStorage.GetAllChildren(assignmentNames)
+	result := make(map[string]ItemInterface, len(defaultRoles)+len(itemsByNames)+len(children))
+	for _, item := range defaultRoles {
+		result[item.GetName()] = item
+	}
+	for _, item := range itemsByNames {
+		result[item.GetName()] = item
+	}
+	for _, item := range children {
+		result[item.GetName()] = item
+	}
+
+	return result, nil
+}
+
+func (r *rbacManager) GetRolesByUserId(userId any) (map[string]ItemInterface, error) {
+	assignments := r.assignmentsStorage.GetByUserId(userId)
+
+	assignmentNames := make([]string, 0, len(assignments))
+	for _, assignment := range assignments {
+		assignmentNames = append(assignmentNames, assignment.GetItemName())
+	}
+
+	defaultRoles, err := r.GetDefaultRoles()
+	if err != nil {
+		return nil, err
+	}
+
 	rolesByNames := r.itemsStorage.GetRolesByNames(assignmentNames)
 	childRoles := r.itemsStorage.GetAllChildRoles(assignmentNames)
-	result := make(map[string]ItemInterface, len(rolesByNames)+len(defaultRoles)+len(childRoles))
-	for _, role := range r.itemsStorage.GetRolesByNames(assignmentNames) {
+	result := make(map[string]ItemInterface, len(defaultRoles)+len(rolesByNames)+len(childRoles))
+	for _, role := range defaultRoles {
 		result[role.GetName()] = role
 	}
-	for _, role := range defaultRoles {
+	for _, role := range rolesByNames {
 		result[role.GetName()] = role
 	}
 	for _, role := range childRoles {
@@ -191,6 +220,169 @@ func (r *rbacManager) GetItemsByUserId(userId any) (map[string]ItemInterface, er
 	}
 
 	return result, nil
+}
+
+func (r *rbacManager) GetChildRoles(roleName string) (map[string]ItemInterface, error) {
+	if !r.itemsStorage.RoleExists(roleName) {
+		return nil, fmt.Errorf("Role %s not found", roleName)
+	}
+
+	return r.itemsStorage.GetAllChildRoles([]string{roleName}), nil
+}
+
+func (r *rbacManager) GetPermissionsByRoleName(name string) map[string]ItemInterface {
+	return r.itemsStorage.GetAllChildPermissions([]string{name})
+}
+
+func (r *rbacManager) GetPermissionsByUserId(userId any) map[string]ItemInterface {
+	assignments := r.assignmentsStorage.GetByUserId(userId)
+	if len(assignments) == 0 {
+		return make(map[string]ItemInterface)
+	}
+
+	assignmentNames := make([]string, 0, len(assignments))
+	for _, assignment := range assignments {
+		assignmentNames = append(assignmentNames, assignment.GetItemName())
+	}
+
+	permissionsByNames := r.itemsStorage.GetPermissionsByNames(assignmentNames)
+	childPermissions := r.itemsStorage.GetAllChildPermissions(assignmentNames)
+
+	result := make(map[string]ItemInterface, len(permissionsByNames)+len(childPermissions))
+	for _, permission := range permissionsByNames {
+		result[permission.GetName()] = permission
+	}
+	for _, permission := range childPermissions {
+		result[permission.GetName()] = permission
+	}
+
+	return result
+}
+
+func (r *rbacManager) GetUserIdsByRoleName(roleName string) []any {
+	parents := r.itemsStorage.GetParents(roleName)
+	parentNames := make([]string, 0, len(parents))
+	for _, parent := range parents {
+		parentNames = append(parentNames, parent.GetName())
+	}
+
+	roleNames := make([]string, 0, len(parentNames)+1)
+	roleNames = append(roleNames, roleName)
+	roleNames = append(roleNames, parentNames...)
+
+	assignments := r.assignmentsStorage.GetByItemNames(roleNames)
+	userIds := make([]any, 0, len(assignments))
+	for _, assignment := range assignments {
+		userIds = append(userIds, assignment.GetUserId())
+	}
+
+	return userIds
+}
+
+func (r *rbacManager) AddRole(role ItemInterface) error {
+	return r.addItem(role)
+}
+
+func (r *rbacManager) GetRole(name string) (ItemInterface, error) {
+	return r.itemsStorage.GetRole(name)
+}
+
+func (r *rbacManager) UpdateRole(name string, role ItemInterface) error {
+	err := r.assertItemNameForUpdate(name, role)
+	if err != nil {
+		return err
+	}
+
+	r.itemsStorage.Update(name, role)
+	r.assignmentsStorage.RenameItem(name, role.GetName())
+
+	return nil
+}
+
+func (r *rbacManager) RemoveRole(name string) {
+	r.removeItem(name)
+}
+
+func (r *rbacManager) AddPermission(permission ItemInterface) error {
+	return r.addItem(permission)
+}
+
+func (r *rbacManager) GetPermission(name string) (ItemInterface, error) {
+	return r.itemsStorage.GetPermission(name)
+}
+
+func (r *rbacManager) UpdatePermission(name string, permission ItemInterface) error {
+	err := r.assertItemNameForUpdate(name, permission)
+	if err != nil {
+		return err
+	}
+
+	r.itemsStorage.Update(name, permission)
+	r.assignmentsStorage.RenameItem(name, permission.GetName())
+
+	return nil
+}
+
+func (r *rbacManager) RemovePermission(name string) {
+	r.removeItem(name)
+}
+
+func (r *rbacManager) SetDefaultRoleNames(roleNames []string) {
+	// Copy the original slice to avoid modifying it outside
+	roleNamesCopy := make([]string, len(roleNames))
+	copy(roleNamesCopy, roleNames)
+	r.defaultRoleNames = roleNamesCopy
+}
+
+func (r *rbacManager) GetDefaultRoleNames() []string {
+	// Copy the original slice to avoid modifying it outside
+	roleNames := make([]string, len(r.defaultRoleNames))
+	copy(roleNames, r.defaultRoleNames)
+	return roleNames
+}
+
+func (r *rbacManager) SetGuestRoleName(guestRoleName string) {
+	r.guestRoleName = guestRoleName
+}
+
+func (r *rbacManager) GetGuestRoleName() string {
+	return r.guestRoleName
+}
+
+func (r *rbacManager) removeItem(name string) {
+	if r.itemsStorage.Exists(name) {
+		r.itemsStorage.Remove(name)
+		r.assignmentsStorage.RemoveByItemName(name)
+	}
+}
+
+func (r *rbacManager) assertItemNameForUpdate(name string, item ItemInterface) error {
+	if name == item.GetName() || !r.itemsStorage.Exists(item.GetName()) {
+		return nil
+	}
+
+	return fmt.Errorf(
+		"Unable to change the role or the permission name. The name %s is already used by another role or permission.",
+		item.GetName(),
+	)
+}
+
+func (r *rbacManager) addItem(item ItemInterface) error {
+	if r.itemsStorage.Exists(item.GetName()) {
+		return fmt.Errorf("Item %s already exists", item.GetName())
+	}
+
+	time := time.Now()
+	if !item.HasCreatedAt() {
+		item = item.WithCreatedAt(time)
+	}
+	if !item.HasUpdatedAt() {
+		item = item.WithUpdatedAt(time)
+	}
+
+	r.itemsStorage.Add(item)
+
+	return nil
 }
 
 func (r *rbacManager) GetDefaultRoles() (map[string]ItemInterface, error) {
@@ -275,8 +467,4 @@ func (r *rbacManager) GetGuestRole() (ItemInterface, error) {
 	}
 
 	return role, nil
-}
-
-func (r *rbacManager) GetRole(name string) (ItemInterface, error) {
-	return r.itemsStorage.GetRole(name)
 }

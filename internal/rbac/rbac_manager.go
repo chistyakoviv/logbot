@@ -31,45 +31,45 @@ type RBACManagerInterface interface {
 	RevokeAll(userId any)
 
 	// Returns the items that are assigned to the user via assign().
-	GetItemsByUserId(userId any) ([]*Item, error)
+	GetItemsByUserId(userId any) (map[string]ItemInterface, error)
 
 	// Returns the roles that are assigned to the user via assign().
-	GetRolesByUserId(userId any) []*Item
+	GetRolesByUserId(userId any) (map[string]ItemInterface, error)
 
 	// Returns child roles of the role specified. Depth isn't limited.
-	GetChildRoles(name string) []*Item
+	GetChildRoles(name string) (map[string]ItemInterface, error)
 
 	// Returns all permissions that the specified role represents.
-	GetPermissionsByRoleName(name string) []*Item
+	GetPermissionsByRoleName(name string) map[string]ItemInterface
 
 	// Returns all permissions that the user has.
-	GetPermissionsByUserId(userId any) []*Item
+	GetPermissionsByUserId(userId any) map[string]ItemInterface
 
 	// Returns all user IDs assigned to the role specified.
-	GetUserIdsByRoleName(name string) []string
+	GetUserIdsByRoleName(name string) []any
 
 	// Adds role or permission to RBAC system.
 	// Panics if the permission already exists.
-	AddRole(role Role)
+	AddRole(role ItemInterface) error
 
 	// Gets role by name.
 	GetRole(name string) (ItemInterface, error)
 
 	// Updates role in RBAC system.
-	UpdateRole(name string, role Role)
+	UpdateRole(name string, role ItemInterface) error
 
 	// Removes role from RBAC system.
 	RemoveRole(name string)
 
 	// Adds permission to RBAC system.
 	// Panics if the permission already exists.
-	AddPermission(permission Permission)
+	AddPermission(permission ItemInterface) error
 
 	// Gets permission by name.
-	GetPermission(name string) (*Permission, error)
+	GetPermission(name string) (ItemInterface, error)
 
 	// Updates permission in RBAC system.
-	UpdatePermission(name string, permission Permission)
+	UpdatePermission(name string, permission ItemInterface) error
 
 	// Removes permission from RBAC system.
 	RemovePermission(name string)
@@ -81,7 +81,7 @@ type RBACManagerInterface interface {
 	GetDefaultRoleNames() []string
 
 	// Returns default roles.
-	GetDefaultRoles() ([]ItemInterface, error)
+	GetDefaultRoles() (map[string]ItemInterface, error)
 
 	// Set guest role name.
 	SetGuestRoleName(roleName string)
