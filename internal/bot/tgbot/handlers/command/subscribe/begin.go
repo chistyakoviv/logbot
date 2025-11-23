@@ -8,10 +8,12 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
+	"github.com/chistyakoviv/logbot/internal/constants"
 	"github.com/chistyakoviv/logbot/internal/db"
 	I18n "github.com/chistyakoviv/logbot/internal/i18n"
 	"github.com/chistyakoviv/logbot/internal/lib/slogger"
 	"github.com/chistyakoviv/logbot/internal/model"
+	"github.com/chistyakoviv/logbot/internal/rbac"
 	"github.com/chistyakoviv/logbot/internal/service/commands"
 	"github.com/chistyakoviv/logbot/internal/service/user_settings"
 )
@@ -20,6 +22,7 @@ func begin(
 	ctx context.Context,
 	logger *slog.Logger,
 	i18n *I18n.I18n,
+	rbac rbac.ManagerInterface,
 	commands commands.IService,
 	userSettings user_settings.IService,
 ) handlers.Response {
@@ -38,6 +41,29 @@ func begin(
 			_, err := b.SendMessage(
 				msg.Chat.Id,
 				"Failed to get the user's language. Please check the log for more information.",
+				&gotgbot.SendMessageOpts{
+					ParseMode: "html",
+				},
+			)
+			return err
+		}
+
+		if !rbac.UserHasPermission(msg.From.Id, constants.PermissionManage, nil) {
+			_, err = b.SendMessage(
+				msg.Chat.Id,
+				i18n.
+					Chain().
+					T(
+						lang,
+						"mention",
+						I18n.WithArgs([]any{
+							msg.From.Id,
+							msg.From.Username,
+						}),
+					).
+					Append("\n").
+					T(lang, "access_denied").
+					String(),
 				&gotgbot.SendMessageOpts{
 					ParseMode: "html",
 				},

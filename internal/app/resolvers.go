@@ -14,6 +14,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/deferredq"
 	"github.com/chistyakoviv/logbot/internal/di"
 	"github.com/chistyakoviv/logbot/internal/i18n"
+	"github.com/chistyakoviv/logbot/internal/rbac"
 	"github.com/chistyakoviv/logbot/internal/repository/commands"
 	"github.com/chistyakoviv/logbot/internal/repository/subscriptions"
 	"github.com/chistyakoviv/logbot/internal/repository/user_settings"
@@ -154,6 +155,16 @@ func resolveI18n(c di.Container) *i18n.I18n {
 	}
 
 	return i18n
+}
+
+func resolveRbac(c di.Container) rbac.ManagerInterface {
+	rbac, err := di.Resolve[rbac.ManagerInterface](c, "rbac")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve rbac definition: %v", err)
+	}
+
+	return rbac
 }
 
 // Repositories

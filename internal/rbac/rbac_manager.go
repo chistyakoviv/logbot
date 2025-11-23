@@ -1,8 +1,13 @@
 package rbac
 
-import "time"
+import (
+	"time"
+)
 
-type RBACManagerInterface interface {
+type ManagerInterface interface {
+	// Checks whether the user has the specified permission.
+	UserHasPermission(userId any, permissionName string, parameters RuleContextParameters) bool
+
 	// Checks the possibility of adding a child to a parent.
 	CanAddChild(parentName string, childName string) bool
 

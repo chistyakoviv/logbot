@@ -2,9 +2,12 @@ package app
 
 import (
 	"context"
+	"log"
 	"log/slog"
 	"net/http"
 	"os"
+	"strconv"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
@@ -13,6 +16,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/handler"
 	"github.com/chistyakoviv/logbot/internal/config"
+	"github.com/chistyakoviv/logbot/internal/constants"
 	"github.com/chistyakoviv/logbot/internal/db"
 	"github.com/chistyakoviv/logbot/internal/db/pg"
 	"github.com/chistyakoviv/logbot/internal/db/transaction"
@@ -21,6 +25,7 @@ import (
 	mwLogger "github.com/chistyakoviv/logbot/internal/http/middleware/logger"
 	"github.com/chistyakoviv/logbot/internal/i18n"
 	"github.com/chistyakoviv/logbot/internal/lib/slogger"
+	"github.com/chistyakoviv/logbot/internal/rbac"
 	"github.com/chistyakoviv/logbot/internal/repository/commands"
 	"github.com/chistyakoviv/logbot/internal/repository/subscriptions"
 	"github.com/chistyakoviv/logbot/internal/repository/user_settings"
@@ -157,6 +162,45 @@ func bootstrap(ctx context.Context, c di.Container) {
 		return i18n.New()
 	})
 
+	c.RegisterSingleton("rbac", func(c di.Container) rbac.ManagerInterface {
+		cfg := resolveConfig(c)
+
+		ruleFactory := rbac.NewRuleFactory()
+		// ruleFactory.Add("superuser", func() rbac.RuleInterface {
+		// 	return NewSuperuserRule()
+		// })
+
+		itemsStorage := rbac.NewItemsStorageInMemory()
+		assignmentsStorage := rbac.NewAssignmentsStorageInMemory()
+		manager := rbac.NewManager(ruleFactory, itemsStorage, assignmentsStorage, nil)
+
+		// Set guest role name
+		manager.SetGuestRoleName("guest")
+
+		// RBAC hierarchy
+		// Permissions
+		managePermission := rbac.NewPermission(constants.PermissionManage)
+		// managePermission = managePermission.WithRuleName("superuser")
+		manager.AddPermission(managePermission)
+
+		// Roles
+		superuser := rbac.NewRole("superuser")
+		manager.AddRole(superuser)
+
+		// Attach permissions to roles
+		manager.AddChild(superuser.GetName(), managePermission.GetName())
+
+		// Assignments (store assignments in database)
+		// Assign the superuser role to a user id (assigning permissions directly is disabled by default)
+		superuserId, err := strconv.ParseInt(cfg.Superuser, 10, 64)
+		if err != nil {
+			log.Fatalf("couldn't parse superuser id from config")
+		}
+		manager.Assign(superuserId, superuser.GetName(), time.Now())
+
+		return manager
+	})
+
 	// Repositories
 	c.RegisterSingleton("subscriptionsRepository", func(c di.Container) subscriptions.IRepository {
 		return subscriptions.NewRepository(resolveDbClient(c), resolveStatementBuilder(c))
@@ -182,5 +226,4 @@ func bootstrap(ctx context.Context, c di.Container) {
 	c.RegisterSingleton("userSettingsService", func(c di.Container) srvUserSettings.IService {
 		return srvUserSettings.NewService(resolveUserSettingsRepository(c), resolveTxManager(c))
 	})
-
 }

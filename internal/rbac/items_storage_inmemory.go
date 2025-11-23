@@ -158,9 +158,9 @@ func (i *itemsStorageInMemory) fillHierarchyRecursive(
 			}
 
 			_, err := i.Get(parentName)
-			if err != nil {
+			if err == nil {
 				result[parentName] = TreeNode{
-					Item:     children[parentName],
+					Item:     i.items[parentName],
 					Children: addedChildItems,
 				}
 				addedChildItems[childName] = child
