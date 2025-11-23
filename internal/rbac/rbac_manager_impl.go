@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/chistyakoviv/logbot/internal/utils"
@@ -20,6 +21,12 @@ type rbacManager struct {
 
 	enableDirectPermissions    bool
 	includeRolesInAccessChecks bool
+
+	// All getters use RLock and all setters use Lock,
+	// so make sure getters do not call setters
+	// and setters do not call getters
+	// to avoid deadlocks
+	mu sync.RWMutex
 }
 
 type RBACManagerOpts struct {
@@ -47,6 +54,8 @@ func (r *rbacManager) UserHasPermission(
 	permissionName string,
 	parameters RuleContextParameters,
 ) bool {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 	item, err := r.itemsStorage.Get(permissionName)
 	if err != nil {
 		return false
@@ -76,14 +85,13 @@ func (r *rbacManager) UserHasPermission(
 	} else {
 		userItemNames = r.filterUserItemNames(userId, itemNames)
 	}
-	userItemNamesMap := make(map[string]ItemInterface, 0)
+	userItemNamesMap := make(map[string]bool, len(userItemNames))
 	for _, userItemName := range userItemNames {
-		userItemNamesMap[userItemName] = nil
+		userItemNamesMap[userItemName] = true
 	}
 
 	for _, data := range hierarchy {
-		_, itemExists := userItemNamesMap[data.Item.GetName()]
-		if !itemExists || r.executeRule(userId, data.Item, parameters) {
+		if !userItemNamesMap[data.Item.GetName()] || !r.executeRule(userId, data.Item, parameters) {
 			continue
 		}
 
@@ -104,10 +112,14 @@ func (r *rbacManager) UserHasPermission(
 }
 
 func (r *rbacManager) CanAddChild(parentName string, childName string) bool {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 	return r.assertFutureChild(parentName, childName) == nil
 }
 
 func (r *rbacManager) AddChild(parentName string, childName string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	err := r.assertFutureChild(parentName, childName)
 	if err != nil {
 		return err
@@ -118,22 +130,32 @@ func (r *rbacManager) AddChild(parentName string, childName string) error {
 }
 
 func (r *rbacManager) RemoveChild(parentName string, childName string) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	r.itemsStorage.RemoveChild(parentName, childName)
 }
 
 func (r *rbacManager) RemoveChildren(parentName string) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	r.itemsStorage.RemoveChildren(parentName)
 }
 
 func (r *rbacManager) HasChild(parentName string, childName string) bool {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 	return r.itemsStorage.HasDirectChild(parentName, childName)
 }
 
 func (r *rbacManager) HasChildren(parentName string) bool {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 	return r.itemsStorage.HasChildren(parentName)
 }
 
 func (r *rbacManager) Assign(userId any, itemName string, createdAt time.Time) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	item, err := r.itemsStorage.Get(itemName)
 	if err != nil {
 		return err
@@ -157,14 +179,20 @@ func (r *rbacManager) Assign(userId any, itemName string, createdAt time.Time) e
 }
 
 func (r *rbacManager) Revoke(userId any, itemName string) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	r.assignmentsStorage.Remove(userId, itemName)
 }
 
 func (r *rbacManager) RevokeAll(userId any) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	r.assignmentsStorage.RemoveByUserId(userId)
 }
 
 func (r *rbacManager) GetItemsByUserId(userId any) (map[string]ItemInterface, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 	assignments := r.assignmentsStorage.GetByUserId(userId)
 
 	assignmentNames := make([]string, 0, len(assignments))
@@ -194,6 +222,8 @@ func (r *rbacManager) GetItemsByUserId(userId any) (map[string]ItemInterface, er
 }
 
 func (r *rbacManager) GetRolesByUserId(userId any) (map[string]ItemInterface, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 	assignments := r.assignmentsStorage.GetByUserId(userId)
 
 	assignmentNames := make([]string, 0, len(assignments))
@@ -223,6 +253,8 @@ func (r *rbacManager) GetRolesByUserId(userId any) (map[string]ItemInterface, er
 }
 
 func (r *rbacManager) GetChildRoles(roleName string) (map[string]ItemInterface, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 	if !r.itemsStorage.RoleExists(roleName) {
 		return nil, fmt.Errorf("Role %s not found", roleName)
 	}
@@ -231,10 +263,14 @@ func (r *rbacManager) GetChildRoles(roleName string) (map[string]ItemInterface, 
 }
 
 func (r *rbacManager) GetPermissionsByRoleName(name string) map[string]ItemInterface {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 	return r.itemsStorage.GetAllChildPermissions([]string{name})
 }
 
 func (r *rbacManager) GetPermissionsByUserId(userId any) map[string]ItemInterface {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 	assignments := r.assignmentsStorage.GetByUserId(userId)
 	if len(assignments) == 0 {
 		return make(map[string]ItemInterface)
@@ -260,6 +296,8 @@ func (r *rbacManager) GetPermissionsByUserId(userId any) map[string]ItemInterfac
 }
 
 func (r *rbacManager) GetUserIdsByRoleName(roleName string) []any {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 	parents := r.itemsStorage.GetParents(roleName)
 	parentNames := make([]string, 0, len(parents))
 	for _, parent := range parents {
@@ -280,14 +318,20 @@ func (r *rbacManager) GetUserIdsByRoleName(roleName string) []any {
 }
 
 func (r *rbacManager) AddRole(role ItemInterface) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	return r.addItem(role)
 }
 
 func (r *rbacManager) GetRole(name string) (ItemInterface, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 	return r.itemsStorage.GetRole(name)
 }
 
 func (r *rbacManager) UpdateRole(name string, role ItemInterface) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	err := r.assertItemNameForUpdate(name, role)
 	if err != nil {
 		return err
@@ -300,18 +344,26 @@ func (r *rbacManager) UpdateRole(name string, role ItemInterface) error {
 }
 
 func (r *rbacManager) RemoveRole(name string) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	r.removeItem(name)
 }
 
 func (r *rbacManager) AddPermission(permission ItemInterface) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	return r.addItem(permission)
 }
 
 func (r *rbacManager) GetPermission(name string) (ItemInterface, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 	return r.itemsStorage.GetPermission(name)
 }
 
 func (r *rbacManager) UpdatePermission(name string, permission ItemInterface) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	err := r.assertItemNameForUpdate(name, permission)
 	if err != nil {
 		return err
@@ -324,10 +376,14 @@ func (r *rbacManager) UpdatePermission(name string, permission ItemInterface) er
 }
 
 func (r *rbacManager) RemovePermission(name string) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	r.removeItem(name)
 }
 
 func (r *rbacManager) SetDefaultRoleNames(roleNames []string) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	// Copy the original slice to avoid modifying it outside
 	roleNamesCopy := make([]string, len(roleNames))
 	copy(roleNamesCopy, roleNames)
@@ -335,6 +391,8 @@ func (r *rbacManager) SetDefaultRoleNames(roleNames []string) {
 }
 
 func (r *rbacManager) GetDefaultRoleNames() []string {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 	// Copy the original slice to avoid modifying it outside
 	roleNames := make([]string, len(r.defaultRoleNames))
 	copy(roleNames, r.defaultRoleNames)
@@ -342,11 +400,37 @@ func (r *rbacManager) GetDefaultRoleNames() []string {
 }
 
 func (r *rbacManager) SetGuestRoleName(guestRoleName string) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	r.guestRoleName = guestRoleName
 }
 
 func (r *rbacManager) GetGuestRoleName() string {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 	return r.guestRoleName
+}
+
+func (r *rbacManager) GetDefaultRoles() (map[string]ItemInterface, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	return r.filterStoredRoles(r.defaultRoleNames)
+}
+
+func (r *rbacManager) GetGuestRole() (ItemInterface, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	if r.guestRoleName == "" {
+		return nil, ErrNoGuestUser
+	}
+
+	// Do not use r.GetRole(r.guestRoleName) to avoid second RLock
+	role, err := r.itemsStorage.GetRole(r.guestRoleName)
+	if err != nil {
+		return nil, ErrGuestRoleNameNotExist
+	}
+
+	return role, nil
 }
 
 func (r *rbacManager) removeItem(name string) {
@@ -383,10 +467,6 @@ func (r *rbacManager) addItem(item ItemInterface) error {
 	r.itemsStorage.Add(item)
 
 	return nil
-}
-
-func (r *rbacManager) GetDefaultRoles() (map[string]ItemInterface, error) {
-	return r.filterStoredRoles(r.defaultRoleNames)
 }
 
 func (r *rbacManager) filterStoredRoles(roleNames []string) (map[string]ItemInterface, error) {
@@ -454,17 +534,4 @@ func (r *rbacManager) filterUserItemNames(userId any, itemNames []string) []stri
 	}
 
 	return names
-}
-
-func (r *rbacManager) GetGuestRole() (ItemInterface, error) {
-	if r.guestRoleName == "" {
-		return nil, ErrNoGuestUser
-	}
-
-	role, err := r.GetRole(r.guestRoleName)
-	if err != nil {
-		return nil, ErrGuestRoleNameNotExist
-	}
-
-	return role, nil
 }
