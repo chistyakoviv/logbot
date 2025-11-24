@@ -183,14 +183,23 @@ func bootstrap(ctx context.Context, c di.Container) {
 		// Permissions
 		managePermission := rbac.NewPermission(constants.PermissionManage)
 		// managePermission = managePermission.WithRuleName("superuser")
-		manager.AddPermission(managePermission)
+		err := manager.AddPermission(managePermission)
+		if err != nil {
+			log.Fatalf("couldn't add permission: %v", err)
+		}
 
 		// Roles
 		superuser := rbac.NewRole("superuser")
-		manager.AddRole(superuser)
+		err = manager.AddRole(superuser)
+		if err != nil {
+			log.Fatalf("couldn't add role: %v", err)
+		}
 
 		// Attach permissions to roles
-		manager.AddChild(superuser.GetName(), managePermission.GetName())
+		err = manager.AddChild(superuser.GetName(), managePermission.GetName())
+		if err != nil {
+			log.Fatalf("couldn't add permission to role: %v", err)
+		}
 
 		// Assignments (store assignments in database)
 		// Assign the superuser role to a user id (assigning permissions directly is disabled by default)
@@ -198,7 +207,10 @@ func bootstrap(ctx context.Context, c di.Container) {
 		if err != nil {
 			log.Fatalf("couldn't parse superuser id from config")
 		}
-		manager.Assign(superuserId, superuser.GetName(), time.Now())
+		err = manager.Assign(superuserId, superuser.GetName(), time.Now())
+		if err != nil {
+			log.Fatalf("couldn't assign superuser role: %v", err)
+		}
 
 		return manager
 	})
