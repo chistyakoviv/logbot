@@ -14,16 +14,13 @@ import (
 	"github.com/chistyakoviv/logbot/internal/i18n/language"
 	"github.com/chistyakoviv/logbot/internal/lib/slogger"
 	"github.com/chistyakoviv/logbot/internal/model"
-	"github.com/chistyakoviv/logbot/internal/service/commands"
 	"github.com/chistyakoviv/logbot/internal/service/user_settings"
 )
 
 func setlangCb(
-	ctx context.Context,
 	logger *slog.Logger,
-	i18n *I18n.I18n,
-	commands commands.IService,
-	userSettings user_settings.IService,
+	i18n I18n.I18nInterface,
+	userSettings user_settings.ServiceInterface,
 ) middleware.TgMiddlewareHandler {
 	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) (context.Context, error) {
 		cb := ectx.CallbackQuery

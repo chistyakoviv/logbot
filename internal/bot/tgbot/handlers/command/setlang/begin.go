@@ -11,14 +11,11 @@ import (
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middleware"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middleware/middlewares"
 	I18n "github.com/chistyakoviv/logbot/internal/i18n"
-	"github.com/chistyakoviv/logbot/internal/service/commands"
 )
 
 func begin(
-	ctx context.Context,
 	logger *slog.Logger,
-	i18n *I18n.I18n,
-	commands commands.IService,
+	i18n I18n.I18nInterface,
 ) middleware.TgMiddlewareHandler {
 	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) (context.Context, error) {
 		msg := ectx.EffectiveMessage

@@ -13,7 +13,7 @@ import (
 	errs "github.com/pkg/errors"
 )
 
-func Superuser(logger *slog.Logger, i18n *I18n.I18n, rbac rbac.ManagerInterface) middleware.TgMiddlewareHandler {
+func Superuser(logger *slog.Logger, i18n I18n.I18nInterface, rbac rbac.ManagerInterface) middleware.TgMiddlewareHandler {
 	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) (context.Context, error) {
 		msg := ectx.EffectiveMessage
 

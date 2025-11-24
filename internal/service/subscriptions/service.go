@@ -8,18 +8,18 @@ import (
 	"github.com/chistyakoviv/logbot/internal/repository/subscriptions"
 )
 
-type IService interface {
+type ServiceInterface interface {
 	Subscribe(ctx context.Context, in *model.SubscriptionInfo) (*model.Subscription, error)
 	Find(ctx context.Context, token string, chatId int64) (*model.Subscription, error)
 	Unsubscribe(ctx context.Context, token string, chatId int64) (*model.Subscription, error)
 }
 
 type service struct {
-	subscriptionsRepository subscriptions.IRepository
+	subscriptionsRepository subscriptions.RepositoryInterface
 	txManager               db.TxManager
 }
 
-func NewService(subscriptionsRepository subscriptions.IRepository, txManager db.TxManager) IService {
+func NewService(subscriptionsRepository subscriptions.RepositoryInterface, txManager db.TxManager) ServiceInterface {
 	return &service{
 		subscriptionsRepository: subscriptionsRepository,
 		txManager:               txManager,

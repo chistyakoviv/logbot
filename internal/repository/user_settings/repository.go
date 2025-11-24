@@ -8,7 +8,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/model"
 )
 
-type IRepository interface {
+type RepositoryInterface interface {
 	Create(ctx context.Context, in *model.UserSettings) (*model.UserSettings, error)
 	Update(ctx context.Context, in *model.UserSettings) (*model.UserSettings, error)
 	Find(ctx context.Context, id int64) (*model.UserSettings, error)
@@ -19,7 +19,7 @@ type respository struct {
 	sq sq.StatementBuilderType
 }
 
-func NewRepository(db db.Client, sq sq.StatementBuilderType) IRepository {
+func NewRepository(db db.Client, sq sq.StatementBuilderType) RepositoryInterface {
 	return &respository{
 		db: db,
 		sq: sq,

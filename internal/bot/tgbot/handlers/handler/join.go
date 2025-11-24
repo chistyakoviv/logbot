@@ -9,11 +9,11 @@ import (
 	"github.com/chistyakoviv/logbot/internal/i18n"
 )
 
-func NewJoin(logger *slog.Logger, i18n *i18n.I18n) handlers.Response {
+func NewJoin(logger *slog.Logger, i18n i18n.I18nInterface) handlers.Response {
 	return joinHandler(logger, i18n)
 }
 
-func joinHandler(logger *slog.Logger, i18n *i18n.I18n) handlers.Response {
+func joinHandler(logger *slog.Logger, i18n i18n.I18nInterface) handlers.Response {
 	lang := i18n.DefaultLang()
 	return func(b *gotgbot.Bot, ctx *ext.Context) error {
 		msg := ctx.EffectiveMessage

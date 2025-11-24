@@ -148,8 +148,8 @@ func resolveTgJoin(c di.Container) handlers.Response {
 	return join
 }
 
-func resolveI18n(c di.Container) *i18n.I18n {
-	i18n, err := di.Resolve[*i18n.I18n](c, "i18n")
+func resolveI18n(c di.Container) i18n.I18nInterface {
+	i18n, err := di.Resolve[i18n.I18nInterface](c, "i18n")
 
 	if err != nil {
 		log.Fatalf("Couldn't resolve i18n definition: %v", err)
@@ -190,8 +190,8 @@ func resolveTgLangMiddleware(c di.Container) tgMiddleware.TgMiddlewareHandler {
 }
 
 // Repositories
-func resolveSubscriptionsRepository(c di.Container) subscriptions.IRepository {
-	repo, err := di.Resolve[subscriptions.IRepository](c, "subscriptionsRepository")
+func resolveSubscriptionsRepository(c di.Container) subscriptions.RepositoryInterface {
+	repo, err := di.Resolve[subscriptions.RepositoryInterface](c, "subscriptionsRepository")
 
 	if err != nil {
 		log.Fatalf("Couldn't resolve subscriptions repository definition: %v", err)
@@ -200,8 +200,8 @@ func resolveSubscriptionsRepository(c di.Container) subscriptions.IRepository {
 	return repo
 }
 
-func resolveCommandsRepository(c di.Container) commands.IRepository {
-	repo, err := di.Resolve[commands.IRepository](c, "commandsRepository")
+func resolveCommandsRepository(c di.Container) commands.RepositoryInterface {
+	repo, err := di.Resolve[commands.RepositoryInterface](c, "commandsRepository")
 
 	if err != nil {
 		log.Fatalf("Couldn't resolve commands repository definition: %v", err)
@@ -210,8 +210,8 @@ func resolveCommandsRepository(c di.Container) commands.IRepository {
 	return repo
 }
 
-func resolveUserSettingsRepository(c di.Container) user_settings.IRepository {
-	repo, err := di.Resolve[user_settings.IRepository](c, "userSettingsRepository")
+func resolveUserSettingsRepository(c di.Container) user_settings.RepositoryInterface {
+	repo, err := di.Resolve[user_settings.RepositoryInterface](c, "userSettingsRepository")
 
 	if err != nil {
 		log.Fatalf("Couldn't resolve user settings repository definition: %v", err)
@@ -221,8 +221,8 @@ func resolveUserSettingsRepository(c di.Container) user_settings.IRepository {
 }
 
 // Services
-func resolveSubscriptionsService(c di.Container) srvSubscriptions.IService {
-	service, err := di.Resolve[srvSubscriptions.IService](c, "subscriptionsService")
+func resolveSubscriptionsService(c di.Container) srvSubscriptions.ServiceInterface {
+	service, err := di.Resolve[srvSubscriptions.ServiceInterface](c, "subscriptionsService")
 
 	if err != nil {
 		log.Fatalf("Couldn't resolve subscriptions service definition: %v", err)
@@ -231,8 +231,8 @@ func resolveSubscriptionsService(c di.Container) srvSubscriptions.IService {
 	return service
 }
 
-func resolveCommandsService(c di.Container) srvCommands.IService {
-	service, err := di.Resolve[srvCommands.IService](c, "commandsService")
+func resolveCommandsService(c di.Container) srvCommands.ServiceInterface {
+	service, err := di.Resolve[srvCommands.ServiceInterface](c, "commandsService")
 
 	if err != nil {
 		log.Fatalf("Couldn't resolve commands service definition: %v", err)
@@ -241,8 +241,8 @@ func resolveCommandsService(c di.Container) srvCommands.IService {
 	return service
 }
 
-func resolveUserSettingsService(c di.Container) srvUserSettings.IService {
-	service, err := di.Resolve[srvUserSettings.IService](c, "userSettingsService")
+func resolveUserSettingsService(c di.Container) srvUserSettings.ServiceInterface {
+	service, err := di.Resolve[srvUserSettings.ServiceInterface](c, "userSettingsService")
 
 	if err != nil {
 		log.Fatalf("Couldn't resolve user settings service definition: %v", err)

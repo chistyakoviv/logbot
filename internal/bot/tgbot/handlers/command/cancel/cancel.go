@@ -17,11 +17,11 @@ func New(
 	ctx context.Context,
 	mw middleware.TgMiddlewareInterface,
 	logger *slog.Logger,
-	i18n *I18n.I18n,
-	commands commands.IService,
+	i18n I18n.I18nInterface,
+	commands commands.ServiceInterface,
 ) *command.TgCommand {
 	return &command.TgCommand{
-		Handler: mw.Pipe(begin(ctx, logger, i18n, commands)).Handler(ctx),
+		Handler: mw.Pipe(begin(logger, i18n, commands)).Handler(ctx),
 		Stages:  []handlers.Response{},
 	}
 }

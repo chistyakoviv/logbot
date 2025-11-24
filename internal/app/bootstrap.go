@@ -160,7 +160,7 @@ func bootstrap(ctx context.Context, c di.Container) {
 		})
 	})
 
-	c.RegisterSingleton("i18n", func(c di.Container) *i18n.I18n {
+	c.RegisterSingleton("i18n", func(c di.Container) i18n.I18nInterface {
 		return i18n.New()
 	})
 
@@ -225,28 +225,28 @@ func bootstrap(ctx context.Context, c di.Container) {
 	})
 
 	// Repositories
-	c.RegisterSingleton("subscriptionsRepository", func(c di.Container) subscriptions.IRepository {
+	c.RegisterSingleton("subscriptionsRepository", func(c di.Container) subscriptions.RepositoryInterface {
 		return subscriptions.NewRepository(resolveDbClient(c), resolveStatementBuilder(c))
 	})
 
-	c.RegisterSingleton("commandsRepository", func(c di.Container) commands.IRepository {
+	c.RegisterSingleton("commandsRepository", func(c di.Container) commands.RepositoryInterface {
 		return commands.NewRepository(resolveDbClient(c), resolveStatementBuilder(c))
 	})
 
-	c.RegisterSingleton("userSettingsRepository", func(c di.Container) user_settings.IRepository {
+	c.RegisterSingleton("userSettingsRepository", func(c di.Container) user_settings.RepositoryInterface {
 		return user_settings.NewRepository(resolveDbClient(c), resolveStatementBuilder(c))
 	})
 
 	// Services
-	c.RegisterSingleton("subscriptionsService", func(c di.Container) srvSubscriptions.IService {
+	c.RegisterSingleton("subscriptionsService", func(c di.Container) srvSubscriptions.ServiceInterface {
 		return srvSubscriptions.NewService(resolveSubscriptionsRepository(c), resolveTxManager(c))
 	})
 
-	c.RegisterSingleton("commandsService", func(c di.Container) srvCommands.IService {
+	c.RegisterSingleton("commandsService", func(c di.Container) srvCommands.ServiceInterface {
 		return srvCommands.NewService(resolveCommandsRepository(c), resolveTxManager(c))
 	})
 
-	c.RegisterSingleton("userSettingsService", func(c di.Container) srvUserSettings.IService {
+	c.RegisterSingleton("userSettingsService", func(c di.Container) srvUserSettings.ServiceInterface {
 		return srvUserSettings.NewService(resolveUserSettingsRepository(c), resolveTxManager(c))
 	})
 }

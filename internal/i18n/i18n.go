@@ -4,16 +4,17 @@ type messages map[string][]string
 
 type Option func(*I18nOpts)
 
-type II18nChain interface {
-	T(lang string, key string, opts ...Option) II18nChain
-	Append(s string) II18nChain
+type I18nChainInterface interface {
+	T(lang string, key string, opts ...Option) I18nChainInterface
+	Append(s string) I18nChainInterface
 	String() string
 }
 
-type II18n interface {
+type I18nInterface interface {
 	RegisterT(lang string, m messages)
 	T(lang string, key string, opts ...Option) string
 	DefaultLang() string
-	Chain() II18nChain
+	Chain() I18nChainInterface
 	GetLangs() []string
+	GetLangCode(lang string) int
 }

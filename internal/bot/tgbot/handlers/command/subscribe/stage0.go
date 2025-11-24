@@ -21,9 +21,9 @@ import (
 
 func stage0(
 	logger *slog.Logger,
-	i18n *I18n.I18n,
-	subscriptions subscriptions.IService,
-	commands commands.IService,
+	i18n I18n.I18nInterface,
+	subscriptions subscriptions.ServiceInterface,
+	commands commands.ServiceInterface,
 ) middleware.TgMiddlewareHandler {
 	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) (context.Context, error) {
 		msg := ectx.EffectiveMessage

@@ -19,7 +19,7 @@ func New(
 	ctx context.Context,
 	mw middleware.TgMiddlewareInterface,
 	logger *slog.Logger,
-	i18n *I18n.I18n,
+	i18n I18n.I18nInterface,
 ) *command.TgCommand {
 	return &command.TgCommand{
 		Handler: mw.Pipe(begin(logger, i18n)).Handler(ctx),
@@ -29,7 +29,7 @@ func New(
 
 func begin(
 	logger *slog.Logger,
-	i18n *I18n.I18n,
+	i18n I18n.I18nInterface,
 ) middleware.TgMiddlewareHandler {
 	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) (context.Context, error) {
 		msg := ectx.EffectiveMessage

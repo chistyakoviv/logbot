@@ -19,17 +19,16 @@ import (
 func NewCommandStage(
 	ctx context.Context,
 	logger *slog.Logger,
-	i18n *i18n.I18n,
-	commands commands.IService,
+	i18n i18n.I18nInterface,
+	commands commands.ServiceInterface,
 	tgCommands command.TgCommands,
 ) handlers.Response {
-	return commandStageHandler(ctx, logger, i18n, commands, tgCommands)
+	return commandStageHandler(ctx, logger, commands, tgCommands)
 }
 
 func commandStageHandler(ctx context.Context,
 	logger *slog.Logger,
-	i18n *i18n.I18n,
-	commands commands.IService,
+	commands commands.ServiceInterface,
 	tgCommands command.TgCommands,
 ) handlers.Response {
 	return func(b *gotgbot.Bot, ectx *ext.Context) error {

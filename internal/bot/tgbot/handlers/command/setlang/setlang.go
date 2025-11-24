@@ -20,15 +20,15 @@ func New(
 	ctx context.Context,
 	mw middleware.TgMiddlewareInterface,
 	logger *slog.Logger,
-	i18n *I18n.I18n,
-	commands commands.IService,
-	userSettings user_settings.IService,
+	i18n I18n.I18nInterface,
+	commands commands.ServiceInterface,
+	userSettings user_settings.ServiceInterface,
 ) *command.TgCommand {
 	return &command.TgCommand{
-		Handler: mw.Pipe(begin(ctx, logger, i18n, commands)).Handler(ctx),
+		Handler: mw.Pipe(begin(logger, i18n)).Handler(ctx),
 		Stages:  []handlers.Response{},
 		Callbacks: map[string]handlers.Response{
-			SetLangCbName: mw.Pipe(setlangCb(ctx, logger, i18n, commands, userSettings)).Handler(ctx),
+			SetLangCbName: mw.Pipe(setlangCb(logger, i18n, userSettings)).Handler(ctx),
 		},
 	}
 }

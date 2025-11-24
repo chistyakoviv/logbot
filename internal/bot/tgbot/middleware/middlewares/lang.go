@@ -21,7 +21,7 @@ var (
 	ErrMissingLangMiddleware error = errors.New("missing lang middleware")
 )
 
-func Lang(logger *slog.Logger, userSettings user_settings.IService) middleware.TgMiddlewareHandler {
+func Lang(logger *slog.Logger, userSettings user_settings.ServiceInterface) middleware.TgMiddlewareHandler {
 	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) (context.Context, error) {
 		msg := ectx.EffectiveMessage
 

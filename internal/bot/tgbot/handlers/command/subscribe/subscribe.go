@@ -20,10 +20,10 @@ func New(
 	ctx context.Context,
 	mw middleware.TgMiddlewareInterface,
 	logger *slog.Logger,
-	i18n *i18n.I18n,
+	i18n i18n.I18nInterface,
 	rbac rbac.ManagerInterface,
-	subscriptions subscriptions.IService,
-	commands commands.IService,
+	subscriptions subscriptions.ServiceInterface,
+	commands commands.ServiceInterface,
 ) *command.TgCommand {
 	mw = mw.Pipe(middlewares.Superuser(logger, i18n, rbac))
 	return &command.TgCommand{

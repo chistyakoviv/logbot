@@ -92,7 +92,7 @@ func (i *I18n) T(lang string, key string, opts ...Option) string {
 	return fmt.Sprintf(utils.RandFromSlice(msgs), o.Args...)
 }
 
-func (i *I18n) Chain() II18nChain {
+func (i *I18n) Chain() I18nChainInterface {
 	return NewI18nChain(i)
 }
 

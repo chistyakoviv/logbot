@@ -17,10 +17,9 @@ import (
 )
 
 func begin(
-	ctx context.Context,
 	logger *slog.Logger,
-	i18n *I18n.I18n,
-	commands commands.IService,
+	i18n I18n.I18nInterface,
+	commands commands.ServiceInterface,
 ) middleware.TgMiddlewareHandler {
 	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) (context.Context, error) {
 		msg := ectx.EffectiveMessage
