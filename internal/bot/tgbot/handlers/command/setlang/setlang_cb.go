@@ -8,7 +8,7 @@ import (
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
-	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middleware"
 	"github.com/chistyakoviv/logbot/internal/db"
 	I18n "github.com/chistyakoviv/logbot/internal/i18n"
 	"github.com/chistyakoviv/logbot/internal/i18n/language"
@@ -24,8 +24,8 @@ func setlangCb(
 	i18n *I18n.I18n,
 	commands commands.IService,
 	userSettings user_settings.IService,
-) handlers.Response {
-	return func(b *gotgbot.Bot, ectx *ext.Context) error {
+) middleware.TgMiddlewareHandler {
+	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) (context.Context, error) {
 		cb := ectx.CallbackQuery
 
 		logger.Debug(
@@ -44,7 +44,7 @@ func setlangCb(
 					ParseMode: "html",
 				},
 			)
-			return err
+			return ctx, err
 		}
 
 		query, err := url.Parse(cb.Data)
@@ -57,7 +57,7 @@ func setlangCb(
 					ParseMode: "html",
 				},
 			)
-			return err
+			return ctx, err
 		}
 		queryParams := query.Query()
 		newLang := queryParams.Get(langParam)
@@ -75,9 +75,9 @@ func setlangCb(
 						ParseMode: "html",
 					},
 				)
-				return err
+				return ctx, err
 			}
-			return err
+			return ctx, err
 		}
 		newLangCode := i18n.GetLangCode(newLang)
 		// Check if the selected language is supported
@@ -94,9 +94,9 @@ func setlangCb(
 						ParseMode: "html",
 					},
 				)
-				return err
+				return ctx, err
 			}
-			return err
+			return ctx, err
 		}
 		_, err = userSettings.Update(ctx, cb.From.Id, &model.UserSettingsInfo{Lang: newLangCode})
 		if err != nil {
@@ -108,7 +108,7 @@ func setlangCb(
 					ParseMode: "html",
 				},
 			)
-			return err
+			return ctx, err
 		}
 
 		_, err = cb.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
@@ -123,8 +123,8 @@ func setlangCb(
 					ParseMode: "html",
 				},
 			)
-			return err
+			return ctx, err
 		}
-		return err
+		return ctx, err
 	}
 }

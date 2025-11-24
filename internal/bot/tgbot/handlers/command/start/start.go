@@ -1,28 +1,38 @@
 package start
 
 import (
+	"context"
 	"log/slog"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middleware"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middleware/middlewares"
 	I18n "github.com/chistyakoviv/logbot/internal/i18n"
 )
 
 const CommandName = "start"
 
-func New(logger *slog.Logger, i18n *I18n.I18n) *command.TgCommand {
+func New(
+	ctx context.Context,
+	mw middleware.TgMiddlewareInterface,
+	logger *slog.Logger,
+	i18n *I18n.I18n,
+) *command.TgCommand {
 	return &command.TgCommand{
-		Handler: begin(logger, i18n),
+		Handler: mw.Pipe(begin(logger, i18n)).Handler(ctx),
 		Stages:  []handlers.Response{},
 	}
 }
 
-func begin(logger *slog.Logger, i18n *I18n.I18n) handlers.Response {
-	lang := i18n.DefaultLang()
-	return func(b *gotgbot.Bot, ctx *ext.Context) error {
-		msg := ctx.EffectiveMessage
+func begin(
+	logger *slog.Logger,
+	i18n *I18n.I18n,
+) middleware.TgMiddlewareHandler {
+	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) (context.Context, error) {
+		msg := ectx.EffectiveMessage
 
 		logger.Debug(
 			"message received",
@@ -30,6 +40,11 @@ func begin(logger *slog.Logger, i18n *I18n.I18n) handlers.Response {
 			slog.String("from", msg.From.Username),
 			slog.String("message", msg.Text),
 		)
+
+		lang, ok := ctx.Value(middlewares.LangKey).(string)
+		if !ok {
+			return ctx, middlewares.ErrMissingLangMiddleware
+		}
 
 		message := i18n.
 			Chain().
@@ -45,6 +60,6 @@ func begin(logger *slog.Logger, i18n *I18n.I18n) handlers.Response {
 		_, err := b.SendMessage(msg.Chat.Id, message, &gotgbot.SendMessageOpts{
 			ParseMode: "html",
 		})
-		return err
+		return ctx, err
 	}
 }

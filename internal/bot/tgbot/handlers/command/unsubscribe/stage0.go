@@ -8,14 +8,14 @@ import (
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
-	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middleware"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middleware/middlewares"
 	"github.com/chistyakoviv/logbot/internal/db"
 	I18n "github.com/chistyakoviv/logbot/internal/i18n"
 	"github.com/chistyakoviv/logbot/internal/lib/slogger"
 	"github.com/chistyakoviv/logbot/internal/model"
 	"github.com/chistyakoviv/logbot/internal/service/commands"
 	"github.com/chistyakoviv/logbot/internal/service/subscriptions"
-	"github.com/chistyakoviv/logbot/internal/service/user_settings"
 	"github.com/google/uuid"
 )
 
@@ -25,9 +25,8 @@ func stage0(
 	i18n *I18n.I18n,
 	subscriptions subscriptions.IService,
 	commands commands.IService,
-	userSettings user_settings.IService,
-) handlers.Response {
-	return func(b *gotgbot.Bot, ectx *ext.Context) error {
+) middleware.TgMiddlewareHandler {
+	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) (context.Context, error) {
 		msg := ectx.EffectiveMessage
 		token := strings.Trim(msg.Text, " ")
 
@@ -38,19 +37,12 @@ func stage0(
 			slog.String("token", token),
 		)
 
-		lang, err := userSettings.GetLang(ctx, msg.From.Id)
-		if err != nil && !errors.Is(err, db.ErrNotFound) {
-			logger.Error("error occurred while getting the user's language", slogger.Err(err))
-			_, err := b.SendMessage(
-				msg.Chat.Id,
-				"Failed to get the user's language. Please check the log for more information.",
-				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
-				},
-			)
-			return err
+		lang, ok := ctx.Value(middlewares.LangKey).(string)
+		if !ok {
+			return ctx, middlewares.ErrMissingLangMiddleware
 		}
 
+		var err error
 		if err := uuid.Validate(token); err != nil {
 			_, err := b.SendMessage(
 				msg.Chat.Id,
@@ -71,7 +63,7 @@ func stage0(
 					ParseMode: "html",
 				},
 			)
-			return err
+			return ctx, err
 		}
 		_, unsubErr := subscriptions.Find(ctx, token, msg.Chat.Id)
 		if errors.Is(unsubErr, db.ErrNotFound) {
@@ -94,7 +86,7 @@ func stage0(
 					ParseMode: "html",
 				},
 			)
-			return err
+			return ctx, err
 		}
 
 		_, err = commands.CompleteByKey(
@@ -125,7 +117,7 @@ func stage0(
 					ParseMode: "html",
 				},
 			)
-			return err
+			return ctx, err
 		}
 
 		_, err = subscriptions.Unsubscribe(ctx, token, msg.Chat.Id)
@@ -150,7 +142,7 @@ func stage0(
 					ParseMode: "html",
 				},
 			)
-			return err
+			return ctx, err
 		}
 
 		_, err = b.SendMessage(
@@ -178,6 +170,6 @@ func stage0(
 				ParseMode: "html",
 			},
 		)
-		return err
+		return ctx, err
 	}
 }

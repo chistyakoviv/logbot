@@ -15,6 +15,8 @@ import (
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/handler"
+	tgMiddleware "github.com/chistyakoviv/logbot/internal/bot/tgbot/middleware"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middleware/middlewares"
 	"github.com/chistyakoviv/logbot/internal/config"
 	"github.com/chistyakoviv/logbot/internal/constants"
 	"github.com/chistyakoviv/logbot/internal/db"
@@ -199,6 +201,15 @@ func bootstrap(ctx context.Context, c di.Container) {
 		manager.Assign(superuserId, superuser.GetName(), time.Now())
 
 		return manager
+	})
+
+	c.RegisterSingleton("tgMiddleware", func(c di.Container) tgMiddleware.TgMiddlewareInterface {
+		return tgMiddleware.NewMiddleware()
+	})
+
+	// Middlewares
+	c.RegisterSingleton("tgLangMiddleware", func(c di.Container) tgMiddleware.TgMiddlewareHandler {
+		return middlewares.Lang(resolveLogger(c), resolveUserSettingsService(c))
 	})
 
 	// Repositories

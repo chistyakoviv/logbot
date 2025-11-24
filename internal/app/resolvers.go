@@ -9,6 +9,7 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
 	"github.com/chistyakoviv/logbot/internal/bot"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command"
+	tgMiddleware "github.com/chistyakoviv/logbot/internal/bot/tgbot/middleware"
 	"github.com/chistyakoviv/logbot/internal/config"
 	"github.com/chistyakoviv/logbot/internal/db"
 	"github.com/chistyakoviv/logbot/internal/deferredq"
@@ -165,6 +166,27 @@ func resolveRbac(c di.Container) rbac.ManagerInterface {
 	}
 
 	return rbac
+}
+
+func resolveTgMiddleware(c di.Container) tgMiddleware.TgMiddlewareInterface {
+	middleware, err := di.Resolve[tgMiddleware.TgMiddlewareInterface](c, "tgMiddleware")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve middleware definition: %v", err)
+	}
+
+	return middleware
+}
+
+// MIddlewares
+func resolveTgLangMiddleware(c di.Container) tgMiddleware.TgMiddlewareHandler {
+	middleware, err := di.Resolve[tgMiddleware.TgMiddlewareHandler](c, "tgLangMiddleware")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve lang middleware definition: %v", err)
+	}
+
+	return middleware
 }
 
 // Repositories

@@ -22,34 +22,48 @@ func BuildTgCommands(
 	srvSubscriptions := resolveSubscriptionsService(c)
 	srvUserSettings := resolveUserSettingsService(c)
 	rbac := resolveRbac(c)
+	mw := resolveTgMiddleware(c)
+
+	// Middlewares
+	mwLang := resolveTgLangMiddleware(c)
+
+	// Lang middleware must be the first
+	mw = mw.Pipe(mwLang)
 	return command.TgCommands{
-		start.CommandName: start.New(logger, i18n),
+		start.CommandName: start.New(
+			ctx,
+			mw,
+			logger,
+			i18n,
+		),
 		cancel.CommandName: cancel.New(
 			ctx,
+			mw,
 			logger,
 			i18n,
 			srvCommands,
-			srvUserSettings,
 		),
 		subscribe.CommandName: subscribe.New(
 			ctx,
+			mw,
 			logger,
 			i18n,
 			rbac,
 			srvSubscriptions,
 			srvCommands,
-			srvUserSettings,
 		),
 		unsubscribe.CommandName: unsubscribe.New(
 			ctx,
+			mw,
 			logger,
 			i18n,
+			rbac,
 			srvSubscriptions,
 			srvCommands,
-			srvUserSettings,
 		),
 		setlang.CommandName: setlang.New(
 			ctx,
+			mw,
 			logger,
 			i18n,
 			srvCommands,
