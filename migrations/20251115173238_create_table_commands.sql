@@ -1,7 +1,7 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS commands (
-    name VARCHAR(255) NOT NULL,
+    name VARCHAR NOT NULL,
     user_id BIGINT NOT NULL,
     chat_id BIGINT NOT NULL,
     stage INTEGER NOT NULL DEFAULT -1,
