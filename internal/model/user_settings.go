@@ -8,6 +8,7 @@ import (
 
 type UserSettings struct {
 	UserId    int64
+	Username  string
 	Lang      int
 	UpdatedAt time.Time
 }
@@ -17,5 +18,6 @@ func (us *UserSettings) Language() string {
 }
 
 type UserSettingsInfo struct {
-	Lang int
+	Username string
+	Lang     int
 }

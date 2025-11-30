@@ -8,7 +8,7 @@ import (
 
 type LabelsRow struct {
 	ChatId    int64     `db:"chat_id"`
-	UserId    int64     `db:"user_id"`
+	Username  string    `db:"username"`
 	Labels    []string  `db:"labels"`
 	UpdatedAt time.Time `db:"updated_at"`
 }
@@ -16,7 +16,7 @@ type LabelsRow struct {
 func (r *LabelsRow) Values() []any {
 	return []any{
 		r.ChatId,
-		r.UserId,
+		r.Username,
 		r.Labels,
 		r.UpdatedAt,
 	}
@@ -28,7 +28,7 @@ func ToModel(r *LabelsRow) *model.Label {
 	}
 	return &model.Label{
 		ChatId:    r.ChatId,
-		UserId:    r.UserId,
+		Username:  r.Username,
 		Labels:    r.Labels,
 		UpdatedAt: r.UpdatedAt,
 	}
@@ -40,7 +40,7 @@ func FromModel(m *model.Label) *LabelsRow {
 	}
 	return &LabelsRow{
 		ChatId:    m.ChatId,
-		UserId:    m.UserId,
+		Username:  m.Username,
 		Labels:    m.Labels,
 		UpdatedAt: m.UpdatedAt,
 	}

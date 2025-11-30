@@ -17,8 +17,8 @@ func (r *repository) Update(ctx context.Context, in *model.Label) (*model.Label,
 		Name: "repository.labels.update",
 		Sqlizer: r.sq.Update(labelsTable).
 			Where(sq.Eq{
-				labelsTableColumnUserId: row.UserId,
-				labelsTableColumnChatId: row.ChatId,
+				labelsTableColumnChatId:   row.ChatId,
+				labelsTableColumnUsername: row.Username,
 			}).
 			SetMap(
 				map[string]interface{}{

@@ -8,6 +8,7 @@ import (
 
 type UserSettingsRow struct {
 	UserId    int64     `db:"user_id"`
+	Username  string    `db:"username"`
 	Lang      int       `db:"lang"`
 	UpdatedAt time.Time `db:"updated_at"`
 }
@@ -15,6 +16,7 @@ type UserSettingsRow struct {
 func (r *UserSettingsRow) Values() []any {
 	return []any{
 		r.UserId,
+		r.Username,
 		r.Lang,
 		r.UpdatedAt,
 	}
@@ -26,6 +28,7 @@ func ToModel(r *UserSettingsRow) *model.UserSettings {
 	}
 	return &model.UserSettings{
 		UserId:    r.UserId,
+		Username:  r.Username,
 		Lang:      r.Lang,
 		UpdatedAt: r.UpdatedAt,
 	}
@@ -37,6 +40,7 @@ func FromModel(m *model.UserSettings) UserSettingsRow {
 	}
 	return UserSettingsRow{
 		UserId:    m.UserId,
+		Username:  m.Username,
 		Lang:      m.Lang,
 		UpdatedAt: m.UpdatedAt,
 	}

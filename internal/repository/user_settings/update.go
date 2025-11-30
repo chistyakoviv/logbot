@@ -20,8 +20,12 @@ func (r *respository) Update(ctx context.Context, in *model.UserSettings) (*mode
 		Set(userSettingsTableColumnUpdatedAt, row.UpdatedAt).
 		Suffix("RETURNING " + strings.Join(userSettingsTableColumns, ","))
 
-	if in.Lang != 0 {
+	if row.Lang != 0 {
 		builder = builder.Set(userSettingsTableColumnLang, row.Lang)
+	}
+
+	if row.Username != "" {
+		builder = builder.Set(userSettingsTableColumnUsername, row.Username)
 	}
 
 	q := db.Query{

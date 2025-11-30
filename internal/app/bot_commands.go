@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/addlabels"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/cancel"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/setlang"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/start"
@@ -21,6 +22,7 @@ func BuildTgCommands(
 	srvCommands := resolveCommandsService(c)
 	srvSubscriptions := resolveSubscriptionsService(c)
 	srvUserSettings := resolveUserSettingsService(c)
+	srvLabels := resolveLabelsService(c)
 	rbac := resolveRbac(c)
 	mw := resolveTgMiddleware(c)
 
@@ -68,6 +70,14 @@ func BuildTgCommands(
 			i18n,
 			srvCommands,
 			srvUserSettings,
+		),
+		addlabels.CommandName: addlabels.New(
+			ctx,
+			mw,
+			logger,
+			i18n,
+			srvLabels,
+			srvCommands,
 		),
 	}
 }

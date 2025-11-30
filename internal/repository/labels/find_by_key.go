@@ -16,8 +16,8 @@ func (r *repository) FindByKey(ctx context.Context, in *model.LabelKey) (*model.
 		Sqlizer: r.sq.Select(labelsTableColumns...).
 			From(labelsTable).
 			Where(sq.Eq{
-				labelsTableColumnUserId: in.UserId,
-				labelsTableColumnChatId: in.ChatId,
+				labelsTableColumnChatId:   in.ChatId,
+				labelsTableColumnUsername: in.Username,
 			}),
 	}
 

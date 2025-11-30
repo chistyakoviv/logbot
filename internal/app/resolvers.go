@@ -17,9 +17,11 @@ import (
 	"github.com/chistyakoviv/logbot/internal/i18n"
 	"github.com/chistyakoviv/logbot/internal/rbac"
 	"github.com/chistyakoviv/logbot/internal/repository/commands"
+	"github.com/chistyakoviv/logbot/internal/repository/labels"
 	"github.com/chistyakoviv/logbot/internal/repository/subscriptions"
 	"github.com/chistyakoviv/logbot/internal/repository/user_settings"
 	srvCommands "github.com/chistyakoviv/logbot/internal/service/commands"
+	srvLabels "github.com/chistyakoviv/logbot/internal/service/labels"
 	srvSubscriptions "github.com/chistyakoviv/logbot/internal/service/subscriptions"
 	srvUserSettings "github.com/chistyakoviv/logbot/internal/service/user_settings"
 	"github.com/go-chi/chi/v5"
@@ -220,6 +222,16 @@ func resolveUserSettingsRepository(c di.Container) user_settings.RepositoryInter
 	return repo
 }
 
+func resolveLabelsRepository(c di.Container) labels.RepositoryInterface {
+	repo, err := di.Resolve[labels.RepositoryInterface](c, "labelsRepository")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve labels repository definition: %v", err)
+	}
+
+	return repo
+}
+
 // Services
 func resolveSubscriptionsService(c di.Container) srvSubscriptions.ServiceInterface {
 	service, err := di.Resolve[srvSubscriptions.ServiceInterface](c, "subscriptionsService")
@@ -246,6 +258,16 @@ func resolveUserSettingsService(c di.Container) srvUserSettings.ServiceInterface
 
 	if err != nil {
 		log.Fatalf("Couldn't resolve user settings service definition: %v", err)
+	}
+
+	return service
+}
+
+func resolveLabelsService(c di.Container) srvLabels.ServiceInterface {
+	service, err := di.Resolve[srvLabels.ServiceInterface](c, "labelsService")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve labels service definition: %v", err)
 	}
 
 	return service

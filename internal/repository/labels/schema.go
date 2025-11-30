@@ -4,14 +4,14 @@ const labelsTable = "labels"
 
 const (
 	labelsTableColumnChatId    = "chat_id"
-	labelsTableColumnUserId    = "user_id"
+	labelsTableColumnUsername  = "username"
 	labelsTableColumnLabels    = "labels"
 	labelsTableColumnUpdatedAt = "updated_at"
 )
 
 var labelsTableColumns = []string{
 	labelsTableColumnChatId,
-	labelsTableColumnUserId,
+	labelsTableColumnUsername,
 	labelsTableColumnLabels,
 	labelsTableColumnUpdatedAt,
 }

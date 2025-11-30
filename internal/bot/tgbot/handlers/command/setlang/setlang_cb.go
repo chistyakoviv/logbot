@@ -95,7 +95,10 @@ func setlangCb(
 			}
 			return ctx, err
 		}
-		_, err = userSettings.Update(ctx, cb.From.Id, &model.UserSettingsInfo{Lang: newLangCode})
+		_, err = userSettings.Update(ctx, cb.From.Id, &model.UserSettingsInfo{
+			Username: cb.From.Username,
+			Lang:     newLangCode,
+		})
 		if err != nil {
 			logger.Error("error occurred while setting the user's language", slogger.Err(err))
 			_, err := b.SendMessage(

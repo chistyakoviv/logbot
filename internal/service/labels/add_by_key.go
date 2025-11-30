@@ -10,10 +10,10 @@ import (
 	"github.com/chistyakoviv/logbot/internal/model"
 )
 
-func (s *service) UpdateByKey(ctx context.Context, key *model.LabelKey, labels []string) (*model.Label, error) {
+func (s *service) AddByKey(ctx context.Context, key *model.LabelKey, labels []string) (*model.Label, error) {
 	newLabel := &model.Label{
 		ChatId:    key.ChatId,
-		UserId:    key.UserId,
+		Username:  key.Username,
 		Labels:    labels,
 		UpdatedAt: time.Now(),
 	}

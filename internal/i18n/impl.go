@@ -60,6 +60,15 @@ func New() *I18n {
 				"setlang_success":          en.SetLangSuccess,
 				"setlang_unknown_language": en.SetLangUnknownLanguage,
 				"setlang_same_language":    en.SetLangSameLanguage,
+
+				"addlabels_enter_mentions":            en.AddLabelsEnterMentions,
+				"addlabels_enter_labels":              en.AddLabelsEnterLabels,
+				"addlabels_error":                     en.AddLabelsError,
+				"addlabels_no_mentions_error":         en.AddLabelsNoMentionsError,
+				"addlabels_save_mentions_error":       en.AddLabelsSaveMentionsError,
+				"addlabels_no_labels_error":           en.AddLabelsNoLabels,
+				"addlabels_failed_apply_labels_error": en.AddLabelsFailedApplyLabelsError,
+				"addlabels_success":                   en.AddLabelsSuccess,
 			},
 		},
 	}
