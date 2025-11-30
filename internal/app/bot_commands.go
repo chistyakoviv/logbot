@@ -6,6 +6,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/addlabels"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/cancel"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/rmlabels"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/setlang"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/start"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/subscribe"
@@ -72,6 +73,14 @@ func BuildTgCommands(
 			srvUserSettings,
 		),
 		addlabels.CommandName: addlabels.New(
+			ctx,
+			mw,
+			logger,
+			i18n,
+			srvLabels,
+			srvCommands,
+		),
+		rmlabels.CommandName: rmlabels.New(
 			ctx,
 			mw,
 			logger,

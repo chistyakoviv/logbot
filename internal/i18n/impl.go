@@ -69,6 +69,15 @@ func New() *I18n {
 				"addlabels_no_labels_error":           en.AddLabelsNoLabels,
 				"addlabels_failed_apply_labels_error": en.AddLabelsFailedApplyLabelsError,
 				"addlabels_success":                   en.AddLabelsSuccess,
+
+				"rmlabels_enter_mentions":             en.RmLabelsEnterMentions,
+				"rmlabels_enter_labels":               en.RmLabelsEnterLabels,
+				"rmlabels_error":                      en.RmLabelsError,
+				"rmlabels_no_mentions_error":          en.RmLabelsNoMentionsError,
+				"rmlabels_save_mentions_error":        en.RmLabelsSaveMentionsError,
+				"rmlabels_no_labels_error":            en.RmLabelsNoLabels,
+				"rmlabels_failed_remove_labels_error": en.RmLabelsFailedRemoveLabelsError,
+				"rmlabels_success":                    en.RmLabelsSuccess,
 			},
 		},
 	}
