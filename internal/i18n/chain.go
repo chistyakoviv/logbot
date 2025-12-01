@@ -2,6 +2,7 @@ package i18n
 
 import (
 	"bytes"
+	"fmt"
 )
 
 type i18nChain struct {
@@ -27,5 +28,13 @@ func (c *i18nChain) String() string {
 
 func (c *i18nChain) Append(s string) I18nChainInterface {
 	c.buf.WriteString(s)
+	return c
+}
+
+func (c *i18nChain) Appendf(format string, args ...any) I18nChainInterface {
+	_, err := fmt.Fprintf(&c.buf, format, args...)
+	if err != nil {
+		// Ignore errors
+	}
 	return c
 }

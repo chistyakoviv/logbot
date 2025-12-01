@@ -10,7 +10,8 @@ import (
 
 type RepositoryInterface interface {
 	FindByKey(ctx context.Context, in *model.LabelKey) (*model.Label, error)
-	FindByLabel(ctx context.Context, label string) (*model.Label, error)
+	FindByLabel(ctx context.Context, label string) ([]*model.Label, error)
+	FindAllByChat(ctx context.Context, chatId int64) ([]*model.Label, error)
 	Create(ctx context.Context, in *model.Label) (*model.Label, error)
 	Update(ctx context.Context, in *model.Label) (*model.Label, error)
 }

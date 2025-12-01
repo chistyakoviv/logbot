@@ -78,6 +78,10 @@ func New() *I18n {
 				"rmlabels_no_labels_error":            en.RmLabelsNoLabels,
 				"rmlabels_failed_remove_labels_error": en.RmLabelsFailedRemoveLabelsError,
 				"rmlabels_success":                    en.RmLabelsSuccess,
+
+				"labels_assigned": en.LabelsAssigned,
+				"labels_empty":    en.LabelsEmpty,
+				"labels_error":    en.LabelsError,
 			},
 		},
 	}

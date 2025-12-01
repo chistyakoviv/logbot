@@ -7,6 +7,7 @@ type Option func(*I18nOpts)
 type I18nChainInterface interface {
 	T(lang string, key string, opts ...Option) I18nChainInterface
 	Append(s string) I18nChainInterface
+	Appendf(format string, args ...any) I18nChainInterface
 	String() string
 }
 

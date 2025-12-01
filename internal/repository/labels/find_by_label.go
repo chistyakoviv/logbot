@@ -2,7 +2,6 @@ package labels
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	sq "github.com/Masterminds/squirrel"
@@ -10,7 +9,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/model"
 )
 
-func (r *repository) FindByLabel(ctx context.Context, label string) (*model.Label, error) {
+func (r *repository) FindByLabel(ctx context.Context, label string) ([]*model.Label, error) {
 	q := db.Query{
 		Name: "repository.labels.find_by_label",
 		Sqlizer: r.sq.Select(labelsTableColumns...).
@@ -22,13 +21,15 @@ func (r *repository) FindByLabel(ctx context.Context, label string) (*model.Labe
 		// Where(sq.Expr(labelsTableColumnLabels+" @> ?::varchar[]", []string{"label1", "lable2"})),
 	}
 
-	var row LabelsRow
-	if err := r.db.DB().Getx(ctx, &row, q); err != nil {
-		if !errors.Is(err, db.ErrNotFound) {
-			return nil, err
-		}
+	var row []LabelsRow
+	if err := r.db.DB().Selectx(ctx, &row, q); err != nil {
 		return nil, fmt.Errorf("%s: %w", q.Name, err)
 	}
 
-	return ToModel(&row), nil
+	out := make([]*model.Label, 0, len(row))
+	for _, v := range row {
+		out = append(out, ToModel(&v))
+	}
+
+	return out, nil
 }
