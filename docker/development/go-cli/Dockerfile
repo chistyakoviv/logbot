@@ -1,6 +1,6 @@
 FROM golang:1.25.4-alpine3.22
 
-# Do not use MOCKERY_VERSION, as it causes mockery to fail with a version parsing error.
+# Do not use MOCKERY_VERSION, as it causes mockery to fail with the version parsing error.
 ENV MOCKERY_INSTALL_VERSION=3.5.5
 
 RUN apk add --no-cache \
