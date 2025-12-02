@@ -60,6 +60,7 @@ func New() *I18n {
 				"setlang_success":          en.SetLangSuccess,
 				"setlang_unknown_language": en.SetLangUnknownLanguage,
 				"setlang_same_language":    en.SetLangSameLanguage,
+				"setlang_error":            en.SetLangError,
 
 				"addlabels_enter_mentions":            en.AddLabelsEnterMentions,
 				"addlabels_enter_labels":              en.AddLabelsEnterLabels,
@@ -82,6 +83,12 @@ func New() *I18n {
 				"labels_assigned": en.LabelsAssigned,
 				"labels_empty":    en.LabelsEmpty,
 				"labels_error":    en.LabelsError,
+
+				"collapse_select_period": en.CollpaseSelectPeriod,
+				"collapse_period_set":    en.CollapsePeriodSet,
+
+				"callback_data_parse_error": en.CallbackDataParseError,
+				"callback_failed_to_answer": en.CallbackFailedToAnswer,
 			},
 		},
 	}

@@ -16,10 +16,12 @@ import (
 	"github.com/chistyakoviv/logbot/internal/di"
 	"github.com/chistyakoviv/logbot/internal/i18n"
 	"github.com/chistyakoviv/logbot/internal/rbac"
+	"github.com/chistyakoviv/logbot/internal/repository/chat_settings"
 	"github.com/chistyakoviv/logbot/internal/repository/commands"
 	"github.com/chistyakoviv/logbot/internal/repository/labels"
 	"github.com/chistyakoviv/logbot/internal/repository/subscriptions"
 	"github.com/chistyakoviv/logbot/internal/repository/user_settings"
+	srvChatSettings "github.com/chistyakoviv/logbot/internal/service/chat_settings"
 	srvCommands "github.com/chistyakoviv/logbot/internal/service/commands"
 	srvLabels "github.com/chistyakoviv/logbot/internal/service/labels"
 	srvSubscriptions "github.com/chistyakoviv/logbot/internal/service/subscriptions"
@@ -222,6 +224,16 @@ func resolveUserSettingsRepository(c di.Container) user_settings.RepositoryInter
 	return repo
 }
 
+func resolveChatSettingsRepository(c di.Container) chat_settings.RepositoryInterface {
+	repo, err := di.Resolve[chat_settings.RepositoryInterface](c, "chatSettingsRepository")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve chat settings repository definition: %v", err)
+	}
+
+	return repo
+}
+
 func resolveLabelsRepository(c di.Container) labels.RepositoryInterface {
 	repo, err := di.Resolve[labels.RepositoryInterface](c, "labelsRepository")
 
@@ -258,6 +270,16 @@ func resolveUserSettingsService(c di.Container) srvUserSettings.ServiceInterface
 
 	if err != nil {
 		log.Fatalf("Couldn't resolve user settings service definition: %v", err)
+	}
+
+	return service
+}
+
+func resolveChatSettingsService(c di.Container) srvChatSettings.ServiceInterface {
+	service, err := di.Resolve[srvChatSettings.ServiceInterface](c, "chatSettingsService")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve chat settings service definition: %v", err)
 	}
 
 	return service

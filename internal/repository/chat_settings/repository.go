@@ -1,4 +1,4 @@
-package user_settings
+package chat_settings
 
 import (
 	"context"
@@ -9,18 +9,18 @@ import (
 )
 
 type RepositoryInterface interface {
-	Create(ctx context.Context, in *model.UserSettings) (*model.UserSettings, error)
-	Update(ctx context.Context, in *model.UserSettings) (*model.UserSettings, error)
-	Find(ctx context.Context, userId int64) (*model.UserSettings, error)
+	Create(ctx context.Context, in *model.ChatSettings) (*model.ChatSettings, error)
+	Update(ctx context.Context, in *model.ChatSettings) (*model.ChatSettings, error)
+	Find(ctx context.Context, chatId int64) (*model.ChatSettings, error)
 }
 
-type respository struct {
+type repository struct {
 	db db.Client
 	sq sq.StatementBuilderType
 }
 
 func NewRepository(db db.Client, sq sq.StatementBuilderType) RepositoryInterface {
-	return &respository{
+	return &repository{
 		db: db,
 		sq: sq,
 	}

@@ -1,16 +1,18 @@
-package setlang
+package collapse
 
 import (
 	"context"
 	"fmt"
 	"log/slog"
 	"net/url"
+	"strconv"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middleware"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middleware/middlewares"
 	I18n "github.com/chistyakoviv/logbot/internal/i18n"
+	"github.com/chistyakoviv/logbot/internal/utils"
 )
 
 func begin(
@@ -21,7 +23,7 @@ func begin(
 		msg := ectx.EffectiveMessage
 
 		logger.Debug(
-			"set language command: initiate",
+			"collapse command: initiate",
 			slog.Int64("chat_id", msg.Chat.Id),
 			slog.String("from", msg.From.Username),
 		)
@@ -31,13 +33,13 @@ func begin(
 			return ctx, middlewares.ErrMissingLangMiddleware
 		}
 
-		var langs []gotgbot.InlineKeyboardButton
-		for _, lang := range i18n.GetLangs() {
+		var buttons []gotgbot.InlineKeyboardButton
+		for idx, period := range periods {
 			queryParams := url.Values{}
-			queryParams.Add(langParam, lang)
-			langs = append(langs, gotgbot.InlineKeyboardButton{
-				Text:         lang,
-				CallbackData: fmt.Sprintf("%s?%s", SetLangCbName, queryParams.Encode()),
+			queryParams.Add(collpasePeriodParam, strconv.Itoa(idx))
+			buttons = append(buttons, gotgbot.InlineKeyboardButton{
+				Text:         period.Label,
+				CallbackData: fmt.Sprintf("%s?%s", CollapseCbName, queryParams.Encode()),
 			})
 		}
 
@@ -54,12 +56,12 @@ func begin(
 					}),
 				).
 				Append("\n").
-				T(lang, "setlang_select_language").
+				T(lang, "collapse_select_period").
 				String(),
 			&gotgbot.SendMessageOpts{
 				ParseMode: "html",
 				ReplyMarkup: gotgbot.InlineKeyboardMarkup{
-					InlineKeyboard: [][]gotgbot.InlineKeyboardButton{langs},
+					InlineKeyboard: utils.Chunk(buttons, 2),
 				},
 			},
 		)

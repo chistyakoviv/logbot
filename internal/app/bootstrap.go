@@ -28,10 +28,12 @@ import (
 	"github.com/chistyakoviv/logbot/internal/i18n"
 	"github.com/chistyakoviv/logbot/internal/lib/slogger"
 	"github.com/chistyakoviv/logbot/internal/rbac"
+	"github.com/chistyakoviv/logbot/internal/repository/chat_settings"
 	"github.com/chistyakoviv/logbot/internal/repository/commands"
 	"github.com/chistyakoviv/logbot/internal/repository/labels"
 	"github.com/chistyakoviv/logbot/internal/repository/subscriptions"
 	"github.com/chistyakoviv/logbot/internal/repository/user_settings"
+	srvChatSettings "github.com/chistyakoviv/logbot/internal/service/chat_settings"
 	srvCommands "github.com/chistyakoviv/logbot/internal/service/commands"
 	srvLabels "github.com/chistyakoviv/logbot/internal/service/labels"
 	srvSubscriptions "github.com/chistyakoviv/logbot/internal/service/subscriptions"
@@ -239,6 +241,10 @@ func bootstrap(ctx context.Context, c di.Container) {
 		return user_settings.NewRepository(resolveDbClient(c), resolveStatementBuilder(c))
 	})
 
+	c.RegisterSingleton("chatSettingsRepository", func(c di.Container) chat_settings.RepositoryInterface {
+		return chat_settings.NewRepository(resolveDbClient(c), resolveStatementBuilder(c))
+	})
+
 	c.RegisterSingleton("labelsRepository", func(c di.Container) labels.RepositoryInterface {
 		return labels.NewRepository(resolveDbClient(c), resolveStatementBuilder(c))
 	})
@@ -254,6 +260,10 @@ func bootstrap(ctx context.Context, c di.Container) {
 
 	c.RegisterSingleton("userSettingsService", func(c di.Container) srvUserSettings.ServiceInterface {
 		return srvUserSettings.NewService(resolveUserSettingsRepository(c), resolveTxManager(c))
+	})
+
+	c.RegisterSingleton("chatSettingsService", func(c di.Container) srvChatSettings.ServiceInterface {
+		return srvChatSettings.NewService(resolveChatSettingsRepository(c), resolveTxManager(c))
 	})
 
 	c.RegisterSingleton("labelsService", func(c di.Container) srvLabels.ServiceInterface {

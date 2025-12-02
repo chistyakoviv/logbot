@@ -15,3 +15,7 @@ var SetLangUnknownLanguage = []string{
 var SetLangSameLanguage = []string{
 	"You are already using this language.",
 }
+
+var SetLangError = []string{
+	"Failed to set the user's language. Please check the log for more information.",
+}

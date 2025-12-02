@@ -1,4 +1,4 @@
-package user_settings
+package chat_settings
 
 import (
 	"context"
@@ -10,17 +10,17 @@ import (
 	"github.com/chistyakoviv/logbot/internal/model"
 )
 
-func (r *respository) Find(ctx context.Context, userId int64) (*model.UserSettings, error) {
+func (r *repository) Find(ctx context.Context, chatId int64) (*model.ChatSettings, error) {
 	q := db.Query{
-		Name: "repository.user_settings.find",
-		Sqlizer: r.sq.Select(userSettingsTableColumns...).
-			From(userSettingsTable).
+		Name: "repository.chat_settings.find",
+		Sqlizer: r.sq.Select(chatSettingsTableColumns...).
+			From(chatSettingsTable).
 			Where(sq.Eq{
-				userSettingsTableColumnUserId: userId,
+				chatSettingsTableColumnChatId: chatId,
 			}),
 	}
 
-	var row UserSettingsRow
+	var row ChatSettingsRow
 	if err := r.db.DB().Getx(ctx, &row, q); err != nil {
 		if errors.Is(err, db.ErrNotFound) {
 			return nil, err

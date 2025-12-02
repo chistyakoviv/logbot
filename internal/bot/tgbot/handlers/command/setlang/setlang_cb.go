@@ -36,7 +36,7 @@ func setlangCb(
 			logger.Error("error occurred while getting the user's language", slogger.Err(currLangErr))
 			_, err := b.SendMessage(
 				cb.Message.GetChat().Id,
-				"Failed to get the user's language. Please check the log for more information.",
+				i18n.T(lang, "callback_data_parse_error"),
 				&gotgbot.SendMessageOpts{
 					ParseMode: "html",
 				},
@@ -49,7 +49,7 @@ func setlangCb(
 			logger.Error("error occurred while parsing the callback data", slogger.Err(err))
 			_, err := b.SendMessage(
 				cb.Message.GetChat().Id,
-				"Failed to parse the callback data. Please check the log for more information.",
+				i18n.T(lang, "callback_data_parse_error"),
 				&gotgbot.SendMessageOpts{
 					ParseMode: "html",
 				},
@@ -67,7 +67,7 @@ func setlangCb(
 				logger.Error("failed to answer callback", slogger.Err(err))
 				_, err := b.SendMessage(
 					cb.Message.GetChat().Id,
-					"Failed to answer callback. Please check the log for more information.",
+					i18n.T(lang, "callback_failed_to_answer"),
 					&gotgbot.SendMessageOpts{
 						ParseMode: "html",
 					},
@@ -86,7 +86,7 @@ func setlangCb(
 				logger.Error("failed to answer callback", slogger.Err(err))
 				_, err := b.SendMessage(
 					cb.Message.GetChat().Id,
-					"Failed to answer callback. Please check the log for more information.",
+					i18n.T(lang, "callback_failed_to_answer"),
 					&gotgbot.SendMessageOpts{
 						ParseMode: "html",
 					},
@@ -103,7 +103,7 @@ func setlangCb(
 			logger.Error("error occurred while setting the user's language", slogger.Err(err))
 			_, err := b.SendMessage(
 				cb.Message.GetChat().Id,
-				"Failed to set the user's language. Please check the log for more information.",
+				i18n.T(lang, "setlang_error"),
 				&gotgbot.SendMessageOpts{
 					ParseMode: "html",
 				},
@@ -118,7 +118,7 @@ func setlangCb(
 			logger.Error("failed to answer callback", slogger.Err(err))
 			_, err := b.SendMessage(
 				cb.Message.GetChat().Id,
-				"Failed to answer callback. Please check the log for more information.",
+				i18n.T(lang, "callback_failed_to_answer"),
 				&gotgbot.SendMessageOpts{
 					ParseMode: "html",
 				},

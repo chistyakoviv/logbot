@@ -6,6 +6,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/addlabels"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/cancel"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/collapse"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/labels"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/rmlabels"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/setlang"
@@ -24,6 +25,7 @@ func BuildTgCommands(
 	srvCommands := resolveCommandsService(c)
 	srvSubscriptions := resolveSubscriptionsService(c)
 	srvUserSettings := resolveUserSettingsService(c)
+	srvChatSettings := resolveChatSettingsService(c)
 	srvLabels := resolveLabelsService(c)
 	rbac := resolveRbac(c)
 	mw := resolveTgMiddleware(c)
@@ -95,6 +97,14 @@ func BuildTgCommands(
 			logger,
 			i18n,
 			srvLabels,
+		),
+		collapse.CommandName: collapse.New(
+			ctx,
+			mw,
+			logger,
+			i18n,
+			srvCommands,
+			srvChatSettings,
 		),
 	}
 }
