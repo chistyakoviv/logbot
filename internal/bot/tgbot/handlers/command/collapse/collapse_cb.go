@@ -25,7 +25,7 @@ func collapseCb(
 		cb := ectx.CallbackQuery
 
 		logger.Debug(
-			"set language command: button clicked",
+			"collapse command: button clicked",
 			slog.Int64("chat_id", cb.Message.GetChat().Id),
 			slog.String("from", cb.From.Username),
 		)

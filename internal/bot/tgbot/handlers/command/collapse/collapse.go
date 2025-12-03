@@ -14,15 +14,15 @@ import (
 )
 
 const CommandName = "collapse"
-const CollapseCbName = "collapse"
+const collapseCbName = "collapse"
 const collpasePeriodParam = "period"
 
-type CollpasePeriod struct {
+type collpasePeriod struct {
 	Label    string
 	Duration time.Duration
 }
 
-var periods = []CollpasePeriod{
+var periods = []collpasePeriod{
 	{"5 minutes", time.Minute * 5},
 	{"10 minutes", time.Minute * 10},
 	{"30 minutes", time.Minute * 30},
@@ -43,7 +43,7 @@ func New(
 		Handler: mw.Pipe(begin(logger, i18n)).Handler(ctx),
 		Stages:  []handlers.Response{},
 		Callbacks: map[string]handlers.Response{
-			CollapseCbName: mw.Pipe(collapseCb(logger, i18n, chatSettings)).Handler(ctx),
+			collapseCbName: mw.Pipe(collapseCb(logger, i18n, chatSettings)).Handler(ctx),
 		},
 	}
 }

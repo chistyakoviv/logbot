@@ -15,6 +15,8 @@ import (
 	"github.com/chistyakoviv/logbot/internal/utils"
 )
 
+const columns = 2
+
 func begin(
 	logger *slog.Logger,
 	i18n I18n.I18nInterface,
@@ -39,7 +41,7 @@ func begin(
 			queryParams.Add(collpasePeriodParam, strconv.Itoa(idx))
 			buttons = append(buttons, gotgbot.InlineKeyboardButton{
 				Text:         period.Label,
-				CallbackData: fmt.Sprintf("%s?%s", CollapseCbName, queryParams.Encode()),
+				CallbackData: fmt.Sprintf("%s?%s", collapseCbName, queryParams.Encode()),
 			})
 		}
 
@@ -61,7 +63,7 @@ func begin(
 			&gotgbot.SendMessageOpts{
 				ParseMode: "html",
 				ReplyMarkup: gotgbot.InlineKeyboardMarkup{
-					InlineKeyboard: utils.Chunk(buttons, 2),
+					InlineKeyboard: utils.Chunk(buttons, columns),
 				},
 			},
 		)
