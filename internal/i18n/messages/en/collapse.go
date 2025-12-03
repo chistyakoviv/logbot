@@ -1,6 +1,6 @@
 package en
 
-var CollpaseSelectPeriod = []string{
+var CollapseSelectPeriod = []string{
 	"Select period to suppress repeated error notifications.",
 }
 

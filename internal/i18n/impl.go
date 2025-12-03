@@ -84,8 +84,11 @@ func New() *I18n {
 				"labels_empty":    en.LabelsEmpty,
 				"labels_error":    en.LabelsError,
 
-				"collapse_select_period": en.CollpaseSelectPeriod,
+				"collapse_select_period": en.CollapseSelectPeriod,
 				"collapse_period_set":    en.CollapsePeriodSet,
+
+				"silence_select_period": en.SilenceSelectPeriod,
+				"silence_period_set":    en.SilencePeriodSet,
 
 				"callback_data_parse_error": en.CallbackDataParseError,
 				"callback_failed_to_answer": en.CallbackFailedToAnswer,
