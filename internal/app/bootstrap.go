@@ -27,15 +27,18 @@ import (
 	mwLogger "github.com/chistyakoviv/logbot/internal/http/middleware/logger"
 	"github.com/chistyakoviv/logbot/internal/i18n"
 	"github.com/chistyakoviv/logbot/internal/lib/slogger"
+	"github.com/chistyakoviv/logbot/internal/loghasher"
 	"github.com/chistyakoviv/logbot/internal/rbac"
 	"github.com/chistyakoviv/logbot/internal/repository/chat_settings"
 	"github.com/chistyakoviv/logbot/internal/repository/commands"
 	"github.com/chistyakoviv/logbot/internal/repository/labels"
+	"github.com/chistyakoviv/logbot/internal/repository/logs"
 	"github.com/chistyakoviv/logbot/internal/repository/subscriptions"
 	"github.com/chistyakoviv/logbot/internal/repository/user_settings"
 	srvChatSettings "github.com/chistyakoviv/logbot/internal/service/chat_settings"
 	srvCommands "github.com/chistyakoviv/logbot/internal/service/commands"
 	srvLabels "github.com/chistyakoviv/logbot/internal/service/labels"
+	srvLogs "github.com/chistyakoviv/logbot/internal/service/logs"
 	srvSubscriptions "github.com/chistyakoviv/logbot/internal/service/subscriptions"
 	srvUserSettings "github.com/chistyakoviv/logbot/internal/service/user_settings"
 	"github.com/go-chi/chi/middleware"
@@ -219,6 +222,10 @@ func bootstrap(ctx context.Context, c di.Container) {
 		return manager
 	})
 
+	c.RegisterSingleton("logHasher", func(c di.Container) loghasher.HasherInterface {
+		return loghasher.NewHasher()
+	})
+
 	c.RegisterSingleton("tgMiddleware", func(c di.Container) tgMiddleware.TgMiddlewareInterface {
 		return tgMiddleware.NewMiddleware()
 	})
@@ -249,6 +256,10 @@ func bootstrap(ctx context.Context, c di.Container) {
 		return labels.NewRepository(resolveDbClient(c), resolveStatementBuilder(c))
 	})
 
+	c.RegisterSingleton("logsRepository", func(c di.Container) logs.RepositoryInterface {
+		return logs.NewRepository(resolveDbClient(c), resolveStatementBuilder(c))
+	})
+
 	// Services
 	c.RegisterSingleton("subscriptionsService", func(c di.Container) srvSubscriptions.ServiceInterface {
 		return srvSubscriptions.NewService(resolveSubscriptionsRepository(c), resolveTxManager(c))
@@ -268,5 +279,9 @@ func bootstrap(ctx context.Context, c di.Container) {
 
 	c.RegisterSingleton("labelsService", func(c di.Container) srvLabels.ServiceInterface {
 		return srvLabels.NewService(resolveLabelsRepository(c), resolveTxManager(c))
+	})
+
+	c.RegisterSingleton("logsService", func(c di.Container) srvLogs.ServiceInterface {
+		return srvLogs.NewService(resolveLogHasher(c), resolveLogsRepository(c), resolveTxManager(c))
 	})
 }

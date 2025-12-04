@@ -34,11 +34,11 @@ func ToModel(r *LabelsRow) *model.Label {
 	}
 }
 
-func FromModel(m *model.Label) *LabelsRow {
+func FromModel(m *model.Label) LabelsRow {
 	if m == nil {
-		return nil
+		return LabelsRow{}
 	}
-	return &LabelsRow{
+	return LabelsRow{
 		ChatId:    m.ChatId,
 		Username:  m.Username,
 		Labels:    m.Labels,

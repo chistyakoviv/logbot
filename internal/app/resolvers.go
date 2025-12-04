@@ -15,15 +15,18 @@ import (
 	"github.com/chistyakoviv/logbot/internal/deferredq"
 	"github.com/chistyakoviv/logbot/internal/di"
 	"github.com/chistyakoviv/logbot/internal/i18n"
+	"github.com/chistyakoviv/logbot/internal/loghasher"
 	"github.com/chistyakoviv/logbot/internal/rbac"
 	"github.com/chistyakoviv/logbot/internal/repository/chat_settings"
 	"github.com/chistyakoviv/logbot/internal/repository/commands"
 	"github.com/chistyakoviv/logbot/internal/repository/labels"
+	"github.com/chistyakoviv/logbot/internal/repository/logs"
 	"github.com/chistyakoviv/logbot/internal/repository/subscriptions"
 	"github.com/chistyakoviv/logbot/internal/repository/user_settings"
 	srvChatSettings "github.com/chistyakoviv/logbot/internal/service/chat_settings"
 	srvCommands "github.com/chistyakoviv/logbot/internal/service/commands"
 	srvLabels "github.com/chistyakoviv/logbot/internal/service/labels"
+	srvLogs "github.com/chistyakoviv/logbot/internal/service/logs"
 	srvSubscriptions "github.com/chistyakoviv/logbot/internal/service/subscriptions"
 	srvUserSettings "github.com/chistyakoviv/logbot/internal/service/user_settings"
 	"github.com/go-chi/chi/v5"
@@ -182,6 +185,16 @@ func resolveTgMiddleware(c di.Container) tgMiddleware.TgMiddlewareInterface {
 	return middleware
 }
 
+func resolveLogHasher(c di.Container) loghasher.HasherInterface {
+	hasher, err := di.Resolve[loghasher.HasherInterface](c, "logHasher")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve hasher definition: %v", err)
+	}
+
+	return hasher
+}
+
 // MIddlewares
 func resolveTgLangMiddleware(c di.Container) tgMiddleware.TgMiddlewareHandler {
 	middleware, err := di.Resolve[tgMiddleware.TgMiddlewareHandler](c, "tgLangMiddleware")
@@ -244,6 +257,16 @@ func resolveLabelsRepository(c di.Container) labels.RepositoryInterface {
 	return repo
 }
 
+func resolveLogsRepository(c di.Container) logs.RepositoryInterface {
+	repo, err := di.Resolve[logs.RepositoryInterface](c, "logsRepository")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve logs repository definition: %v", err)
+	}
+
+	return repo
+}
+
 // Services
 func resolveSubscriptionsService(c di.Container) srvSubscriptions.ServiceInterface {
 	service, err := di.Resolve[srvSubscriptions.ServiceInterface](c, "subscriptionsService")
@@ -290,6 +313,16 @@ func resolveLabelsService(c di.Container) srvLabels.ServiceInterface {
 
 	if err != nil {
 		log.Fatalf("Couldn't resolve labels service definition: %v", err)
+	}
+
+	return service
+}
+
+func resolveLogsService(c di.Container) srvLogs.ServiceInterface {
+	service, err := di.Resolve[srvLogs.ServiceInterface](c, "logsService")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve logs service definition: %v", err)
 	}
 
 	return service
