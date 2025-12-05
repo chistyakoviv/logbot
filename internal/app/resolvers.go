@@ -30,6 +30,7 @@ import (
 	srvSubscriptions "github.com/chistyakoviv/logbot/internal/service/subscriptions"
 	srvUserSettings "github.com/chistyakoviv/logbot/internal/service/user_settings"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-playground/validator/v10"
 )
 
 // Retrieves the application configuration from the dependency injection container,
@@ -103,6 +104,16 @@ func resolveDeferredQ(c di.Container) deferredq.DQueue {
 	}
 
 	return dq
+}
+
+func resolveValidator(c di.Container) *validator.Validate {
+	validator, err := di.Resolve[*validator.Validate](c, "validator")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve validator definition: %v", err)
+	}
+
+	return validator
 }
 
 func resolveTxManager(c di.Container) db.TxManager {

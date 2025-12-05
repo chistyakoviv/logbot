@@ -10,4 +10,5 @@ type Bot interface {
 	Shutdown(ctx context.Context) error
 	HandlerFunc() http.HandlerFunc
 	WebhookPath() string
+	SendMessage(chatId int64, text string, opts interface{}) error
 }

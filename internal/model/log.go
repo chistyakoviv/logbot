@@ -2,13 +2,11 @@ package model
 
 import (
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type Log struct {
 	Id        int
-	Token     uuid.UUID
+	Token     string
 	Data      string
 	Label     string
 	Hash      string
@@ -16,7 +14,7 @@ type Log struct {
 }
 
 type LogInfo struct {
-	Token uuid.UUID
+	Token string
 	Data  string
 	Label string
 }

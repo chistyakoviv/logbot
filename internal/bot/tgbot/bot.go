@@ -131,3 +131,12 @@ func (tgb *TgBot) HandlerFunc() http.HandlerFunc {
 func (tgb *TgBot) WebhookPath() string {
 	return tgb.webhookPath
 }
+
+func (tgb *TgBot) SendMessage(chatId int64, text string, opts interface{}) error {
+	options, ok := opts.(*gotgbot.SendMessageOpts)
+	if !ok {
+		options = &gotgbot.SendMessageOpts{}
+	}
+	_, err := tgb.bot.SendMessage(chatId, text, options)
+	return err
+}

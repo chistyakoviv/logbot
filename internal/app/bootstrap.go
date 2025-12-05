@@ -43,6 +43,7 @@ import (
 	srvUserSettings "github.com/chistyakoviv/logbot/internal/service/user_settings"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-playground/validator/v10"
 )
 
 func bootstrap(ctx context.Context, c di.Container) {
@@ -134,6 +135,10 @@ func bootstrap(ctx context.Context, c di.Container) {
 
 	c.RegisterSingleton("dq", func(c di.Container) deferredq.DQueue {
 		return deferredq.New(resolveLogger(c))
+	})
+
+	c.RegisterSingleton("validator", func(c di.Container) *validator.Validate {
+		return validator.New()
 	})
 
 	c.RegisterSingleton("txManager", func(c di.Container) db.TxManager {

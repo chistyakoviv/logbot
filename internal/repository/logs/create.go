@@ -15,7 +15,7 @@ func (r *repository) Create(ctx context.Context, log *model.Log) (*model.Log, er
 	q := db.Query{
 		Name: "repository.logs.create",
 		Sqlizer: r.sq.Insert(logsTable).
-			Columns(logsTableColumns...).
+			Columns(logsTableInsertableColumns...).
 			Values(row.Values()...).
 			Suffix("RETURNING " + strings.Join(logsTableColumns, ",")),
 	}

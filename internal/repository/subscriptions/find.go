@@ -11,10 +11,6 @@ import (
 )
 
 func (r *repository) Find(ctx context.Context, token string, chatId int64) (*model.Subscription, error) {
-	if token == "" {
-		return nil, errors.New("token is empty")
-	}
-
 	q := db.Query{
 		Name: "repository.subscriptions.find_by_token_and_chat",
 		Sqlizer: r.sq.Select(subscriptionsTableColumns...).
