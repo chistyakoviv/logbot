@@ -19,6 +19,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/model"
 	srvChatSettings "github.com/chistyakoviv/logbot/internal/service/chat_settings"
 	srvLabels "github.com/chistyakoviv/logbot/internal/service/labels"
+	srvLastSent "github.com/chistyakoviv/logbot/internal/service/last_sent"
 	srvLogs "github.com/chistyakoviv/logbot/internal/service/logs"
 	srvSubscriptions "github.com/chistyakoviv/logbot/internal/service/subscriptions"
 	"github.com/go-chi/render"
@@ -35,6 +36,7 @@ func New(
 	subscriptions srvSubscriptions.ServiceInterface,
 	chatSettings srvChatSettings.ServiceInterface,
 	labels srvLabels.ServiceInterface,
+	lastSent srvLastSent.ServiceInterface,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req LogRequest
@@ -127,16 +129,24 @@ func New(
 				continue
 			}
 
-			// lastTimestamp, err := logs.FindLastSentByTokenAndHash(ctx, logInfo.Token, logInfo.Hash)
-			// if err != nil && !errors.Is(err, db.ErrNotFound) {
-			// 	logger.Error("failed to find former log with token and hash", slogger.Err(err))
-			// 	continue
-			// }
-			// if err == nil && settings.CollapsePeriod > 0 && now.Sub(lastTimestamp) < settings.CollapsePeriod {
-			// 	// Notification falls within collapse period
-			// 	logger.Debug("Notification wasn’t sent because it falls within the collapse period")
-			// 	continue
-			// }
+			lastSentTimestamp := lastSent.Get(ctx, &model.LastSentKey{
+				ChatId: chatId,
+				Token:  log.Token,
+				Hash:   log.Hash,
+			})
+			if err != nil && !errors.Is(err, db.ErrNotFound) {
+				logger.Error("failed to find former log with token and hash", slogger.Err(err))
+				continue
+			}
+			timeSinceLastSent := now.Sub(lastSentTimestamp)
+			if err == nil && settings.CollapsePeriod > 0 && timeSinceLastSent < settings.CollapsePeriod {
+				// Notification falls within collapse period
+				logger.Debug(
+					"Notification wasn’t sent because it falls within the collapse period",
+					slog.Duration("time_since_last_sent", timeSinceLastSent),
+				)
+				continue
+			}
 
 			subscribers, err := labels.FindByLabel(ctx, logInfo.Label)
 			if err != nil {
@@ -179,6 +189,12 @@ func New(
 					slog.Int64("chat_id", chatId),
 					slogger.Err(err),
 				)
+			} else {
+				lastSent.Update(ctx, &model.LastSentKey{
+					ChatId: chatId,
+					Token:  log.Token,
+					Hash:   log.Hash,
+				})
 			}
 		}
 

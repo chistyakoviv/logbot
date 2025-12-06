@@ -20,12 +20,14 @@ import (
 	"github.com/chistyakoviv/logbot/internal/repository/chat_settings"
 	"github.com/chistyakoviv/logbot/internal/repository/commands"
 	"github.com/chistyakoviv/logbot/internal/repository/labels"
+	"github.com/chistyakoviv/logbot/internal/repository/last_sent"
 	"github.com/chistyakoviv/logbot/internal/repository/logs"
 	"github.com/chistyakoviv/logbot/internal/repository/subscriptions"
 	"github.com/chistyakoviv/logbot/internal/repository/user_settings"
 	srvChatSettings "github.com/chistyakoviv/logbot/internal/service/chat_settings"
 	srvCommands "github.com/chistyakoviv/logbot/internal/service/commands"
 	srvLabels "github.com/chistyakoviv/logbot/internal/service/labels"
+	srvLastSent "github.com/chistyakoviv/logbot/internal/service/last_sent"
 	srvLogs "github.com/chistyakoviv/logbot/internal/service/logs"
 	srvSubscriptions "github.com/chistyakoviv/logbot/internal/service/subscriptions"
 	srvUserSettings "github.com/chistyakoviv/logbot/internal/service/user_settings"
@@ -278,6 +280,16 @@ func resolveLogsRepository(c di.Container) logs.RepositoryInterface {
 	return repo
 }
 
+func resolveLastSentRepository(c di.Container) last_sent.RepositoryInterface {
+	repo, err := di.Resolve[last_sent.RepositoryInterface](c, "lastSentRepository")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve last sent repository definition: %v", err)
+	}
+
+	return repo
+}
+
 // Services
 func resolveSubscriptionsService(c di.Container) srvSubscriptions.ServiceInterface {
 	service, err := di.Resolve[srvSubscriptions.ServiceInterface](c, "subscriptionsService")
@@ -334,6 +346,16 @@ func resolveLogsService(c di.Container) srvLogs.ServiceInterface {
 
 	if err != nil {
 		log.Fatalf("Couldn't resolve logs service definition: %v", err)
+	}
+
+	return service
+}
+
+func resolveLastSentService(c di.Container) srvLastSent.ServiceInterface {
+	service, err := di.Resolve[srvLastSent.ServiceInterface](c, "lastSentService")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve last sent service definition: %v", err)
 	}
 
 	return service

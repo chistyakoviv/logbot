@@ -1,20 +1,19 @@
-package logs
+package last_sent
 
 import (
 	"context"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/chistyakoviv/logbot/internal/db"
 	"github.com/chistyakoviv/logbot/internal/model"
-	"github.com/google/uuid"
 )
 
 type RepositoryInterface interface {
-	Create(ctx context.Context, log *model.Log) (*model.Log, error)
-	FindAllByToken(ctx context.Context, token uuid.UUID) ([]*model.Log, error)
-	Delete(ctx context.Context, id int) error
-	DeleteByToken(ctx context.Context, token uuid.UUID) error
-	DeleteByHash(ctx context.Context, hash string) error
+	Create(ctx context.Context, lastSent *model.LastSent) (*model.LastSent, error)
+	Update(ctx context.Context, lastSent *model.LastSent) (*model.LastSent, error)
+	LastSent(ctx context.Context, lastSentKey *model.LastSentKey) (time.Time, error)
+	FindByKey(ctx context.Context, lastSentKey *model.LastSentKey) (*model.LastSent, error)
 }
 
 type repository struct {
