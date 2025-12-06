@@ -1,4 +1,4 @@
-package request
+package log
 
 type LogRequest struct {
 	Data  string `json:"data" validate:"required"`

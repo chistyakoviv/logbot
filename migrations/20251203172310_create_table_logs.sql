@@ -11,8 +11,10 @@ CREATE TABLE IF NOT EXISTS logs (
 );
 
 CREATE INDEX IF NOT EXISTS logs_token_idx ON logs (token);
-CREATE INDEX IF NOT EXISTS logs_label_idx ON logs (label);
 CREATE INDEX IF NOT EXISTS logs_hash_idx ON logs (hash);
+CREATE INDEX IF NOT EXISTS logs_token_hash_createdat_idx ON logs (token, hash, created_at);
+-- CREATE INDEX IF NOT EXISTS logs_token_hash_createdat_covering_idx
+--    ON logs (token, hash, created_at) INCLUDE (data, label)
 
 COMMENT ON TABLE logs IS 'Logs table';
 

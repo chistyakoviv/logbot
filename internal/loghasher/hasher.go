@@ -16,18 +16,21 @@ type logHasher struct {
 
 func NewHasher() HasherInterface {
 	return &logHasher{
-		// Patterns for the most common timestamp formats:
-		// - 2025-01-17T14:32:11Z
-		// - 2025-01-17T14:32:11+02:00
-		// - 2025-01-17 14:32:11
-		// - 14:32:11
-		// - Jan 17 14:32:11
 		timestampPattern: regexp.MustCompile(
+			// Patterns for the most common timestamp formats:
+			// - 2025-01-17T14:32:11Z
+			// - 2025-01-17T14:32:11+02:00
+			// - 2025-01-17 14:32:11
+			// - 14:32:11
+			// - Jan 17 14:32:11
 			`(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z)|` +
 				`(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:[+-]\d{2}:\d{2}))|` +
 				`(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})|` +
 				`(\b\d{2}:\d{2}:\d{2}\b)|` +
-				`([A-Za-z]{3}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})`,
+				`([A-Za-z]{3}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})|` +
+				// IP address patterns (IPv4 + IPv6):
+				`\b(?:\d{1,3}\.){3}\d{1,3}\b|` +
+				`\b(?:[0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F]{0,4}\b`,
 		),
 	}
 }

@@ -287,6 +287,6 @@ func bootstrap(ctx context.Context, c di.Container) {
 	})
 
 	c.RegisterSingleton("logsService", func(c di.Container) srvLogs.ServiceInterface {
-		return srvLogs.NewService(resolveLogHasher(c), resolveLogsRepository(c), resolveTxManager(c))
+		return srvLogs.NewService(resolveLogsRepository(c), resolveTxManager(c))
 	})
 }

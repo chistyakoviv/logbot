@@ -18,6 +18,7 @@ func initRoutes(ctx context.Context, c di.Container) {
 	subscriptions := resolveSubscriptionsService(c)
 	chatSettings := resolveChatSettingsService(c)
 	labels := resolveLabelsService(c)
+	loghasher := resolveLogHasher(c)
 
 	router.Get("/healthcheck", func(w http.ResponseWriter, r *http.Request) {
 		if _, err := w.Write([]byte("alive")); err != nil {
@@ -33,6 +34,7 @@ func initRoutes(ctx context.Context, c di.Container) {
 		logger,
 		validator,
 		tgBot,
+		loghasher,
 		logs,
 		subscriptions,
 		chatSettings,

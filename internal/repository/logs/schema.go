@@ -3,12 +3,12 @@ package logs
 const logsTable = "logs"
 
 const (
-	logsTableColumnId         = "id"
-	logsTableColumnToken      = "token"
-	logsTableColumnData       = "data"
-	logsTableColumnLabel      = "label"
-	logsTableColumnHash       = "hash"
-	logsTableColumnCreateddAt = "created_at"
+	logsTableColumnId        = "id"
+	logsTableColumnToken     = "token"
+	logsTableColumnData      = "data"
+	logsTableColumnLabel     = "label"
+	logsTableColumnHash      = "hash"
+	logsTableColumnCreatedAt = "created_at"
 )
 
 var logsTableInsertableColumns = []string{
@@ -18,7 +18,7 @@ var logsTableInsertableColumns = []string{
 	logsTableColumnData,
 	logsTableColumnLabel,
 	logsTableColumnHash,
-	logsTableColumnCreateddAt,
+	logsTableColumnCreatedAt,
 }
 
 var logsTableColumns = []string{
@@ -27,5 +27,5 @@ var logsTableColumns = []string{
 	logsTableColumnData,
 	logsTableColumnLabel,
 	logsTableColumnHash,
-	logsTableColumnCreateddAt,
+	logsTableColumnCreatedAt,
 }

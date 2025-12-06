@@ -17,4 +17,5 @@ type LogInfo struct {
 	Token string
 	Data  string
 	Label string
+	Hash  string
 }

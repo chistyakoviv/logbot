@@ -12,7 +12,7 @@ func (s *service) Create(ctx context.Context, log *model.LogInfo) (*model.Log, e
 		Data:      log.Data,
 		Label:     log.Label,
 		Token:     log.Token,
-		Hash:      s.logHasher.Hash(log.Data),
+		Hash:      log.Hash,
 		CreatedAt: time.Now(),
 	}
 

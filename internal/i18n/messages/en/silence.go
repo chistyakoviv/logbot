@@ -5,5 +5,5 @@ var SilenceSelectPeriod = []string{
 }
 
 var SilencePeriodSet = []string{
-	"Notification errors silence time set to %s.",
+	"Notifications will be muted for errors for the next %s.",
 }
