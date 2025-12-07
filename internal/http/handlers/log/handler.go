@@ -123,9 +123,13 @@ func New(
 				settings = &model.ChatSettings{}
 			}
 
-			if !settings.SilenceUntil.IsZero() && now.Before(settings.SilenceUntil) {
+			if !settings.MuteUntil.IsZero() && now.Before(settings.MuteUntil) {
 				// Chat is silenced
-				logger.Debug("Notification wasn’t sent because this chat is muted")
+				logger.Debug(
+					"Notification wasn’t sent because this chat is muted",
+					slog.Duration("mute_time_remaining",
+						settings.MuteUntil.Sub(now)),
+				)
 				continue
 			}
 

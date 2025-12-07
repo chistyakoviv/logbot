@@ -1,9 +1,9 @@
 package en
 
-var SilenceSelectPeriod = []string{
+var MuteSelectPeriod = []string{
 	"Select a period during which error notifications will be disabled.",
 }
 
-var SilencePeriodSet = []string{
+var MutePeriodSet = []string{
 	"Notifications will be muted for errors for the next %s.",
 }

@@ -8,9 +8,9 @@ import (
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/cancel"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/collapse"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/labels"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/mute"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/rmlabels"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/setlang"
-	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/silence"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/start"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/subscribe"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/unsubscribe"
@@ -107,7 +107,7 @@ func BuildTgCommands(
 			srvCommands,
 			srvChatSettings,
 		),
-		silence.CommandName: silence.New(
+		mute.CommandName: mute.New(
 			ctx,
 			mw,
 			logger,

@@ -9,7 +9,7 @@ import (
 type ChatSettingsRow struct {
 	ChatId         int64         `db:"chat_id"`
 	CollapsePeriod time.Duration `db:"collapse_period"`
-	SilenceUntil   time.Time     `db:"silence_until"`
+	MuteUntil      time.Time     `db:"mute_until"`
 	UpdatedAt      time.Time     `db:"updated_at"`
 }
 
@@ -17,7 +17,7 @@ func (r *ChatSettingsRow) Values() []any {
 	return []any{
 		r.ChatId,
 		r.CollapsePeriod,
-		r.SilenceUntil,
+		r.MuteUntil,
 		r.UpdatedAt,
 	}
 }
@@ -29,7 +29,7 @@ func ToModel(r *ChatSettingsRow) *model.ChatSettings {
 	return &model.ChatSettings{
 		ChatId:         r.ChatId,
 		CollapsePeriod: r.CollapsePeriod,
-		SilenceUntil:   r.SilenceUntil,
+		MuteUntil:      r.MuteUntil,
 		UpdatedAt:      r.UpdatedAt,
 	}
 }
@@ -41,7 +41,7 @@ func FromModel(m *model.ChatSettings) ChatSettingsRow {
 	return ChatSettingsRow{
 		ChatId:         m.ChatId,
 		CollapsePeriod: m.CollapsePeriod,
-		SilenceUntil:   m.SilenceUntil,
+		MuteUntil:      m.MuteUntil,
 		UpdatedAt:      m.UpdatedAt,
 	}
 }

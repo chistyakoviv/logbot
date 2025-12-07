@@ -1,4 +1,4 @@
-package silence
+package mute
 
 import (
 	"context"
@@ -17,7 +17,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/service/chat_settings"
 )
 
-func silenceCb(
+func muteCb(
 	logger *slog.Logger,
 	i18n I18n.I18nInterface,
 	chatSettings chat_settings.ServiceInterface,
@@ -26,7 +26,7 @@ func silenceCb(
 		cb := ectx.CallbackQuery
 
 		logger.Debug(
-			"silence command: button clicked",
+			"mute command: button clicked",
 			slog.Int64("chat_id", cb.Message.GetChat().Id),
 			slog.String("from", cb.From.Username),
 		)
@@ -49,7 +49,7 @@ func silenceCb(
 			return ctx, err
 		}
 		queryParams := query.Query()
-		rawPeriod := queryParams.Get(silencePeriodParam)
+		rawPeriod := queryParams.Get(mutePeriodParam)
 		periodIdx, err := strconv.Atoi(rawPeriod)
 		if err != nil {
 			logger.Error("error occurred while parsing the callback data", slogger.Err(err))
@@ -77,7 +77,7 @@ func silenceCb(
 		period := periods[periodIdx].Duration
 
 		_, err = chatSettings.Update(ctx, cb.Message.GetChat().Id, &model.ChatSettingsInfo{
-			SilenceUntil: time.Now().Add(period),
+			MuteUntil: time.Now().Add(period),
 		})
 		if err != nil {
 			logger.Error("error occurred while setting the collapse period", slogger.Err(err))
@@ -94,7 +94,7 @@ func silenceCb(
 		_, err = cb.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
 			Text: i18n.T(
 				lang,
-				"silence_period_set",
+				"mute_period_set",
 				I18n.WithArgs([]any{
 					period,
 				}),
@@ -127,7 +127,7 @@ func silenceCb(
 				Append("\n").
 				T(
 					lang,
-					"silence_period_set",
+					"mute_period_set",
 					I18n.WithArgs([]any{
 						period,
 					}),

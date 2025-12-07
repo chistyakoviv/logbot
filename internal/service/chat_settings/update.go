@@ -13,7 +13,7 @@ func (s *service) Update(ctx context.Context, chatId int64, in *model.ChatSettin
 	chatSettings := &model.ChatSettings{
 		ChatId:         chatId,
 		CollapsePeriod: in.CollapsePeriod,
-		SilenceUntil:   in.SilenceUntil,
+		MuteUntil:      in.MuteUntil,
 		UpdatedAt:      time.Now(),
 	}
 

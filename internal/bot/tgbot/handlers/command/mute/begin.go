@@ -1,4 +1,4 @@
-package silence
+package mute
 
 import (
 	"context"
@@ -23,7 +23,7 @@ func begin(
 		msg := ectx.EffectiveMessage
 
 		logger.Debug(
-			"silence command: initiate",
+			"mute command: initiate",
 			slog.Int64("chat_id", msg.Chat.Id),
 			slog.String("from", msg.From.Username),
 		)
@@ -36,10 +36,10 @@ func begin(
 		var buttons []gotgbot.InlineKeyboardButton
 		for idx, period := range periods {
 			queryParams := url.Values{}
-			queryParams.Add(silencePeriodParam, strconv.Itoa(idx))
+			queryParams.Add(mutePeriodParam, strconv.Itoa(idx))
 			buttons = append(buttons, gotgbot.InlineKeyboardButton{
 				Text:         period.Label,
-				CallbackData: fmt.Sprintf("%s?%s", silenceCbName, queryParams.Encode()),
+				CallbackData: fmt.Sprintf("%s?%s", muteCbName, queryParams.Encode()),
 			})
 		}
 
@@ -56,7 +56,7 @@ func begin(
 					}),
 				).
 				Append("\n").
-				T(lang, "silence_select_period").
+				T(lang, "mute_select_period").
 				String(),
 			&gotgbot.SendMessageOpts{
 				ParseMode: "html",

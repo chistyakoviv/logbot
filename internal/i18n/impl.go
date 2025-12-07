@@ -87,8 +87,8 @@ func New() *I18n {
 				"collapse_select_period": en.CollapseSelectPeriod,
 				"collapse_period_set":    en.CollapsePeriodSet,
 
-				"silence_select_period": en.SilenceSelectPeriod,
-				"silence_period_set":    en.SilencePeriodSet,
+				"mute_select_period": en.MuteSelectPeriod,
+				"mute_period_set":    en.MutePeriodSet,
 
 				"callback_data_parse_error": en.CallbackDataParseError,
 				"callback_failed_to_answer": en.CallbackFailedToAnswer,

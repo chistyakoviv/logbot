@@ -24,8 +24,8 @@ func (r *repository) Update(ctx context.Context, in *model.ChatSettings) (*model
 		builder = builder.Set(chatSettingsTableColumnCollapsePeriod, row.CollapsePeriod)
 	}
 
-	if !row.SilenceUntil.IsZero() {
-		builder = builder.Set(chatSettingsTableColumnSilenceUntil, row.SilenceUntil)
+	if !row.MuteUntil.IsZero() {
+		builder = builder.Set(chatSettingsTableColumnMuteUntil, row.MuteUntil)
 	}
 
 	q := db.Query{

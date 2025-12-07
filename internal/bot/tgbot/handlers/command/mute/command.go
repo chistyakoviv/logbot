@@ -1,4 +1,4 @@
-package silence
+package mute
 
 import (
 	"context"
@@ -13,16 +13,16 @@ import (
 	"github.com/chistyakoviv/logbot/internal/service/commands"
 )
 
-const CommandName = "silence"
-const silenceCbName = "silence"
-const silencePeriodParam = "period"
+const CommandName = "mute"
+const muteCbName = "mute"
+const mutePeriodParam = "period"
 
-type silencePeriod struct {
+type mutePeriod struct {
 	Label    string
 	Duration time.Duration
 }
 
-var periods = []silencePeriod{
+var periods = []mutePeriod{
 	{"5 minutes", time.Minute * 5},
 	{"10 minutes", time.Minute * 10},
 	{"30 minutes", time.Minute * 30},
@@ -45,7 +45,7 @@ func New(
 		Handler: mw.Pipe(begin(logger, i18n)).Handler(ctx),
 		Stages:  []handlers.Response{},
 		Callbacks: map[string]handlers.Response{
-			silenceCbName: mw.Pipe(silenceCb(logger, i18n, chatSettings)).Handler(ctx),
+			muteCbName: mw.Pipe(muteCb(logger, i18n, chatSettings)).Handler(ctx),
 		},
 	}
 }
