@@ -1,0 +1,137 @@
+stages:
+  - build
+  - lint
+  - push
+  - staging
+
+default:
+  image: alpine:3.21.0
+
+variables:
+  REGISTRY: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME
+  DOCKER_COMPOSE_FILE_DEFAULT: compose.yaml
+
+.setup_ssh:
+  before_script:
+    - apk add --update openssh rsync gettext
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts
+
+.docker:
+  image: docker:28.0.0-alpine3.21
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  services:
+    - docker:28.0.0-dind-alpine3.21
+  before_script:
+    - apk --update add make
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+build:
+  extends:
+    - .docker
+  variables:
+    DOCKER_COMPOSE_FILE: compose-staging.yaml
+    IMAGE_TAG: $CI_COMMIT_REF_SLUG
+  when: manual
+  allow_failure: false
+  stage: build
+  script:
+    - make build
+    - make push
+
+lint_logbot:
+  extends:
+    - .docker
+  variables:
+    DOCKER_COMPOSE_FILE: compose-staging.yaml
+    IMAGE_TAG: $CI_COMMIT_REF_SLUG
+  needs:
+    - build
+  stage: lint
+  script:
+    - make lint
+
+push_latest:
+  stage: push
+  extends:
+    - .docker
+  needs:
+    - lint_logbot
+  script:
+    - IMAGE_TAG=$CI_COMMIT_REF_SLUG make pull
+    - SRC_IMAGE_TAG=$CI_COMMIT_REF_SLUG IMAGE_TAG=latest make tag
+    - IMAGE_TAG=latest make push-latest
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+staging:
+  extends:
+    - .setup_ssh
+  stage: staging
+  variables:
+    DOCKER_COMPOSE_FILE: compose-staging.yaml
+    DOCKER_COMPOSE_FILE_OUT: compose-staging-env.yaml
+    SSH_HOST: $SSH_DEV_HOST
+    SSH_PRIVATE_KEY: $SSH_DEV_PRIVATE_KEY
+    PROJECT_DIR: $DEPLOY_DOCKER_DEV_PATH/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME
+    DEPLOY_DST: $PROJECT_DIR/branches/$CI_COMMIT_REF_SLUG/
+    APP_URL: $LOGBOT_WEBHOOK_DOMAIN
+    SERVICE_SUFFIX: ${CI_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}
+    PROJECT_NAME: ${CI_PROJECT_NAME}_${CI_COMMIT_REF_SLUG}
+    IMAGE_TAG: $CI_COMMIT_REF_SLUG
+    DB_HOST: $DB_DEV_HOST
+    DB_NAME: $DB_DEV_NAME
+    DB_PASSWORD: $DB_DEV_PASSWORD
+    DB_USER: $DB_DEV_USER
+  needs:
+    - lint_logbot
+  environment:
+    name: staging
+    url: $APP_URL
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  script:
+    - envsubst < $DOCKER_COMPOSE_FILE > $DOCKER_COMPOSE_FILE_OUT
+    - ssh -T $SSH_DEV_USER@$SSH_DEV_HOST mkdir -p $DEPLOY_DST
+    - rsync -raR --delete $DOCKER_COMPOSE_FILE_OUT $SSH_DEV_USER@$SSH_DEV_HOST:$DEPLOY_DST
+    - |
+      ssh -T $SSH_DEV_USER@$SSH_DEV_HOST <<EOF
+        cd $DEPLOY_DST
+        if [ ! -d logbot-pg ]; then
+          mkdir logbot-pg
+          chmod 777 logbot-pg
+        fi
+        mv -f $DOCKER_COMPOSE_FILE_OUT $DOCKER_COMPOSE_FILE_DEFAULT
+        echo COMPOSE_PROJECT_NAME=$PROJECT_NAME > .env
+        docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+        docker compose pull
+        docker compose up --build --remove-orphans -d
+        docker compose run --rm logbot-go-cli make migrate-up <<<ENDOFRUN
+      EOF
+
+stop_staging:
+  extends:
+    - .setup_ssh
+  stage: staging
+  variables:
+    GIT_STRATEGY: none
+    SSH_HOST: $SSH_DEV_HOST
+    SSH_PRIVATE_KEY: $SSH_DEV_PRIVATE_KEY
+    PROJECT_DIR: $DEPLOY_DOCKER_DEV_PATH/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME
+    DEPLOY_DST: $PROJECT_DIR/branches/$CI_COMMIT_REF_SLUG
+  when: manual
+  environment:
+    name: staging
+    action: stop
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  script:
+    - |
+      ssh -T $SSH_DEV_USER@$SSH_DEV_HOST <<EOF
+        cd $DEPLOY_DST
+        docker compose down --remove-orphans
+      EOF

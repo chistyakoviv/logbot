@@ -24,7 +24,7 @@ services:
       timeout: 5s
       retries: 5
 
-  go-cli:
+  logbot-go-cli:
     build:
       dockerfile: ./docker/development/go-cli/Dockerfile
     volumes:

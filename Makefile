@@ -1,40 +1,41 @@
+DOCKER_COMPOSE_FILE ?= compose.yaml
 IMAGE_TAG ?= latest
 
 # Project commands
 cli-test:
-	docker compose run --rm go-cli sh -c "CONFIG_PATH=config/local.yml go run cmd/logbot/main.go"
+	docker compose -f ${DOCKER_COMPOSE_FILE} run --rm logbot-go-cli sh -c "CONFIG_PATH=config/local.yml go run cmd/logbot/main.go"
 
 migrate-status:
-	docker compose run --rm go-cli make logbot-migrate-status
+	docker compose -f ${DOCKER_COMPOSE_FILE} run --rm logbot-go-cli make logbot-migrate-status
 
 migrate-up:
-	docker compose run --rm go-cli make logbot-migrate-up
+	docker compose -f ${DOCKER_COMPOSE_FILE} run --rm logbot-go-cli make logbot-migrate-up
 
 migrate-down:
-	docker compose run --rm go-cli make logbot-migrate-down
+	docker compose -f ${DOCKER_COMPOSE_FILE} run --rm logbot-go-cli make logbot-migrate-down
 
 migration:
-	docker compose run --rm go-cli goose create ${MIGRATION_NAME} sql
+	docker compose -f ${DOCKER_COMPOSE_FILE} run --rm logbot-go-cli goose create ${MIGRATION_NAME} sql
 
 lint:
-	docker compose run --rm go-cli make logbot-lint
+	docker compose -f ${DOCKER_COMPOSE_FILE} run --rm logbot-go-cli make logbot-lint
 
 lint-migrate:
-	docker compose run --rm go-cli golangci-lint migrate --config .golangci.pipeline.yaml
+	docker compose -f ${DOCKER_COMPOSE_FILE} run --rm logbot-go-cli golangci-lint migrate --config .golangci.pipeline.yaml
 
 .PHONY: mocks
 mocks:
-	docker compose run --rm go-cli mockery
+	docker compose -f ${DOCKER_COMPOSE_FILE} run --rm logbot-go-cli mockery
 
 .PHONY: tests
 tests:
-	docker compose run --rm logbot go test -v ./...
+	docker compose -f ${DOCKER_COMPOSE_FILE} run --rm logbot go test -v ./...
 
 db-connect:
-	docker compose exec logbot-pg psql postgres://app:secret@logbot-pg/app
+	docker compose -f ${DOCKER_COMPOSE_FILE} exec logbot-pg psql postgres://app:secret@logbot-pg/app
 
 db-purge:
-	docker compose run --rm go-cli make logbot-db-purge
+	docker compose -f ${DOCKER_COMPOSE_FILE} run --rm logbot-go-cli make logbot-db-purge
 
 wait-db:
 	wait-for-it logbot-pg:5432 -t 60
@@ -52,7 +53,6 @@ logbot-migrate-down: wait-db
 logbot-db-purge: wait-db
 	psql ${PG_DSN} -t -c "SELECT 'DROP TABLE \"' || tablename || '\" CASCADE;' FROM pg_tables WHERE schemaname = 'public'" | \
 	psql ${PG_DSN}
-
 
 logbot-lint:
 	golangci-lint run -v ./... --config .golangci.pipeline.yaml
