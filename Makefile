@@ -62,4 +62,4 @@ tag:
 	git push origin "${TAG}"
 
 local-domain:
-	ngrok http 8080
+	ngrok http 80
