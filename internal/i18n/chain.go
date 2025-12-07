@@ -34,7 +34,8 @@ func (c *i18nChain) Append(s string) I18nChainInterface {
 func (c *i18nChain) Appendf(format string, args ...any) I18nChainInterface {
 	_, err := fmt.Fprintf(&c.buf, format, args...)
 	if err != nil {
-		// Ignore errors
+		// Branch can't be empty, but we need to ignore errors
+		return c
 	}
 	return c
 }

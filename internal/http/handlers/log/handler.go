@@ -194,11 +194,14 @@ func New(
 					slogger.Err(err),
 				)
 			} else {
-				lastSent.Update(ctx, &model.LastSentKey{
+				_, err = lastSent.Update(ctx, &model.LastSentKey{
 					ChatId: chatId,
 					Token:  log.Token,
 					Hash:   log.Hash,
 				})
+				if err != nil {
+					logger.Error("failed to update last sent", slogger.Err(err))
+				}
 			}
 		}
 

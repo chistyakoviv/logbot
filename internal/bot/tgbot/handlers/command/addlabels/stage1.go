@@ -148,7 +148,7 @@ func stage1(
 			users[i] = user.(string)
 		}
 
-		var hasError bool = false
+		hasError := false
 		for _, user := range users {
 			_, err = labelsService.AddByKey(
 				ctx,
