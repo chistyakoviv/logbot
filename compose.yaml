@@ -30,5 +30,5 @@ services:
     volumes:
       - ./:/go/src/github.com/chistyakoviv/logbot
     environment:
-      - PG_DSN=postgres://app:secret@logbot-pg/app?sslmode=disable
+      - POSTGRES_DSN=postgres://app:secret@logbot-pg/app?sslmode=disable
       - GOOSE_MIGRATION_DIR=./migrations

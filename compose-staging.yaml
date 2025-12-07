@@ -40,7 +40,7 @@ services:
   logbot-go-cli:
     image: ${REGISTRY}/logbot-go-cli:${IMAGE_TAG}
     environment:
-      POSTGRES_DSN: postgres://${DB_USER}:${DB_PASSWORD}@logbot-pg:5432/${DB_NAME}?sslmode=disable
+      PG_DSN: postgres://${DB_USER}:${DB_PASSWORD}@logbot-pg:5432/${DB_NAME}?sslmode=disable
       GOOSE_MIGRATION_DIR: ./migrations
 
 networks:

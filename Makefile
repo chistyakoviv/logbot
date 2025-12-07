@@ -42,17 +42,17 @@ wait-db:
 
 # DB commands
 logbot-migrate-status: wait-db
-	goose postgres "${PG_DSN}" status -v
+	goose postgres "${POSTGRES_DSN}" status -v
 
 logbot-migrate-up: wait-db
-	goose postgres "${PG_DSN}" up -v
+	goose postgres "${POSTGRES_DSN}" up -v
 
 logbot-migrate-down: wait-db
-	goose postgres "${PG_DSN}" down -v
+	goose postgres "${POSTGRES_DSN}" down -v
 
 logbot-db-purge: wait-db
-	psql ${PG_DSN} -t -c "SELECT 'DROP TABLE \"' || tablename || '\" CASCADE;' FROM pg_tables WHERE schemaname = 'public'" | \
-	psql ${PG_DSN}
+	psql ${POSTGRES_DSN} -t -c "SELECT 'DROP TABLE \"' || tablename || '\" CASCADE;' FROM pg_tables WHERE schemaname = 'public'" | \
+	psql ${POSTGRES_DSN}
 
 logbot-lint:
 	golangci-lint run -v ./... --config .golangci.pipeline.yaml
