@@ -9,12 +9,12 @@ import (
 )
 
 type Config struct {
-	Env        string     `yaml:"env" env:"ENV" env-required:"true"`
-	Token      string     `yaml:"token" env:"TOKEN" env-required:"true" yaml-required:"true"`
+	Env        string     `yaml:"env" env:"LOGBOT_ENV" env-required:"true"`
+	Token      string     `yaml:"token" env:"LOGBOT_TOKEN" env-required:"true" yaml-required:"true"`
 	HTTPServer HTTPServer `yaml:"http_server"`
 	Postgres   Postgres   `yaml:"database"`
 	Webhook    Webhook    `yaml:"webhook"`
-	Superuser  string     `yaml:"superuser" env:"SUPERUSER" env-required:"true" yaml-required:"true"`
+	Superuser  string     `yaml:"superuser" env:"LOGBOT_SUPERUSER" env-required:"true" yaml-required:"true"`
 }
 
 type Postgres struct {
@@ -22,16 +22,16 @@ type Postgres struct {
 }
 
 type HTTPServer struct {
-	Host         string        `yaml:"host" env:"HOST" env-default:"0.0.0.0"`
-	Port         string        `yaml:"port" env:"PORT" env-default:"8080"`
-	ReadTimeout  time.Duration `yaml:"read_timeout" env:"READ_TIMEOUT" env-required:"true"`
-	WriteTimeout time.Duration `yaml:"write_timeout" env:"WRITE_TIMEOUT" env-required:"true"`
-	IdleTimeout  time.Duration `yaml:"idle_timeout" env:"IDLE_TIMEOUT" env-required:"true"`
+	Host         string        `yaml:"host" env:"LOGBOT_HOST" env-default:"0.0.0.0"`
+	Port         string        `yaml:"port" env:"LOGBOT_PORT" env-default:"80"`
+	ReadTimeout  time.Duration `yaml:"read_timeout" env:"LOGBOT_READ_TIMEOUT" env-required:"true"`
+	WriteTimeout time.Duration `yaml:"write_timeout" env:"LOGBOT_WRITE_TIMEOUT" env-required:"true"`
+	IdleTimeout  time.Duration `yaml:"idle_timeout" env:"LOGBOT_IDLE_TIMEOUT" env-required:"true"`
 }
 
 type Webhook struct {
-	Secret string `yaml:"secret" env:"WEBHOOK_SECRET" env-required:"true"`
-	Domain string `yaml:"domain" env:"WEBHOOK_DOMAIN" env-required:"true"`
+	Secret string `yaml:"secret" env:"LOGBOT_WEBHOOK_SECRET" env-required:"true"`
+	Domain string `yaml:"domain" env:"LOGBOT_WEBHOOK_DOMAIN" env-required:"true"`
 }
 
 type ConfigOptions struct {

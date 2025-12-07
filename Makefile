@@ -1,3 +1,5 @@
+IMAGE_TAG ?= latest
+
 # Project commands
 cli-test:
 	docker compose run --rm go-cli sh -c "CONFIG_PATH=config/local.yml go run cmd/logbot/main.go"
@@ -63,3 +65,51 @@ tag:
 
 local-domain:
 	ngrok http 80
+
+# Docker commands
+build: build-logbot
+
+build-logbot:
+	DOCKER_BUILDKIT=1 docker --log-level=info build --pull --build-arg BUILDKIT_INLINE_CACHE=1 \
+	--target builder \
+	--cache-from ${REGISTRY}/logbot:${IMAGE_TAG}-builder \
+	--tag ${REGISTRY}/logbot:${IMAGE_TAG}-builder \
+	--file docker/production/logbot/Dockerfile \
+	.
+
+	DOCKER_BUILDKIT=1 docker --log-level=info build --pull --build-arg BUILDKIT_INLINE_CACHE=1 \
+	--cache-from ${REGISTRY}/logbot:${IMAGE_TAG} \
+	--tag ${REGISTRY}/logbot:${IMAGE_TAG} \
+	--file docker/production/logbot/Dockerfile \
+	.
+
+	DOCKER_BUILDKIT=1 docker --log-level=info build --pull --build-arg BUILDKIT_INLINE_CACHE=1 \
+	--cache-from ${REGISTRY}/logbot-go-cli:${IMAGE_TAG} \
+	--tag ${REGISTRY}/logbot-go-cli:${IMAGE_TAG} \
+	--file docker/production/go-cli/Dockerfile \
+	.
+
+pull: pull-logbot
+
+pull-logbot:
+	docker pull ${REGISTRY}/logbot:${IMAGE_TAG}
+	docker pull ${REGISTRY}/logbot-go-cli:${IMAGE_TAG}
+
+tag: tag-api
+
+tag-api:
+	docker tag ${REGISTRY}/logbot:${SRC_IMAGE_TAG} ${REGISTRY}/logbot:${IMAGE_TAG}
+	docker tag ${REGISTRY}/logbot-go-cli:${SRC_IMAGE_TAG} ${REGISTRY}/logbot-go-cli:${IMAGE_TAG}
+
+push: push-logbot
+
+push-logbot:
+	docker push ${REGISTRY}/logbot:${IMAGE_TAG}
+	docker push ${REGISTRY}/logbot-go-cli:${IMAGE_TAG}
+	docker push ${REGISTRY}/logbot:${IMAGE_TAG}-builder
+
+push-latest: push-logbot-latest
+
+push-logbot-latest:
+	docker push ${REGISTRY}/logbot:${IMAGE_TAG}
+	docker push ${REGISTRY}/logbot-go-cli:${IMAGE_TAG}

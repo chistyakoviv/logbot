@@ -1,0 +1,46 @@
+services:
+  logbot:
+    image: ${REGISTRY}/logbot:${IMAGE_TAG}
+    environment:
+      LOGBOT_ENV: prod
+      LOGBOT_TOKEN: ${LOGBOT_TOKEN}
+      LOGBOT_SUPERUSER: ${LOGBOT_SUPERUSER}
+      LOGBOT_READ_TIMEOUT: 1s
+      LOGBOT_WRITE_TIMEOUT: 1s
+      LOGBOT_IDLE_TIMEOUT: 5s
+      POSTGRES_DSN: postgres://${DB_USER}:${DB_PASSWORD}@logbot-pg:5432/${DB_NAME}?sslmode=disable
+    networks:
+      - traefik-public
+      - default
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik-public
+      - traefik.http.routers.logbot-${SERVICE_SUFFIX}.rule=Host(`${APP_URL}`)
+      - traefik.http.routers.logbot-${SERVICE_SUFFIX}.entrypoints=web
+      - traefik.http.services.logbot-${SERVICE_SUFFIX}.loadBalancer.server.port=80
+    restart: unless-stopped
+
+  logbot-pg:
+    image: postgres:17.6-alpine3.22
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - ./logbot-pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d app"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  logbot-go-cli:
+    image: ${REGISTRY}/logbot-go-cli:${IMAGE_TAG}
+    environment:
+      POSTGRES_DSN: postgres://${DB_USER}:${DB_PASSWORD}@logbot-pg:5432/${DB_NAME}?sslmode=disable
+      GOOSE_MIGRATION_DIR: ./migrations
+
+networks:
+  traefik-public:
+    external: true
