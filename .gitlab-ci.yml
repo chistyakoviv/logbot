@@ -110,7 +110,7 @@ staging:
         docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
         docker compose pull
         docker compose up --build --remove-orphans -d
-        docker compose run --rm logbot-go-cli make migrate-up <<<ENDOFRUN
+        docker compose run --rm logbot-go-cli make logbot-migrate-up <<<ENDOFRUN
       EOF
 
 stop_staging:
