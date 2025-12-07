@@ -1,5 +1,9 @@
 package en
 
+var CancelDescription = []string{
+	"Cancel the current command.",
+}
+
 var CancelCommand = []string{
 	"Command was canceled.",
 }

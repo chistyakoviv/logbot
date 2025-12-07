@@ -1,5 +1,9 @@
 package en
 
+var AddLabelsDescription = []string{
+	"Add labels to chat members. When an error with that label appears, those members will be mentioned automatically.",
+}
+
 var AddLabelsEnterMentions = []string{
 	"Mention users you want to assign labels to.",
 }

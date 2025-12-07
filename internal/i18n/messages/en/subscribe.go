@@ -1,5 +1,9 @@
 package en
 
+var SubscribeDescription = []string{
+	"Subscribe this chat to receive error notifications (permission required).",
+}
+
 var SubscribeBegin = []string{
 	"Enter your token.",
 }

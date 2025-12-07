@@ -1,5 +1,9 @@
 package en
 
+var LabelsDescription = []string{
+	"Show the list of labels assigned to each user of this chat.",
+}
+
 var LabelsAssigned = []string{
 	"Here is the list of labels assigned to the users of this chat.",
 }

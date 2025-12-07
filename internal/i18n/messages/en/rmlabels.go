@@ -1,5 +1,9 @@
 package en
 
+var RmLabelsDescription = []string{
+	"Remove assigned labels from chat members.",
+}
+
 var RmLabelsEnterMentions = []string{
 	"Mention users you want to remove labels from.",
 }

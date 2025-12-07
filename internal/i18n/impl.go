@@ -32,7 +32,6 @@ func New() *I18n {
 		data: map[string]messages{
 			"en": {
 				"greeting":    en.Greeting,
-				"help":        en.Help,
 				"intro":       en.Intro,
 				"description": en.Description,
 
@@ -43,24 +42,28 @@ func New() *I18n {
 				"subscribe_token_exists":  en.SubscribeTokenExists,
 				"subscribe_error":         en.SubscribeError,
 				"subscribe_complete":      en.SubscribeComplete,
+				"subscribe_description":   en.SubscribeDescription,
 
 				"mention": en.Mention,
 
 				"cancel_command":            en.CancelCommand,
 				"cancel_command_error":      en.CancelCommandError,
 				"cancel_no_current_command": en.CancelNoCurrentCommand,
+				"cancel_description":        en.CancelDescription,
 
 				"unsubscribe_begin":            en.UnsubscribeBegin,
 				"unsubscribe_invalid_token":    en.UnsubscribeInvalidToken,
 				"unsubscribe_token_not_exists": en.UnsubscribeTokenNotExists,
 				"unsubscribe_error":            en.UnsubscribeError,
 				"unsubscribe_complete":         en.UnsubscribeComplete,
+				"unsubscribe_description":      en.UnsubscribeDescription,
 
 				"setlang_select_language":  en.SetLangSelectLanguage,
 				"setlang_success":          en.SetLangSuccess,
 				"setlang_unknown_language": en.SetLangUnknownLanguage,
 				"setlang_same_language":    en.SetLangSameLanguage,
 				"setlang_error":            en.SetLangError,
+				"setlang_description":      en.SetLangDescription,
 
 				"addlabels_enter_mentions":            en.AddLabelsEnterMentions,
 				"addlabels_enter_labels":              en.AddLabelsEnterLabels,
@@ -70,6 +73,7 @@ func New() *I18n {
 				"addlabels_no_labels_error":           en.AddLabelsNoLabels,
 				"addlabels_failed_apply_labels_error": en.AddLabelsFailedApplyLabelsError,
 				"addlabels_success":                   en.AddLabelsSuccess,
+				"addlabels_description":               en.AddLabelsDescription,
 
 				"rmlabels_enter_mentions":             en.RmLabelsEnterMentions,
 				"rmlabels_enter_labels":               en.RmLabelsEnterLabels,
@@ -79,19 +83,27 @@ func New() *I18n {
 				"rmlabels_no_labels_error":            en.RmLabelsNoLabels,
 				"rmlabels_failed_remove_labels_error": en.RmLabelsFailedRemoveLabelsError,
 				"rmlabels_success":                    en.RmLabelsSuccess,
+				"rmlabels_description":                en.RmLabelsDescription,
 
-				"labels_assigned": en.LabelsAssigned,
-				"labels_empty":    en.LabelsEmpty,
-				"labels_error":    en.LabelsError,
+				"labels_assigned":    en.LabelsAssigned,
+				"labels_empty":       en.LabelsEmpty,
+				"labels_error":       en.LabelsError,
+				"labels_description": en.LabelsDescription,
 
 				"collapse_select_period": en.CollapseSelectPeriod,
 				"collapse_period_set":    en.CollapsePeriodSet,
+				"collapse_description":   en.CollapseDescription,
 
 				"mute_select_period": en.MuteSelectPeriod,
 				"mute_period_set":    en.MutePeriodSet,
+				"mute_description":   en.MuteDescription,
 
 				"callback_data_parse_error": en.CallbackDataParseError,
 				"callback_failed_to_answer": en.CallbackFailedToAnswer,
+
+				"help":             en.Help,
+				"help_title":       en.HelpTitle,
+				"help_description": en.HelpDescription,
 			},
 		},
 	}
