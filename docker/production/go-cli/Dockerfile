@@ -1,10 +1,7 @@
-FROM golang:1.25.4-alpine3.22
+FROM alpine:3.22
 
 # bash needed for wait-for-it
 RUN apk add --no-cache make bash curl postgresql-client
-
-# See https://golangci-lint.run/welcome/install/
-RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.6.1
 
 RUN curl -fsSL \
     https://raw.githubusercontent.com/pressly/goose/master/install.sh |\

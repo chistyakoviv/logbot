@@ -1,0 +1,3 @@
+services:
+  logbot-go-cli:
+    image: ${REGISTRY}/logbot:${IMAGE_TAG}-builder

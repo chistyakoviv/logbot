@@ -1,5 +1,10 @@
 FROM golang:1.25.4-alpine3.22 AS builder
 
+RUN apk add --no-cache curl make
+
+# See https://golangci-lint.run/welcome/install/
+RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.6.1
+
 WORKDIR /app
 
 COPY ./go.mod ./go.sum ./

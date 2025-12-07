@@ -47,7 +47,7 @@ lint_logbot:
   extends:
     - .docker
   variables:
-    DOCKER_COMPOSE_FILE: compose-staging.yaml
+    DOCKER_COMPOSE_FILE: compose-testing.yaml
     IMAGE_TAG: $CI_COMMIT_REF_SLUG
   needs:
     - build
