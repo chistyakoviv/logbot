@@ -58,7 +58,7 @@ logbot-lint:
 	golangci-lint run -v ./... --config .golangci.pipeline.yaml
 
 # Git commands
-tag:
+version:
 # tag v1.0.1
 	git tag "${TAG}"
 	git push origin "${TAG}"
@@ -95,9 +95,9 @@ pull-logbot:
 	docker pull ${REGISTRY}/logbot:${IMAGE_TAG}
 	docker pull ${REGISTRY}/logbot-go-cli:${IMAGE_TAG}
 
-tag: tag-api
+tag: tag-logbot
 
-tag-api:
+tag-logbot:
 	docker tag ${REGISTRY}/logbot:${SRC_IMAGE_TAG} ${REGISTRY}/logbot:${IMAGE_TAG}
 	docker tag ${REGISTRY}/logbot-go-cli:${SRC_IMAGE_TAG} ${REGISTRY}/logbot-go-cli:${IMAGE_TAG}
 
