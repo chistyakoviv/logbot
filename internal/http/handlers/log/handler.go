@@ -3,10 +3,12 @@ package log
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"io"
 	"log/slog"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
@@ -25,6 +27,14 @@ import (
 	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
 )
+
+func EscapeMarkdown(s string) string {
+	replacer := strings.NewReplacer(
+		"_", "\\_",
+		"*", "\\*",
+	)
+	return replacer.Replace(s)
+}
 
 func New(
 	ctx context.Context,
@@ -95,10 +105,14 @@ func New(
 		}
 
 		logInfo := &model.LogInfo{
-			Data:  req.Data,
-			Label: req.Label,
-			Token: req.Token,
-			Hash:  loghasher.Hash(req.Data),
+			Data:          req.Log,
+			Service:       req.Labels.Service,
+			ContainerName: req.Labels.ContainerName,
+			ContainerId:   req.Labels.ContainerId,
+			Node:          req.Labels.Node,
+			NodeId:        req.Labels.NodeId,
+			Token:         req.Token,
+			Hash:          loghasher.Hash(req.Log),
 		}
 		log, err := logs.Create(ctx, logInfo)
 		if err != nil {
@@ -152,11 +166,11 @@ func New(
 				continue
 			}
 
-			subscribers, err := labels.FindByLabel(ctx, logInfo.Label)
+			subscribers, err := labels.FindByLabel(ctx, log.Service)
 			if err != nil {
 				logger.Error(
 					"failed to find subscribers",
-					slog.Attr{Key: "label", Value: slog.StringValue(logInfo.Label)},
+					slog.Attr{Key: "label", Value: slog.StringValue(log.Service)},
 					slogger.Err(err),
 				)
 
@@ -176,12 +190,55 @@ func New(
 					message.WriteString(", ")
 				}
 			}
-			message.WriteString("\nlabel: `")
-			message.WriteString(logInfo.Label)
-			message.WriteString("`\n")
-			message.WriteString("```\n")
-			message.WriteString(logInfo.Data)
-			message.WriteString("\n```")
+
+			if log.Service != "" || log.ContainerId != "" || log.NodeId != "" {
+				message.WriteString("\n\n*Info*\n")
+
+				if log.Service != "" {
+					message.WriteString("service: `")
+					message.WriteString(log.Service)
+					message.WriteString("`\n")
+				}
+
+				if log.ContainerId != "" {
+					message.WriteString("container id: `")
+					message.WriteString(log.ContainerId)
+					message.WriteString("`\n")
+				}
+
+				if log.NodeId != "" {
+					message.WriteString("node id: `")
+					message.WriteString(log.NodeId)
+					message.WriteString("`\n")
+				}
+			}
+			message.WriteString("\n*Data*\n")
+
+			var decodedData map[string]string
+			err = json.Unmarshal([]byte(log.Data), &decodedData)
+
+			if err == nil {
+				for key, value := range decodedData {
+					if key != "code" {
+						message.WriteString("_")
+						message.WriteString(EscapeMarkdown(key))
+						message.WriteString("_")
+						message.WriteString(": ")
+						message.WriteString(EscapeMarkdown(value))
+						message.WriteString("\n")
+					}
+				}
+
+				if code, ok := decodedData["code"]; ok {
+					message.WriteString("```\n")
+					message.WriteString(code)
+					message.WriteString("\n```")
+				}
+			} else {
+				message.WriteString("```\n")
+				message.WriteString(log.Data)
+				message.WriteString("\n```")
+			}
 
 			err = tgBot.SendMessage(chatId, message.String(), &gotgbot.SendMessageOpts{
 				// ParseMode: "MarkdownV2",

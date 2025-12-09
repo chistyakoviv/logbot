@@ -2,7 +2,11 @@ Table logs {
   id int [primary key]
   token uuid [not null]
   data text [not null]
-  label varchar [not null]
+  service varchar [not null]
+  container_name varchar
+  container_id varchar
+  node varchar
+  node_id varchar
   hash varchar [not null, note: 'Hash computed from log data after stripping timestamps']
   created_at timestamp [default: 'now()']
 }

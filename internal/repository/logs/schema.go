@@ -3,12 +3,16 @@ package logs
 const logsTable = "logs"
 
 const (
-	logsTableColumnId        = "id"
-	logsTableColumnToken     = "token"
-	logsTableColumnData      = "data"
-	logsTableColumnLabel     = "label"
-	logsTableColumnHash      = "hash"
-	logsTableColumnCreatedAt = "created_at"
+	logsTableColumnId            = "id"
+	logsTableColumnToken         = "token"
+	logsTableColumnData          = "data"
+	logsTableColumnService       = "service"
+	logsTableColumnContainerName = "container_name"
+	logsTableColumnContainerId   = "container_id"
+	logsTableColumnNode          = "node"
+	logsTableColumnNodeId        = "node_id"
+	logsTableColumnHash          = "hash"
+	logsTableColumnCreatedAt     = "created_at"
 )
 
 var logsTableInsertableColumns = []string{
@@ -16,7 +20,11 @@ var logsTableInsertableColumns = []string{
 	// logsTableColumnId,
 	logsTableColumnToken,
 	logsTableColumnData,
-	logsTableColumnLabel,
+	logsTableColumnService,
+	logsTableColumnContainerName,
+	logsTableColumnContainerId,
+	logsTableColumnNode,
+	logsTableColumnNodeId,
 	logsTableColumnHash,
 	logsTableColumnCreatedAt,
 }
@@ -25,7 +33,11 @@ var logsTableColumns = []string{
 	logsTableColumnId,
 	logsTableColumnToken,
 	logsTableColumnData,
-	logsTableColumnLabel,
+	logsTableColumnService,
+	logsTableColumnContainerName,
+	logsTableColumnContainerId,
+	logsTableColumnNode,
+	logsTableColumnNodeId,
 	logsTableColumnHash,
 	logsTableColumnCreatedAt,
 }

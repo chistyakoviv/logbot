@@ -7,12 +7,16 @@ import (
 )
 
 type LogsRow struct {
-	Id        int       `db:"id"`
-	Token     string    `db:"token"`
-	Data      string    `db:"data"`
-	Label     string    `db:"label"`
-	Hash      string    `db:"hash"`
-	CreatedAt time.Time `db:"created_at"`
+	Id            int       `db:"id"`
+	Token         string    `db:"token"`
+	Data          string    `db:"data"`
+	Service       string    `db:"service"`
+	ContainerName string    `db:"container_name"`
+	ContainerId   string    `db:"container_id"`
+	Node          string    `db:"node"`
+	NodeId        string    `db:"node_id"`
+	Hash          string    `db:"hash"`
+	CreatedAt     time.Time `db:"created_at"`
 }
 
 func (r *LogsRow) Values() []any {
@@ -21,7 +25,11 @@ func (r *LogsRow) Values() []any {
 		// r.Id,
 		r.Token,
 		r.Data,
-		r.Label,
+		r.Service,
+		r.ContainerName,
+		r.ContainerId,
+		r.Node,
+		r.NodeId,
 		r.Hash,
 		r.CreatedAt,
 	}
@@ -32,12 +40,16 @@ func ToModel(r *LogsRow) *model.Log {
 		return nil
 	}
 	return &model.Log{
-		Id:        r.Id,
-		Token:     r.Token,
-		Data:      r.Data,
-		Label:     r.Label,
-		Hash:      r.Hash,
-		CreatedAt: r.CreatedAt,
+		Id:            r.Id,
+		Token:         r.Token,
+		Data:          r.Data,
+		Service:       r.Service,
+		ContainerName: r.ContainerName,
+		ContainerId:   r.ContainerId,
+		Node:          r.Node,
+		NodeId:        r.NodeId,
+		Hash:          r.Hash,
+		CreatedAt:     r.CreatedAt,
 	}
 }
 
@@ -46,11 +58,15 @@ func FromModel(m *model.Log) LogsRow {
 		return LogsRow{}
 	}
 	return LogsRow{
-		Id:        m.Id,
-		Token:     m.Token,
-		Data:      m.Data,
-		Label:     m.Label,
-		Hash:      m.Hash,
-		CreatedAt: m.CreatedAt,
+		Id:            m.Id,
+		Token:         m.Token,
+		Data:          m.Data,
+		Service:       m.Service,
+		ContainerName: m.ContainerName,
+		ContainerId:   m.ContainerId,
+		Node:          m.Node,
+		NodeId:        m.NodeId,
+		Hash:          m.Hash,
+		CreatedAt:     m.CreatedAt,
 	}
 }

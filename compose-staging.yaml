@@ -20,7 +20,7 @@ services:
       - traefik.http.routers.logbot-${SERVICE_SUFFIX}.rule=Host(`${APP_URL}`)
       - traefik.http.routers.logbot-${SERVICE_SUFFIX}.entrypoints=web
       - traefik.http.services.logbot-${SERVICE_SUFFIX}.loadBalancer.server.port=80
-    restart: unless-stopped
+    restart: always
 
   logbot-pg:
     image: postgres:17.6-alpine3.22
@@ -35,7 +35,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-    restart: unless-stopped
+    restart: always
 
   logbot-go-cli:
     image: ${REGISTRY}/logbot-go-cli:${IMAGE_TAG}
