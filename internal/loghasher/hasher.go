@@ -30,7 +30,13 @@ func NewHasher() HasherInterface {
 				`([A-Za-z]{3}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})|` +
 				// IP address patterns (IPv4 + IPv6):
 				`\b(?:\d{1,3}\.){3}\d{1,3}\b|` +
-				`\b(?:[0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F]{0,4}\b`,
+				`\b(?:[0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F]{0,4}\b|` +
+				// UUID patterns:
+				`\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b|` +
+				// Request id patterns:
+				`\b[0-9a-fA-F]+/[A-Za-z0-9]+-\d+\b|` +
+				// 32 character hash patterns:
+				`\b[0-9a-fA-F]{32}\b`,
 		),
 	}
 }
