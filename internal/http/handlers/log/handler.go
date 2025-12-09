@@ -8,7 +8,6 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
@@ -18,6 +17,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/lib/http/response"
 	"github.com/chistyakoviv/logbot/internal/lib/slogger"
 	"github.com/chistyakoviv/logbot/internal/loghasher"
+	"github.com/chistyakoviv/logbot/internal/markdown"
 	"github.com/chistyakoviv/logbot/internal/model"
 	srvChatSettings "github.com/chistyakoviv/logbot/internal/service/chat_settings"
 	srvLabels "github.com/chistyakoviv/logbot/internal/service/labels"
@@ -28,20 +28,13 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-func EscapeMarkdown(s string) string {
-	replacer := strings.NewReplacer(
-		"_", "\\_",
-		"*", "\\*",
-	)
-	return replacer.Replace(s)
-}
-
 func New(
 	ctx context.Context,
 	logger *slog.Logger,
 	validation handlers.Validator,
 	tgBot bot.Bot,
 	loghasher loghasher.HasherInterface,
+	markdowner markdown.MarkdownerInterface,
 	logs srvLogs.ServiceInterface,
 	subscriptions srvSubscriptions.ServiceInterface,
 	chatSettings srvChatSettings.ServiceInterface,
@@ -221,10 +214,10 @@ func New(
 				for key, value := range decodedData {
 					if key != "code" {
 						message.WriteString("_")
-						message.WriteString(EscapeMarkdown(key))
+						message.WriteString(markdowner.Escape(key))
 						message.WriteString("_")
 						message.WriteString(": ")
-						message.WriteString(EscapeMarkdown(value))
+						message.WriteString(markdowner.Escape(value))
 						message.WriteString("\n")
 					}
 				}

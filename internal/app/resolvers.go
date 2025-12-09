@@ -16,6 +16,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/di"
 	"github.com/chistyakoviv/logbot/internal/i18n"
 	"github.com/chistyakoviv/logbot/internal/loghasher"
+	"github.com/chistyakoviv/logbot/internal/markdown"
 	"github.com/chistyakoviv/logbot/internal/rbac"
 	"github.com/chistyakoviv/logbot/internal/repository/chat_settings"
 	"github.com/chistyakoviv/logbot/internal/repository/commands"
@@ -206,6 +207,16 @@ func resolveLogHasher(c di.Container) loghasher.HasherInterface {
 	}
 
 	return hasher
+}
+
+func resolveMarkdowner(c di.Container) markdown.MarkdownerInterface {
+	markdowner, err := di.Resolve[markdown.MarkdownerInterface](c, "markdowner")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve markdowner definition: %v", err)
+	}
+
+	return markdowner
 }
 
 // MIddlewares

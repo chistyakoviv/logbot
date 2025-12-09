@@ -28,6 +28,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/i18n"
 	"github.com/chistyakoviv/logbot/internal/lib/slogger"
 	"github.com/chistyakoviv/logbot/internal/loghasher"
+	"github.com/chistyakoviv/logbot/internal/markdown"
 	"github.com/chistyakoviv/logbot/internal/rbac"
 	"github.com/chistyakoviv/logbot/internal/repository/chat_settings"
 	"github.com/chistyakoviv/logbot/internal/repository/commands"
@@ -231,6 +232,10 @@ func bootstrap(ctx context.Context, c di.Container) {
 
 	c.RegisterSingleton("logHasher", func(c di.Container) loghasher.HasherInterface {
 		return loghasher.NewHasher()
+	})
+
+	c.RegisterSingleton("markdowner", func(c di.Container) markdown.MarkdownerInterface {
+		return markdown.NewMarkdowner()
 	})
 
 	c.RegisterSingleton("tgMiddleware", func(c di.Container) tgMiddleware.TgMiddlewareInterface {
