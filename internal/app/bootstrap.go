@@ -15,8 +15,8 @@ import (
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/handler"
-	tgMiddleware "github.com/chistyakoviv/logbot/internal/bot/tgbot/middleware"
-	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middleware/middlewares"
+	tgMiddlewares "github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares"
+	tgMiddleware "github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares/middleware"
 	"github.com/chistyakoviv/logbot/internal/config"
 	"github.com/chistyakoviv/logbot/internal/constants"
 	"github.com/chistyakoviv/logbot/internal/db"
@@ -238,13 +238,13 @@ func bootstrap(ctx context.Context, c di.Container) {
 		return markdown.NewMarkdowner()
 	})
 
-	c.RegisterSingleton("tgMiddleware", func(c di.Container) tgMiddleware.TgMiddlewareInterface {
-		return tgMiddleware.NewMiddleware()
+	c.RegisterSingleton("tgMiddleware", func(c di.Container) tgMiddlewares.TgMiddlewareInterface {
+		return tgMiddlewares.NewMiddleware()
 	})
 
 	// Middlewares
-	c.RegisterSingleton("tgLangMiddleware", func(c di.Container) tgMiddleware.TgMiddlewareHandler {
-		return middlewares.Lang(resolveLogger(c), resolveUserSettingsService(c))
+	c.RegisterSingleton("tgLangMiddleware", func(c di.Container) tgMiddlewares.TgMiddlewareHandler {
+		return tgMiddleware.Lang(resolveLogger(c), resolveUserSettingsService(c))
 	})
 
 	// Repositories

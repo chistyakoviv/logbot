@@ -8,7 +8,7 @@ import (
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
-	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middleware"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares"
 	"github.com/chistyakoviv/logbot/internal/db"
 	I18n "github.com/chistyakoviv/logbot/internal/i18n"
 	"github.com/chistyakoviv/logbot/internal/i18n/language"
@@ -21,7 +21,7 @@ func setlangCb(
 	logger *slog.Logger,
 	i18n I18n.I18nInterface,
 	userSettings user_settings.ServiceInterface,
-) middleware.TgMiddlewareHandler {
+) middlewares.TgMiddlewareHandler {
 	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) (context.Context, error) {
 		cb := ectx.CallbackQuery
 

@@ -7,7 +7,7 @@ import (
 
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command"
-	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middleware"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares"
 	I18n "github.com/chistyakoviv/logbot/internal/i18n"
 	"github.com/chistyakoviv/logbot/internal/service/chat_settings"
 	"github.com/chistyakoviv/logbot/internal/service/commands"
@@ -33,7 +33,7 @@ var periods = []collpasePeriod{
 
 func New(
 	ctx context.Context,
-	mw middleware.TgMiddlewareInterface,
+	mw middlewares.TgMiddlewareInterface,
 	logger *slog.Logger,
 	i18n I18n.I18nInterface,
 	commands commands.ServiceInterface,

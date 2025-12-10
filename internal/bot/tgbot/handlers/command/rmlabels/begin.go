@@ -6,8 +6,8 @@ import (
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
-	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middleware"
-	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middleware/middlewares"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares/middleware"
 	I18n "github.com/chistyakoviv/logbot/internal/i18n"
 	"github.com/chistyakoviv/logbot/internal/lib/slogger"
 	"github.com/chistyakoviv/logbot/internal/model"
@@ -18,7 +18,7 @@ func begin(
 	logger *slog.Logger,
 	i18n I18n.I18nInterface,
 	commands commands.ServiceInterface,
-) middleware.TgMiddlewareHandler {
+) middlewares.TgMiddlewareHandler {
 	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) (context.Context, error) {
 		msg := ectx.EffectiveMessage
 
@@ -28,9 +28,9 @@ func begin(
 			slog.String("from", msg.From.Username),
 		)
 
-		lang, ok := ctx.Value(middlewares.LangKey).(string)
+		lang, ok := ctx.Value(middleware.LangKey).(string)
 		if !ok {
-			return ctx, middlewares.ErrMissingLangMiddleware
+			return ctx, middleware.ErrMissingLangMiddleware
 		}
 
 		var err error

@@ -1,4 +1,4 @@
-package middlewares
+package middleware
 
 import (
 	"context"
@@ -6,14 +6,14 @@ import (
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
-	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middleware"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares"
 	"github.com/chistyakoviv/logbot/internal/constants"
 	I18n "github.com/chistyakoviv/logbot/internal/i18n"
 	"github.com/chistyakoviv/logbot/internal/rbac"
 	errs "github.com/pkg/errors"
 )
 
-func Superuser(logger *slog.Logger, i18n I18n.I18nInterface, rbac rbac.ManagerInterface) middleware.TgMiddlewareHandler {
+func Superuser(logger *slog.Logger, i18n I18n.I18nInterface, rbac rbac.ManagerInterface) middlewares.TgMiddlewareHandler {
 	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) (context.Context, error) {
 		msg := ectx.EffectiveMessage
 
@@ -51,7 +51,7 @@ func Superuser(logger *slog.Logger, i18n I18n.I18nInterface, rbac rbac.ManagerIn
 			if err != nil {
 				return ctx, err
 			}
-			return ctx, errs.Wrap(middleware.ErrMiddlewareCanceled, "access denied")
+			return ctx, errs.Wrap(middlewares.ErrMiddlewareCanceled, "access denied")
 		}
 
 		return ctx, nil

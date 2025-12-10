@@ -1,4 +1,4 @@
-package middlewares
+package middleware
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
-	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middleware"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares"
 	"github.com/chistyakoviv/logbot/internal/db"
 	"github.com/chistyakoviv/logbot/internal/lib/slogger"
 	"github.com/chistyakoviv/logbot/internal/service/user_settings"
@@ -21,7 +21,7 @@ var (
 	ErrMissingLangMiddleware error = errors.New("missing lang middleware")
 )
 
-func Lang(logger *slog.Logger, userSettings user_settings.ServiceInterface) middleware.TgMiddlewareHandler {
+func Lang(logger *slog.Logger, userSettings user_settings.ServiceInterface) middlewares.TgMiddlewareHandler {
 	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) (context.Context, error) {
 		msg := ectx.EffectiveMessage
 

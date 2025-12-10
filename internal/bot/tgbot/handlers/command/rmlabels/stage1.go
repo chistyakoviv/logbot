@@ -8,8 +8,8 @@ import (
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
-	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middleware"
-	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middleware/middlewares"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares/middleware"
 	"github.com/chistyakoviv/logbot/internal/db"
 	I18n "github.com/chistyakoviv/logbot/internal/i18n"
 	"github.com/chistyakoviv/logbot/internal/lib/slogger"
@@ -23,7 +23,7 @@ func stage1(
 	i18n I18n.I18nInterface,
 	labelsService labels.ServiceInterface,
 	commands commands.ServiceInterface,
-) middleware.TgMiddlewareHandler {
+) middlewares.TgMiddlewareHandler {
 	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) (context.Context, error) {
 		msg := ectx.EffectiveMessage
 
@@ -34,9 +34,9 @@ func stage1(
 			slog.String("label", msg.Text),
 		)
 
-		lang, ok := ctx.Value(middlewares.LangKey).(string)
+		lang, ok := ctx.Value(middleware.LangKey).(string)
 		if !ok {
-			return ctx, middlewares.ErrMissingLangMiddleware
+			return ctx, middleware.ErrMissingLangMiddleware
 		}
 
 		labels := make([]string, 0)

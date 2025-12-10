@@ -14,15 +14,15 @@ import (
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/setlang"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/subscribe"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/unsubscribe"
-	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middleware"
-	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middleware/middlewares"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares/middleware"
 	I18n "github.com/chistyakoviv/logbot/internal/i18n"
 )
 
 func begin(
 	logger *slog.Logger,
 	i18n I18n.I18nInterface,
-) middleware.TgMiddlewareHandler {
+) middlewares.TgMiddlewareHandler {
 	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) (context.Context, error) {
 		msg := ectx.EffectiveMessage
 
@@ -32,9 +32,9 @@ func begin(
 			slog.String("from", msg.From.Username),
 		)
 
-		lang, ok := ctx.Value(middlewares.LangKey).(string)
+		lang, ok := ctx.Value(middleware.LangKey).(string)
 		if !ok {
-			return ctx, middlewares.ErrMissingLangMiddleware
+			return ctx, middleware.ErrMissingLangMiddleware
 		}
 
 		_, err := b.SendMessage(
