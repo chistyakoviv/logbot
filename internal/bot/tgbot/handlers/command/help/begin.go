@@ -9,6 +9,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/addlabels"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/cancel"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/collapse"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/labels"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/mute"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/rmlabels"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/setlang"
@@ -63,6 +64,9 @@ func begin(
 				Append("\n\n").
 				Appendf("/%s - ", rmlabels.CommandName).
 				T(lang, "rmlabels_description").
+				Append("\n\n").
+				Appendf("/%s - ", labels.CommandName).
+				T(lang, "labels_description").
 				Append("\n\n").
 				Appendf("/%s - ", subscribe.CommandName).
 				T(lang, "subscribe_description").
