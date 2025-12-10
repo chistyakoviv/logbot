@@ -10,10 +10,11 @@ import (
 
 func (s *service) Subscribe(ctx context.Context, in *model.SubscriptionInfo) (*model.Subscription, error) {
 	sub := &model.Subscription{
-		Id:        uuid.New(),
-		ChatId:    in.ChatId,
-		Token:     in.Token,
-		CreatedAt: time.Now(),
+		Id:          uuid.New(),
+		ChatId:      in.ChatId,
+		Token:       in.Token,
+		ProjectName: in.ProjectName,
+		CreatedAt:   time.Now(),
 	}
 	out, err := s.subscriptionsRepository.Create(ctx, sub)
 

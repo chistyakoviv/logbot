@@ -29,11 +29,11 @@ func BuildTgCommands(
 	srvUserSettings := resolveUserSettingsService(c)
 	srvChatSettings := resolveChatSettingsService(c)
 	srvLabels := resolveLabelsService(c)
-	rbac := resolveRbac(c)
 	mw := resolveTgMiddleware(c)
 
 	// Middlewares
 	mwLang := resolveTgLangMiddleware(c)
+	mwSuperuser := resolveTgSuperuserMiddleware(c)
 	mwSubscription := resolveTgSubscriptionMiddleware(c)
 
 	// Lang middleware must be the first
@@ -55,18 +55,18 @@ func BuildTgCommands(
 		subscribe.CommandName: subscribe.New(
 			ctx,
 			mw,
+			mwSuperuser,
 			logger,
 			i18n,
-			rbac,
 			srvSubscriptions,
 			srvCommands,
 		),
 		unsubscribe.CommandName: unsubscribe.New(
 			ctx,
 			mw,
+			mwSuperuser,
 			logger,
 			i18n,
-			rbac,
 			srvSubscriptions,
 			srvCommands,
 		),

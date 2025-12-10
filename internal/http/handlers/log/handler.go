@@ -82,7 +82,7 @@ func New(
 			return
 		}
 
-		subscribedChats, err := subscriptions.FindChatsByToken(ctx, req.Token)
+		subscriptions, err := subscriptions.FindByToken(ctx, req.Token)
 		if err != nil {
 			logger.Error("failed to check subscription", slogger.Err(err))
 
@@ -91,7 +91,7 @@ func New(
 
 			return
 		}
-		if len(subscribedChats) == 0 {
+		if len(subscriptions) == 0 {
 			logger.Error("subscription not found")
 
 			render.Status(r, http.StatusNotFound)
@@ -122,8 +122,8 @@ func New(
 
 		now := time.Now().UTC()
 		var settings *model.ChatSettings
-		for _, chatId := range subscribedChats {
-			settings, err = chatSettings.Find(ctx, chatId)
+		for _, subscription := range subscriptions {
+			settings, err = chatSettings.Find(ctx, subscription.ChatId)
 			if err != nil {
 				if !errors.Is(err, db.ErrNotFound) {
 					logger.Error("failed to find chat settings", slogger.Err(err))
@@ -144,7 +144,7 @@ func New(
 			}
 
 			lastSentTimestamp := lastSent.Get(ctx, &model.LastSentKey{
-				ChatId: chatId,
+				ChatId: subscription.ChatId,
 				Token:  log.Token,
 				Hash:   log.Hash,
 			})
@@ -187,7 +187,11 @@ func New(
 				}
 			}
 
-			message.WriteString("\n\n*Info*\n")
+			message.WriteString("\n\n*Project ")
+			message.WriteString(subscription.ProjectName)
+			message.WriteString("*\n")
+
+			message.WriteString("\n*Info*\n")
 
 			message.WriteString("service: `")
 			message.WriteString(log.Service)
@@ -238,19 +242,19 @@ func New(
 				message.WriteString("\n```")
 			}
 
-			err = tgBot.SendMessage(chatId, message.String(), &gotgbot.SendMessageOpts{
+			err = tgBot.SendMessage(subscription.ChatId, message.String(), &gotgbot.SendMessageOpts{
 				// ParseMode: "MarkdownV2",
 				ParseMode: "Markdown",
 			})
 			if err != nil {
 				logger.Error(
 					"failed to send message to chat",
-					slog.Int64("chat_id", chatId),
+					slog.Int64("chat_id", subscription.ChatId),
 					slogger.Err(err),
 				)
 			} else {
 				_, err = lastSent.Update(ctx, &model.LastSentKey{
-					ChatId: chatId,
+					ChatId: subscription.ChatId,
 					Token:  log.Token,
 					Hash:   log.Hash,
 				})

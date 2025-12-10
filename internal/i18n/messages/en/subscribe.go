@@ -9,7 +9,15 @@ var SubscribeBegin = []string{
 }
 
 var SubscribeComplete = []string{
-	"Subscription succeeded: <code>%s</code>.",
+	"Subscription succeeded.",
+}
+
+var SubscribeToken = []string{
+	"Token: <code>%s</code>",
+}
+
+var SubscribeProjectName = []string{
+	"Project: %s",
 }
 
 var SubscribeInvalidToken = []string{
@@ -26,4 +34,12 @@ var SubscribeError = []string{
 
 var SubscribeSubsriptionRequired = []string{
 	"Subscription is required to run this command.",
+}
+
+var SubscribeEnterProjectName = []string{
+	"Enter project name. Project name must be less than or equal to %v characters.",
+}
+
+var SubscribeTooLongProjectName = []string{
+	"Project name is too long.",
 }

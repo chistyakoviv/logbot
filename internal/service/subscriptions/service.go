@@ -13,7 +13,7 @@ type ServiceInterface interface {
 	Find(ctx context.Context, token string, chatId int64) (*model.Subscription, error)
 	FindByChatId(ctx context.Context, chatId int64) ([]*model.Subscription, error)
 	HasSubscription(ctx context.Context, token string) (bool, error)
-	FindChatsByToken(ctx context.Context, token string) ([]int64, error)
+	FindByToken(ctx context.Context, token string) ([]*model.Subscription, error)
 	Unsubscribe(ctx context.Context, token string, chatId int64) (*model.Subscription, error)
 }
 

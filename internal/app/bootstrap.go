@@ -251,6 +251,10 @@ func bootstrap(ctx context.Context, c di.Container) {
 		return tgMiddleware.Subscription(resolveLogger(c), resolveI18n(c), resolveSubscriptionsService(c))
 	})
 
+	c.RegisterSingleton("tgSuperuserMiddleware", func(c di.Container) tgMiddlewares.TgMiddlewareHandler {
+		return tgMiddleware.Superuser(resolveLogger(c), resolveI18n(c), resolveRbac(c))
+	})
+
 	// Repositories
 	c.RegisterSingleton("subscriptionsRepository", func(c di.Container) subscriptions.RepositoryInterface {
 		return subscriptions.NewRepository(resolveDbClient(c), resolveStatementBuilder(c))

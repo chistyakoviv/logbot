@@ -6,14 +6,18 @@ import (
 	"github.com/google/uuid"
 )
 
+const MaxProjectNameLength = 100
+
 type Subscription struct {
-	Id        uuid.UUID
-	ChatId    int64
-	Token     string
-	CreatedAt time.Time
+	Id          uuid.UUID
+	ChatId      int64
+	Token       string
+	ProjectName string
+	CreatedAt   time.Time
 }
 
 type SubscriptionInfo struct {
-	ChatId int64
-	Token  string
+	ChatId      int64
+	Token       string
+	ProjectName string
 }

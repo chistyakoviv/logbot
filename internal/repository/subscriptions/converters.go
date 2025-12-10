@@ -8,10 +8,11 @@ import (
 )
 
 type SubscriptionRow struct {
-	Id        uuid.UUID `db:"id"`
-	ChatId    int64     `db:"chat_id"`
-	Token     string    `db:"token"`
-	CreatedAt time.Time `db:"created_at"`
+	Id          uuid.UUID `db:"id"`
+	ChatId      int64     `db:"chat_id"`
+	Token       string    `db:"token"`
+	ProjectName string    `db:"project_name"`
+	CreatedAt   time.Time `db:"created_at"`
 }
 
 func (r *SubscriptionRow) Values() []any {
@@ -19,6 +20,7 @@ func (r *SubscriptionRow) Values() []any {
 		r.Id,
 		r.ChatId,
 		r.Token,
+		r.ProjectName,
 		r.CreatedAt,
 	}
 }
@@ -28,10 +30,11 @@ func ToModel(r *SubscriptionRow) *model.Subscription {
 		return nil
 	}
 	return &model.Subscription{
-		Id:        r.Id,
-		ChatId:    r.ChatId,
-		Token:     r.Token,
-		CreatedAt: r.CreatedAt,
+		Id:          r.Id,
+		ChatId:      r.ChatId,
+		Token:       r.Token,
+		ProjectName: r.ProjectName,
+		CreatedAt:   r.CreatedAt,
 	}
 }
 
@@ -41,9 +44,10 @@ func FromModel(m *model.Subscription) SubscriptionRow {
 		return SubscriptionRow{}
 	}
 	return SubscriptionRow{
-		Id:        m.Id,
-		ChatId:    m.ChatId,
-		Token:     m.Token,
-		CreatedAt: m.CreatedAt,
+		Id:          m.Id,
+		ChatId:      m.ChatId,
+		Token:       m.Token,
+		ProjectName: m.ProjectName,
+		CreatedAt:   m.CreatedAt,
 	}
 }

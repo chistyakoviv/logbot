@@ -64,7 +64,7 @@ func stage0(
 			)
 			return ctx, err
 		}
-		_, unsubErr := subscriptions.Find(ctx, token, msg.Chat.Id)
+		sub, unsubErr := subscriptions.Find(ctx, token, msg.Chat.Id)
 		if errors.Is(unsubErr, db.ErrNotFound) {
 			_, err := b.SendMessage(
 				msg.Chat.Id,
@@ -96,6 +96,9 @@ func stage0(
 			},
 		)
 		if err != nil || unsubErr != nil {
+			if err == nil {
+				err = unsubErr
+			}
 			logger.Error("error occurred while unsubscribing", slogger.Err(err))
 			_, err := b.SendMessage(
 				msg.Chat.Id,
@@ -160,8 +163,13 @@ func stage0(
 				T(
 					lang,
 					"unsubscribe_complete",
+				).
+				Append("\n").
+				T(
+					lang,
+					"unsubscribe_project_name",
 					I18n.WithArgs([]any{
-						token,
+						sub.ProjectName,
 					}),
 				).
 				String(),

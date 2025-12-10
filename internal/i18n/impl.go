@@ -44,6 +44,9 @@ func New() *I18n {
 				"subscribe_complete":              en.SubscribeComplete,
 				"subscribe_description":           en.SubscribeDescription,
 				"subscribe_subscription_required": en.SubscribeSubsriptionRequired,
+				"subscribe_enter_project_name":    en.SubscribeEnterProjectName,
+				"subscribe_token":                 en.SubscribeToken,
+				"subscribe_project_name":          en.SubscribeProjectName,
 
 				"mention": en.Mention,
 
@@ -58,6 +61,7 @@ func New() *I18n {
 				"unsubscribe_error":            en.UnsubscribeError,
 				"unsubscribe_complete":         en.UnsubscribeComplete,
 				"unsubscribe_description":      en.UnsubscribeDescription,
+				"unsubscribe_project_name":     en.UnsubscribeProjectName,
 
 				"setlang_select_language":  en.SetLangSelectLanguage,
 				"setlang_success":          en.SetLangSuccess,

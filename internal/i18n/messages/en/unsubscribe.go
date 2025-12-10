@@ -9,7 +9,11 @@ var UnsubscribeBegin = []string{
 }
 
 var UnsubscribeComplete = []string{
-	"Usubscription succeeded: <code>%s</code>.",
+	"Usubscription succeeded.",
+}
+
+var UnsubscribeProjectName = []string{
+	"Project: %s",
 }
 
 var UnsubscribeInvalidToken = []string{
