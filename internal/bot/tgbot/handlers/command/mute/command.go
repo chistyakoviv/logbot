@@ -23,6 +23,7 @@ type mutePeriod struct {
 }
 
 var periods = []mutePeriod{
+	{"none", 0},
 	{"5 minutes", time.Minute * 5},
 	{"10 minutes", time.Minute * 10},
 	{"30 minutes", time.Minute * 30},
@@ -31,6 +32,7 @@ var periods = []mutePeriod{
 	{"6 hours", time.Hour * 6},
 	{"12 hours", time.Hour * 12},
 	{"24 hours", time.Hour * 24},
+	{"3 days", time.Hour * 24 * 3},
 }
 
 func New(

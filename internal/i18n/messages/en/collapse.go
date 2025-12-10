@@ -9,5 +9,5 @@ var CollapseSelectPeriod = []string{
 }
 
 var CollapsePeriodSet = []string{
-	"Collapse period set to %s.",
+	"Collapse period set to %v.",
 }

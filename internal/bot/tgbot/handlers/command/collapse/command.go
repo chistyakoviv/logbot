@@ -23,10 +23,12 @@ type collpasePeriod struct {
 }
 
 var periods = []collpasePeriod{
+	{"none", -1},
 	{"5 minutes", time.Minute * 5},
 	{"10 minutes", time.Minute * 10},
 	{"30 minutes", time.Minute * 30},
 	{"1 hour", time.Hour * 1},
+	{"3 hours", time.Hour * 3},
 	{"12 hours", time.Hour * 12},
 	{"24 hours", time.Hour * 24},
 }

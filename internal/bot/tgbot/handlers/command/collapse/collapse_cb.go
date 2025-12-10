@@ -74,6 +74,12 @@ func collapseCb(
 		}
 
 		period := periods[periodIdx].Duration
+		var periodArg any
+		if period < 0 {
+			periodArg = "none"
+		} else {
+			periodArg = period
+		}
 
 		_, err = chatSettings.Update(ctx, cb.Message.GetChat().Id, &model.ChatSettingsInfo{
 			CollapsePeriod: period,
@@ -95,7 +101,7 @@ func collapseCb(
 				lang,
 				"collapse_period_set",
 				I18n.WithArgs([]any{
-					period,
+					periodArg,
 				}),
 			),
 		})
@@ -128,7 +134,7 @@ func collapseCb(
 					lang,
 					"collapse_period_set",
 					I18n.WithArgs([]any{
-						period,
+						periodArg,
 					}),
 				).
 				String(),
