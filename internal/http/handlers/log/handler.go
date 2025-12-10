@@ -8,6 +8,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"sort"
 	"time"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
@@ -27,6 +28,8 @@ import (
 	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
 )
+
+const stackTraceKey = "stack"
 
 func New(
 	ctx context.Context,
@@ -207,21 +210,29 @@ func New(
 			err = json.Unmarshal([]byte(log.Data), &decodedData)
 
 			if err == nil {
-				for key, value := range decodedData {
-					if key != "code" {
-						message.WriteString(markdowner.Escape(key))
-						message.WriteString(": ")
-						message.WriteString(markdowner.Escape(value))
-						message.WriteString("\n")
+				keys := make([]string, 0, len(decodedData))
+				for key := range decodedData {
+					if key != stackTraceKey {
+						keys = append(keys, key)
 					}
 				}
+				// Always print entries in the same order
+				sort.Strings(keys)
+				for _, key := range keys {
+					message.WriteString(markdowner.Escape(key))
+					message.WriteString(": ")
+					message.WriteString(markdowner.Escape(decodedData[key]))
+					message.WriteString("\n")
+				}
 
-				if code, ok := decodedData["code"]; ok {
+				// Print stack trace in code block
+				if code, ok := decodedData[stackTraceKey]; ok {
 					message.WriteString("```\n")
 					message.WriteString(code)
 					message.WriteString("\n```")
 				}
 			} else {
+				// Log data is in an unexpected format, print it in code block
 				message.WriteString("```\n")
 				message.WriteString(log.Data)
 				message.WriteString("\n```")
