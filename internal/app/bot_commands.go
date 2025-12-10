@@ -34,6 +34,7 @@ func BuildTgCommands(
 
 	// Middlewares
 	mwLang := resolveTgLangMiddleware(c)
+	mwSubscription := resolveTgSubscriptionMiddleware(c)
 
 	// Lang middleware must be the first
 	mw = mw.Pipe(mwLang)
@@ -80,6 +81,7 @@ func BuildTgCommands(
 		addlabels.CommandName: addlabels.New(
 			ctx,
 			mw,
+			mwSubscription,
 			logger,
 			i18n,
 			srvLabels,
@@ -88,6 +90,7 @@ func BuildTgCommands(
 		rmlabels.CommandName: rmlabels.New(
 			ctx,
 			mw,
+			mwSubscription,
 			logger,
 			i18n,
 			srvLabels,
@@ -103,6 +106,7 @@ func BuildTgCommands(
 		collapse.CommandName: collapse.New(
 			ctx,
 			mw,
+			mwSubscription,
 			logger,
 			i18n,
 			srvCommands,
@@ -111,6 +115,7 @@ func BuildTgCommands(
 		mute.CommandName: mute.New(
 			ctx,
 			mw,
+			mwSubscription,
 			logger,
 			i18n,
 			srvCommands,

@@ -1,7 +1,7 @@
 package en
 
 var MuteDescription = []string{
-	"Disable error notifications for the selected period.",
+	"Disable error notifications for the selected period (subscription required).",
 }
 
 var MuteSelectPeriod = []string{

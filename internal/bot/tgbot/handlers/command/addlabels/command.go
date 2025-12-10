@@ -22,11 +22,13 @@ const (
 func New(
 	ctx context.Context,
 	mw middlewares.TgMiddlewareInterface,
+	mwSubscription middlewares.TgMiddlewareHandler,
 	logger *slog.Logger,
 	i18n i18n.I18nInterface,
 	labels labels.ServiceInterface,
 	commands commands.ServiceInterface,
 ) *command.TgCommand {
+	mw = mw.Pipe(mwSubscription)
 	return &command.TgCommand{
 		Handler: mw.Pipe(begin(logger, i18n, commands)).Handler(ctx),
 		Stages: []handlers.Response{

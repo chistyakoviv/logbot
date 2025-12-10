@@ -37,12 +37,13 @@ func New() *I18n {
 
 				"access_denied": en.AccessDenied,
 
-				"subscribe_begin":         en.SubscribeBegin,
-				"subscribe_invalid_token": en.SubscribeInvalidToken,
-				"subscribe_token_exists":  en.SubscribeTokenExists,
-				"subscribe_error":         en.SubscribeError,
-				"subscribe_complete":      en.SubscribeComplete,
-				"subscribe_description":   en.SubscribeDescription,
+				"subscribe_begin":                 en.SubscribeBegin,
+				"subscribe_invalid_token":         en.SubscribeInvalidToken,
+				"subscribe_token_exists":          en.SubscribeTokenExists,
+				"subscribe_error":                 en.SubscribeError,
+				"subscribe_complete":              en.SubscribeComplete,
+				"subscribe_description":           en.SubscribeDescription,
+				"subscribe_subscription_required": en.SubscribeSubsriptionRequired,
 
 				"mention": en.Mention,
 

@@ -23,3 +23,7 @@ var SubscribeTokenExists = []string{
 var SubscribeError = []string{
 	"Subscription failed. Please check the log for more information. The command was canceled.",
 }
+
+var SubscribeSubsriptionRequired = []string{
+	"Subscription is required to run this command.",
+}

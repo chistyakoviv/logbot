@@ -230,6 +230,16 @@ func resolveTgLangMiddleware(c di.Container) tgMiddlewares.TgMiddlewareHandler {
 	return middleware
 }
 
+func resolveTgSubscriptionMiddleware(c di.Container) tgMiddlewares.TgMiddlewareHandler {
+	middleware, err := di.Resolve[tgMiddlewares.TgMiddlewareHandler](c, "tgSubscriptionMiddleware")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve subscription middleware definition: %v", err)
+	}
+
+	return middleware
+}
+
 // Repositories
 func resolveSubscriptionsRepository(c di.Container) subscriptions.RepositoryInterface {
 	repo, err := di.Resolve[subscriptions.RepositoryInterface](c, "subscriptionsRepository")

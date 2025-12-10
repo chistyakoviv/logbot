@@ -1,7 +1,7 @@
 package en
 
 var CollapseDescription = []string{
-	"Group identical error notifications so they appear only once for the selected time period.",
+	"Group identical error notifications so they appear only once for the selected time period (subscription required).",
 }
 
 var CollapseSelectPeriod = []string{
