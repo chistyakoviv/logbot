@@ -1,7 +1,7 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS logs (
-    id SERIAL,
+    id BIGSERIAL,
     token UUID NOT NULL,
     data VARCHAR NOT NULL,
     service VARCHAR NOT NULL,
