@@ -7,7 +7,7 @@ type LogRequest struct {
 }
 
 type Labels struct {
-	Service       string `json:"service"`
+	Service       string `json:"service" validate:"required"`
 	Node          string `json:"node"`
 	NodeId        string `json:"node_id"`
 	ContainerName string `json:"container_name"`

@@ -184,26 +184,22 @@ func New(
 				}
 			}
 
-			if log.Service != "" || log.ContainerId != "" || log.NodeId != "" {
-				message.WriteString("\n\n*Info*\n")
+			message.WriteString("\n\n*Info*\n")
 
-				if log.Service != "" {
-					message.WriteString("service: `")
-					message.WriteString(log.Service)
-					message.WriteString("`\n")
-				}
+			message.WriteString("service: `")
+			message.WriteString(log.Service)
+			message.WriteString("`\n")
 
-				if log.ContainerId != "" {
-					message.WriteString("container id: `")
-					message.WriteString(log.ContainerId)
-					message.WriteString("`\n")
-				}
+			if len(log.ContainerId) > 0 {
+				message.WriteString("container id: `")
+				message.WriteString(log.ContainerId)
+				message.WriteString("`\n")
+			}
 
-				if log.NodeId != "" {
-					message.WriteString("node id: `")
-					message.WriteString(log.NodeId)
-					message.WriteString("`\n")
-				}
+			if len(log.NodeId) > 0 {
+				message.WriteString("node id: `")
+				message.WriteString(log.NodeId)
+				message.WriteString("`\n")
 			}
 			message.WriteString("\n*Data*\n")
 
@@ -213,9 +209,7 @@ func New(
 			if err == nil {
 				for key, value := range decodedData {
 					if key != "code" {
-						message.WriteString("_")
 						message.WriteString(markdowner.Escape(key))
-						message.WriteString("_")
 						message.WriteString(": ")
 						message.WriteString(markdowner.Escape(value))
 						message.WriteString("\n")
