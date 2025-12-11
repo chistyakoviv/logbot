@@ -38,7 +38,6 @@ type ConfigOptions struct {
 	ConfigPath string
 }
 
-// Functions that start with the Must prefix require that the config is loaded, otherwise panic will be thrown.
 func MustLoad(opts *ConfigOptions) *Config {
 	var (
 		cfg        Config
@@ -54,8 +53,6 @@ func MustLoad(opts *ConfigOptions) *Config {
 	}
 
 	if configPath != "" {
-		// log.Fatal("CONFIG_PATH is not set")
-
 		// check if file exists.
 		if _, err := os.Stat(configPath); os.IsNotExist(err) {
 			log.Fatalf("config file %s does not exist", configPath)
