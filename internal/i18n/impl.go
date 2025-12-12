@@ -109,6 +109,9 @@ func New() *I18n {
 				"help":             en.Help,
 				"help_title":       en.HelpTitle,
 				"help_description": en.HelpDescription,
+
+				"gentoken_generated":   en.GentokenGenerated,
+				"gentoken_description": en.GentokenDescription,
 			},
 		},
 	}

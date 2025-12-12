@@ -9,6 +9,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/addlabels"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/cancel"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/collapse"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/gentoken"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/labels"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/mute"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/rmlabels"
@@ -52,6 +53,9 @@ func begin(
 				Append("\n\n").
 				Appendf("/%s - ", setlang.CommandName).
 				T(lang, "setlang_description").
+				Append("\n\n").
+				Appendf("/%s - ", gentoken.CommandName).
+				T(lang, "gentoken_description").
 				Append("\n\n").
 				Appendf("/%s - ", collapse.CommandName).
 				T(lang, "collapse_description").

@@ -7,6 +7,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/addlabels"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/cancel"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/collapse"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/gentoken"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/help"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/labels"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/mute"
@@ -122,6 +123,12 @@ func BuildTgCommands(
 			srvChatSettings,
 		),
 		help.CommandName: help.New(
+			ctx,
+			mw,
+			logger,
+			i18n,
+		),
+		gentoken.CommandName: gentoken.New(
 			ctx,
 			mw,
 			logger,

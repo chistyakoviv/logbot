@@ -244,6 +244,8 @@ func New(
 			}
 
 			err = tgBot.SendMessage(subscription.ChatId, message.String(), &gotgbot.SendMessageOpts{
+				// Send silent notification
+				// DisableNotification: true,
 				// ParseMode: "MarkdownV2",
 				ParseMode: "Markdown",
 			})
