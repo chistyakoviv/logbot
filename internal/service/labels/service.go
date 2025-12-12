@@ -9,7 +9,7 @@ import (
 )
 
 type ServiceInterface interface {
-	FindByLabel(ctx context.Context, label string) ([]*model.Label, error)
+	FindByChatIdAndLabel(ctx context.Context, chatId int64, label string) ([]*model.Label, error)
 	FindByKey(ctx context.Context, key *model.LabelKey) (*model.Label, error)
 	FindAllByChat(ctx context.Context, chatId int64) ([]*model.Label, error)
 	AddByKey(ctx context.Context, key *model.LabelKey, labels []string) (*model.Label, error)

@@ -15,6 +15,9 @@ CREATE INDEX idx_users_labels ON labels USING GIN (labels);
 -- to search by user and label combining btree and gin indexes using bitmap index
 CREATE INDEX idx_labels_user ON labels (username);
 
+-- Search by user and label combining btree and gin indexes using bitmap index
+CREATE INDEX idx_labels_chat ON labels (chat_id);
+
 COMMENT ON TABLE labels IS 'Labels for each user in each chat';
 
 COMMENT ON COLUMN labels.chat_id IS 'Chat ID the label belongs to';

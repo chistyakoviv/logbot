@@ -133,6 +133,7 @@ func New(
 				settings = &model.ChatSettings{}
 			}
 
+			// Skip notification if chat is muted
 			if !settings.MuteUntil.IsZero() && now.Before(settings.MuteUntil) {
 				// Chat is silenced
 				logger.Debug(
@@ -152,6 +153,7 @@ func New(
 				logger.Error("failed to find former log with token and hash", slogger.Err(err))
 				continue
 			}
+			// Skip notification if it was sent recently
 			timeSinceLastSent := now.Sub(lastSentTimestamp)
 			if err == nil && settings.CollapsePeriod > 0 && timeSinceLastSent < settings.CollapsePeriod {
 				// Notification falls within collapse period
@@ -162,14 +164,13 @@ func New(
 				continue
 			}
 
-			subscribers, err := labels.FindByLabel(ctx, log.Service)
+			subscribers, err := labels.FindByChatIdAndLabel(ctx, subscription.ChatId, log.Service)
 			if err != nil {
 				logger.Error(
 					"failed to find subscribers",
 					slog.Attr{Key: "label", Value: slog.StringValue(log.Service)},
 					slogger.Err(err),
 				)
-
 				continue
 			}
 
