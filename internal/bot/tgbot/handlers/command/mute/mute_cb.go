@@ -74,12 +74,6 @@ func muteCb(
 		}
 
 		period := periods[periodIdx].Duration
-		var periodArg any
-		if period == 0 {
-			periodArg = 0 * time.Second
-		} else {
-			periodArg = period
-		}
 
 		_, err = chatSettings.UpdateMuteUntil(ctx, cb.Message.GetChat().Id, time.Now().Add(period))
 		if err != nil {
@@ -99,7 +93,7 @@ func muteCb(
 				lang,
 				"mute_period_set",
 				I18n.WithArgs([]any{
-					periodArg,
+					period,
 				}),
 			),
 		})
@@ -132,7 +126,7 @@ func muteCb(
 					lang,
 					"mute_period_set",
 					I18n.WithArgs([]any{
-						periodArg,
+						period,
 					}),
 				).
 				String(),

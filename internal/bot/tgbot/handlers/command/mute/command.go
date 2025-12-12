@@ -23,7 +23,7 @@ type mutePeriod struct {
 }
 
 var periods = []mutePeriod{
-	{"none", 0},
+	{"none", time.Second * 0},
 	{"5 minutes", time.Minute * 5},
 	{"10 minutes", time.Minute * 10},
 	{"30 minutes", time.Minute * 30},
