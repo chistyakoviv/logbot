@@ -112,12 +112,8 @@ func bootstrap(ctx context.Context, c di.Container) {
 		logger := resolveLogger(c)
 
 		router.Use(middleware.RequestID)
-		// Replace middleware.Logger with custom logger middleware to keep logs consistent with the rest of the application
-		// router.Use(middleware.Logger)
 		router.Use(mwLogger.New(logger))
-		// router.Use(middleware.Heartbeat("/ping"))
 		router.Use(middleware.Recoverer)
-		router.Use(middleware.URLFormat)
 		router.Use(middleware.NoCache)
 
 		return router
