@@ -2,6 +2,7 @@ package chat_settings
 
 import (
 	"context"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/chistyakoviv/logbot/internal/db"
@@ -10,7 +11,8 @@ import (
 
 type RepositoryInterface interface {
 	Create(ctx context.Context, in *model.ChatSettings) (*model.ChatSettings, error)
-	Update(ctx context.Context, in *model.ChatSettings) (*model.ChatSettings, error)
+	UpdateCollapsePeriod(ctx context.Context, chatId int64, period time.Duration) (*model.ChatSettings, error)
+	UpdateMuteUntil(ctx context.Context, chatId int64, muteUntil time.Time) (*model.ChatSettings, error)
 	Find(ctx context.Context, chatId int64) (*model.ChatSettings, error)
 }
 

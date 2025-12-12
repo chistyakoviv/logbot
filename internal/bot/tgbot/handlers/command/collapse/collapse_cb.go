@@ -12,7 +12,6 @@ import (
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares/middleware"
 	I18n "github.com/chistyakoviv/logbot/internal/i18n"
 	"github.com/chistyakoviv/logbot/internal/lib/slogger"
-	"github.com/chistyakoviv/logbot/internal/model"
 	"github.com/chistyakoviv/logbot/internal/service/chat_settings"
 )
 
@@ -75,15 +74,13 @@ func collapseCb(
 
 		period := periods[periodIdx].Duration
 		var periodArg any
-		if period < 0 {
+		if period == 0 {
 			periodArg = "none"
 		} else {
 			periodArg = period
 		}
 
-		_, err = chatSettings.Update(ctx, cb.Message.GetChat().Id, &model.ChatSettingsInfo{
-			CollapsePeriod: period,
-		})
+		_, err = chatSettings.UpdateCollapsePeriod(ctx, cb.Message.GetChat().Id, period)
 		if err != nil {
 			logger.Error("error occurred while setting the collapse period", slogger.Err(err))
 			_, err := b.SendMessage(

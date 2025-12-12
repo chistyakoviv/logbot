@@ -13,7 +13,6 @@ import (
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares/middleware"
 	I18n "github.com/chistyakoviv/logbot/internal/i18n"
 	"github.com/chistyakoviv/logbot/internal/lib/slogger"
-	"github.com/chistyakoviv/logbot/internal/model"
 	"github.com/chistyakoviv/logbot/internal/service/chat_settings"
 )
 
@@ -76,15 +75,13 @@ func muteCb(
 
 		period := periods[periodIdx].Duration
 		var periodArg any
-		if period < 0 {
-			periodArg = 0
+		if period == 0 {
+			periodArg = 0 * time.Second
 		} else {
 			periodArg = period
 		}
 
-		_, err = chatSettings.Update(ctx, cb.Message.GetChat().Id, &model.ChatSettingsInfo{
-			MuteUntil: time.Now().Add(period),
-		})
+		_, err = chatSettings.UpdateMuteUntil(ctx, cb.Message.GetChat().Id, time.Now().Add(period))
 		if err != nil {
 			logger.Error("error occurred while setting the collapse period", slogger.Err(err))
 			_, err := b.SendMessage(

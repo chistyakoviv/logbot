@@ -8,8 +8,3 @@ type ChatSettings struct {
 	MuteUntil      time.Time
 	UpdatedAt      time.Time
 }
-
-type ChatSettingsInfo struct {
-	CollapsePeriod time.Duration
-	MuteUntil      time.Time
-}
