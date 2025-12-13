@@ -15,14 +15,14 @@ import (
 
 const CommandName = "collapse"
 const collapseCbName = "collapse"
-const collpasePeriodParam = "period"
+const collapsePeriodParam = "period"
 
-type collpasePeriod struct {
+type collapsePeriod struct {
 	Label    string
 	Duration time.Duration
 }
 
-var periods = []collpasePeriod{
+var periods = []collapsePeriod{
 	{"none", 0},
 	{"5 minutes", time.Minute * 5},
 	{"10 minutes", time.Minute * 10},

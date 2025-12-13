@@ -38,7 +38,7 @@ func begin(
 		var buttons []gotgbot.InlineKeyboardButton
 		for idx, period := range periods {
 			queryParams := url.Values{}
-			queryParams.Add(collpasePeriodParam, strconv.Itoa(idx))
+			queryParams.Add(collapsePeriodParam, strconv.Itoa(idx))
 			buttons = append(buttons, gotgbot.InlineKeyboardButton{
 				Text:         period.Label,
 				CallbackData: fmt.Sprintf("%s?%s", collapseCbName, queryParams.Encode()),

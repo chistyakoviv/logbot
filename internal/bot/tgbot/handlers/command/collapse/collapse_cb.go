@@ -47,7 +47,7 @@ func collapseCb(
 			return ctx, err
 		}
 		queryParams := query.Query()
-		rawPeriod := queryParams.Get(collpasePeriodParam)
+		rawPeriod := queryParams.Get(collapsePeriodParam)
 		periodIdx, err := strconv.Atoi(rawPeriod)
 		if err != nil {
 			logger.Error("error occurred while parsing the callback data", slogger.Err(err))
