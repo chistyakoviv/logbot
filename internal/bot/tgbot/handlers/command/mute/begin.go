@@ -15,6 +15,8 @@ import (
 	"github.com/chistyakoviv/logbot/internal/utils"
 )
 
+const columns = 2
+
 func begin(
 	logger *slog.Logger,
 	i18n I18n.I18nInterface,
@@ -59,9 +61,11 @@ func begin(
 				T(lang, "mute_select_period").
 				String(),
 			&gotgbot.SendMessageOpts{
-				ParseMode: "html",
+				// For the silence command notifications are always disabled
+				DisableNotification: true,
+				ParseMode:           "html",
 				ReplyMarkup: gotgbot.InlineKeyboardMarkup{
-					InlineKeyboard: utils.Chunk(buttons, 2),
+					InlineKeyboard: utils.Chunk(buttons, columns),
 				},
 			},
 		)
