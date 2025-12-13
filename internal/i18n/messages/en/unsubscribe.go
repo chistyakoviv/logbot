@@ -13,7 +13,7 @@ var UnsubscribeComplete = []string{
 }
 
 var UnsubscribeProjectName = []string{
-	"Project: %s",
+	"<b>Project:</b> %s",
 }
 
 var UnsubscribeInvalidToken = []string{

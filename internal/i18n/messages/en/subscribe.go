@@ -13,11 +13,11 @@ var SubscribeComplete = []string{
 }
 
 var SubscribeToken = []string{
-	"Token: <code>%s</code>",
+	"<b>Token:</b> <code>%s</code>",
 }
 
 var SubscribeProjectName = []string{
-	"Project: %s",
+	"<b>Project:</b> %s",
 }
 
 var SubscribeInvalidToken = []string{

@@ -164,7 +164,7 @@ func stage0(
 					lang,
 					"unsubscribe_complete",
 				).
-				Append("\n").
+				Append("\n\n").
 				T(
 					lang,
 					"unsubscribe_project_name",

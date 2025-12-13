@@ -15,6 +15,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/rmlabels"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/setlang"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/subscribe"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/subscriptions"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/unsubscribe"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares/middleware"
@@ -77,6 +78,9 @@ func begin(
 				Append("\n\n").
 				Appendf("/%s - ", unsubscribe.CommandName).
 				T(lang, "unsubscribe_description").
+				Append("\n\n").
+				Appendf("/%s - ", subscriptions.CommandName).
+				T(lang, "subscriptions_description").
 				String(),
 			&gotgbot.SendMessageOpts{
 				ParseMode: "html",

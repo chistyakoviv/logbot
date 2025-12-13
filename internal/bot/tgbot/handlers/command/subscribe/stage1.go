@@ -219,20 +219,20 @@ func stage1(
 					lang,
 					"subscribe_complete",
 				).
+				Append("\n\n").
+				T(
+					lang,
+					"subscribe_project_name",
+					I18n.WithArgs([]any{
+						projectName,
+					}),
+				).
 				Append("\n").
 				T(
 					lang,
 					"subscribe_token",
 					I18n.WithArgs([]any{
 						token,
-					}),
-				).
-				Append("\n").
-				T(
-					lang,
-					"subscribe_project_name",
-					I18n.WithArgs([]any{
-						projectName,
 					}),
 				).
 				String(),

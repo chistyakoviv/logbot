@@ -112,6 +112,12 @@ func New() *I18n {
 
 				"gentoken_generated":   en.GentokenGenerated,
 				"gentoken_description": en.GentokenDescription,
+
+				"subscriptions_subscription": en.SubscriptionsSubscription,
+				"subscriptions_empty":        en.SubscriptionsEmpty,
+				"subscriptions_error":        en.SubscriptionsError,
+				"subscriptions_list":         en.SubscriptionsList,
+				"subscriptions_description":  en.SubscriptionsDescription,
 			},
 		},
 	}

@@ -15,6 +15,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/setlang"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/start"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/subscribe"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/subscriptions"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/unsubscribe"
 	"github.com/chistyakoviv/logbot/internal/di"
 )
@@ -133,6 +134,13 @@ func BuildTgCommands(
 			mw,
 			logger,
 			i18n,
+		),
+		subscriptions.CommandName: subscriptions.New(
+			ctx,
+			mw,
+			logger,
+			i18n,
+			srvSubscriptions,
 		),
 	}
 }
