@@ -3,13 +3,11 @@
 CREATE TABLE IF NOT EXISTS chat_settings (
     chat_id BIGINT NOT NULL,
     collapse_period INTERVAL NOT NULL DEFAULT INTERVAL '0',
-    mute_until TIMESTAMP WITH TIME ZONE,
-    silence_until TIMESTAMP WITH TIME ZONE,
+    mute_until TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+    silence_until TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     PRIMARY KEY (chat_id)
 );
-
--- ALTER TABLE chat_settings ADD COLUMN IF NOT EXISTS silence_until TIMESTAMP WITH TIME ZONE;
 
 COMMENT ON TABLE chat_settings IS 'Chat settings';
 
