@@ -33,6 +33,11 @@ func begin(
 			return ctx, middleware.ErrMissingLangMiddleware
 		}
 
+		isSilenced, ok := ctx.Value(middleware.SilenceKey).(bool)
+		if !ok {
+			return ctx, middleware.ErrMissingSilenceMiddleware
+		}
+
 		var err error
 		_, err = commands.ResetByKey(
 			ctx,
@@ -61,7 +66,8 @@ func begin(
 					T(lang, "addlabels_error").
 					String(),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return ctx, err
@@ -83,7 +89,8 @@ func begin(
 				T(lang, "addlabels_enter_mentions").
 				String(),
 			&gotgbot.SendMessageOpts{
-				ParseMode: "html",
+				DisableNotification: isSilenced,
+				ParseMode:           "html",
 			},
 		)
 		return ctx, err

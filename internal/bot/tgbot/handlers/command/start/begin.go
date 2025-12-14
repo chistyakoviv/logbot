@@ -30,6 +30,11 @@ func begin(
 			return ctx, middleware.ErrMissingLangMiddleware
 		}
 
+		isSilenced, ok := ctx.Value(middleware.SilenceKey).(bool)
+		if !ok {
+			return ctx, middleware.ErrMissingSilenceMiddleware
+		}
+
 		message := i18n.
 			Chain().
 			T(lang, "greeting").
@@ -42,7 +47,8 @@ func begin(
 			String()
 		// fmt.Fprintf(&message, "%s", "<pre language=\"typescript\">console.log('Hello, world!')</pre>")
 		_, err := b.SendMessage(msg.Chat.Id, message, &gotgbot.SendMessageOpts{
-			ParseMode: "html",
+			DisableNotification: isSilenced,
+			ParseMode:           "html",
 		})
 		return ctx, err
 	}

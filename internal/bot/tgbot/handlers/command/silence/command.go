@@ -1,4 +1,4 @@
-package collapse
+package silence
 
 import (
 	"context"
@@ -13,17 +13,17 @@ import (
 	"github.com/chistyakoviv/logbot/internal/service/commands"
 )
 
-const CommandName = "collapse"
-const collapseCbName = "collapse"
-const collapsePeriodParam = "period"
+const CommandName = "silence"
+const silenceCbName = "silence"
+const silencePeriodParam = "period"
 
-type collapsePeriod struct {
+type silencePeriod struct {
 	Label    string
 	Duration time.Duration
 }
 
-var periods = []collapsePeriod{
-	{"none", 0},
+var periods = []silencePeriod{
+	{"none", time.Second * 0},
 	{"5 minutes", time.Minute * 5},
 	{"10 minutes", time.Minute * 10},
 	{"30 minutes", time.Minute * 30},
@@ -33,7 +33,7 @@ var periods = []collapsePeriod{
 	{"24 hours", time.Hour * 24},
 }
 
-type collapseCommand struct {
+type silenceCommand struct {
 	command.TgCommand
 }
 
@@ -47,18 +47,18 @@ func New(
 	chatSettings chat_settings.ServiceInterface,
 ) command.TgCommandInterface {
 	mw = mw.Pipe(mwSubscription)
-	return &collapseCommand{
+	return &silenceCommand{
 		TgCommand: command.TgCommand{
 			Handler: mw.Pipe(begin(logger, i18n)).Handler(ctx),
 			Callbacks: map[string]handlers.Response{
-				collapseCbName: mw.Pipe(collapseCb(logger, i18n, chatSettings)).Handler(ctx),
+				silenceCbName: mw.Pipe(silenceCb(logger, i18n, chatSettings)).Handler(ctx),
 			},
 		},
 	}
 }
 
-func (c *collapseCommand) ApplyDescription(lang string, i18n I18n.I18nChainInterface) {
+func (c *silenceCommand) ApplyDescription(lang string, i18n I18n.I18nChainInterface) {
 	i18n.
 		Appendf("\n\n/%s - ", CommandName).
-		T(lang, "collapse_description")
+		T(lang, "silence_description")
 }

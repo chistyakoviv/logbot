@@ -1,4 +1,4 @@
-package collapse
+package silence
 
 import (
 	"context"
@@ -25,7 +25,7 @@ func begin(
 		msg := ectx.EffectiveMessage
 
 		logger.Debug(
-			"collapse command: initiate",
+			"silence command: initiate",
 			slog.Int64("chat_id", msg.Chat.Id),
 			slog.String("from", msg.From.Username),
 		)
@@ -35,18 +35,13 @@ func begin(
 			return ctx, middleware.ErrMissingLangMiddleware
 		}
 
-		isSilenced, ok := ctx.Value(middleware.SilenceKey).(bool)
-		if !ok {
-			return ctx, middleware.ErrMissingSilenceMiddleware
-		}
-
 		var buttons []gotgbot.InlineKeyboardButton
 		for idx, period := range periods {
 			queryParams := url.Values{}
-			queryParams.Add(collapsePeriodParam, strconv.Itoa(idx))
+			queryParams.Add(silencePeriodParam, strconv.Itoa(idx))
 			buttons = append(buttons, gotgbot.InlineKeyboardButton{
 				Text:         period.Label,
-				CallbackData: fmt.Sprintf("%s?%s", collapseCbName, queryParams.Encode()),
+				CallbackData: fmt.Sprintf("%s?%s", silenceCbName, queryParams.Encode()),
 			})
 		}
 
@@ -63,10 +58,11 @@ func begin(
 					}),
 				).
 				Append("\n").
-				T(lang, "collapse_select_period").
+				T(lang, "silence_select_period").
 				String(),
 			&gotgbot.SendMessageOpts{
-				DisableNotification: isSilenced,
+				// For the silence command notifications are always disabled
+				DisableNotification: true,
 				ParseMode:           "html",
 				ReplyMarkup: gotgbot.InlineKeyboardMarkup{
 					InlineKeyboard: utils.Chunk(buttons, columns),

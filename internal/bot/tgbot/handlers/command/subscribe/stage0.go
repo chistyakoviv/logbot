@@ -41,6 +41,11 @@ func stage0(
 			return ctx, middleware.ErrMissingLangMiddleware
 		}
 
+		isSilenced, ok := ctx.Value(middleware.SilenceKey).(bool)
+		if !ok {
+			return ctx, middleware.ErrMissingSilenceMiddleware
+		}
+
 		var err error
 		if err := uuid.Validate(token); err != nil {
 			_, err := b.SendMessage(
@@ -59,7 +64,8 @@ func stage0(
 					T(lang, "subscribe_invalid_token").
 					String(),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return ctx, err
@@ -82,7 +88,8 @@ func stage0(
 					T(lang, "subscribe_token_exists").
 					String(),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return ctx, err
@@ -120,7 +127,8 @@ func stage0(
 					T(lang, "subscribe_error").
 					String(),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return ctx, err
@@ -148,7 +156,8 @@ func stage0(
 				).
 				String(),
 			&gotgbot.SendMessageOpts{
-				ParseMode: "html",
+				DisableNotification: isSilenced,
+				ParseMode:           "html",
 			},
 		)
 		return ctx, err

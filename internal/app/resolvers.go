@@ -250,6 +250,16 @@ func resolveTgSuperuserMiddleware(c di.Container) tgMiddlewares.TgMiddlewareHand
 	return middleware
 }
 
+func resolveTgSilenceMiddleware(c di.Container) tgMiddlewares.TgMiddlewareHandler {
+	middleware, err := di.Resolve[tgMiddlewares.TgMiddlewareHandler](c, "tgSilenceMiddleware")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve silence middleware definition: %v", err)
+	}
+
+	return middleware
+}
+
 // Repositories
 func resolveSubscriptionsRepository(c di.Container) subscriptions.RepositoryInterface {
 	repo, err := di.Resolve[subscriptions.RepositoryInterface](c, "subscriptionsRepository")

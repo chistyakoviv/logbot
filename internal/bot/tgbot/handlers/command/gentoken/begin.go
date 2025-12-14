@@ -31,6 +31,11 @@ func begin(
 			return ctx, middleware.ErrMissingLangMiddleware
 		}
 
+		isSilenced, ok := ctx.Value(middleware.SilenceKey).(bool)
+		if !ok {
+			return ctx, middleware.ErrMissingSilenceMiddleware
+		}
+
 		token := uuid.New()
 		message := i18n.
 			Chain().
@@ -56,7 +61,8 @@ func begin(
 			msg.Chat.Id,
 			message,
 			&gotgbot.SendMessageOpts{
-				ParseMode: "html",
+				DisableNotification: isSilenced,
+				ParseMode:           "html",
 			},
 		)
 		return ctx, err

@@ -35,6 +35,11 @@ func begin(
 			return ctx, middleware.ErrMissingLangMiddleware
 		}
 
+		isSilenced, ok := ctx.Value(middleware.SilenceKey).(bool)
+		if !ok {
+			return ctx, middleware.ErrMissingSilenceMiddleware
+		}
+
 		var buttons []gotgbot.InlineKeyboardButton
 		for idx, period := range periods {
 			queryParams := url.Values{}
@@ -61,8 +66,7 @@ func begin(
 				T(lang, "mute_select_period").
 				String(),
 			&gotgbot.SendMessageOpts{
-				// For the silence command notifications are always disabled
-				DisableNotification: true,
+				DisableNotification: isSilenced,
 				ParseMode:           "html",
 				ReplyMarkup: gotgbot.InlineKeyboardMarkup{
 					InlineKeyboard: utils.Chunk(buttons, columns),

@@ -13,6 +13,7 @@ type RepositoryInterface interface {
 	Create(ctx context.Context, in *model.ChatSettings) (*model.ChatSettings, error)
 	UpdateCollapsePeriod(ctx context.Context, chatId int64, period time.Duration) (*model.ChatSettings, error)
 	UpdateMuteUntil(ctx context.Context, chatId int64, muteUntil time.Time) (*model.ChatSettings, error)
+	UpdateSilenceUntil(ctx context.Context, chatId int64, silenceUntil time.Time) (*model.ChatSettings, error)
 	Find(ctx context.Context, chatId int64) (*model.ChatSettings, error)
 }
 

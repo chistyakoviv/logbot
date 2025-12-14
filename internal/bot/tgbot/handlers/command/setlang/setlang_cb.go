@@ -9,6 +9,7 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares/middleware"
 	"github.com/chistyakoviv/logbot/internal/db"
 	I18n "github.com/chistyakoviv/logbot/internal/i18n"
 	"github.com/chistyakoviv/logbot/internal/i18n/language"
@@ -31,6 +32,11 @@ func setlangCb(
 			slog.String("from", cb.From.Username),
 		)
 
+		isSilenced, ok := ctx.Value(middleware.SilenceKey).(bool)
+		if !ok {
+			return ctx, middleware.ErrMissingSilenceMiddleware
+		}
+
 		lang, currLangErr := userSettings.GetLang(ctx, cb.From.Id)
 		if currLangErr != nil && !errors.Is(currLangErr, db.ErrNotFound) {
 			logger.Error("error occurred while getting the user's language", slogger.Err(currLangErr))
@@ -38,7 +44,8 @@ func setlangCb(
 				cb.Message.GetChat().Id,
 				i18n.T(lang, "callback_data_parse_error"),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return ctx, err
@@ -51,7 +58,8 @@ func setlangCb(
 				cb.Message.GetChat().Id,
 				i18n.T(lang, "callback_data_parse_error"),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return ctx, err
@@ -69,7 +77,8 @@ func setlangCb(
 					cb.Message.GetChat().Id,
 					i18n.T(lang, "callback_failed_to_answer"),
 					&gotgbot.SendMessageOpts{
-						ParseMode: "html",
+						DisableNotification: isSilenced,
+						ParseMode:           "html",
 					},
 				)
 				return ctx, err
@@ -88,7 +97,8 @@ func setlangCb(
 					cb.Message.GetChat().Id,
 					i18n.T(lang, "callback_failed_to_answer"),
 					&gotgbot.SendMessageOpts{
-						ParseMode: "html",
+						DisableNotification: isSilenced,
+						ParseMode:           "html",
 					},
 				)
 				return ctx, err
@@ -105,7 +115,8 @@ func setlangCb(
 				cb.Message.GetChat().Id,
 				i18n.T(lang, "setlang_error"),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return ctx, err
@@ -120,7 +131,8 @@ func setlangCb(
 				cb.Message.GetChat().Id,
 				i18n.T(lang, "callback_failed_to_answer"),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return ctx, err

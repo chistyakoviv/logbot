@@ -38,6 +38,11 @@ func stage1(
 			return ctx, middleware.ErrMissingLangMiddleware
 		}
 
+		isSilenced, ok := ctx.Value(middleware.SilenceKey).(bool)
+		if !ok {
+			return ctx, middleware.ErrMissingSilenceMiddleware
+		}
+
 		if len(projectName) > model.MaxProjectNameLength {
 			_, err := b.SendMessage(
 				msg.Chat.Id,
@@ -55,7 +60,8 @@ func stage1(
 					T(lang, "subscribe_too_long_project_name").
 					String(),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return ctx, err
@@ -87,7 +93,8 @@ func stage1(
 					T(lang, "subscribe_error").
 					String(),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return ctx, err
@@ -118,7 +125,8 @@ func stage1(
 					T(lang, "addlabels_error").
 					String(),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return ctx, err
@@ -143,7 +151,8 @@ func stage1(
 					T(lang, "subscribe_error").
 					String(),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return ctx, err
@@ -167,7 +176,8 @@ func stage1(
 					T(lang, "subscribe_token_exists").
 					String(),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return ctx, err
@@ -196,7 +206,8 @@ func stage1(
 					T(lang, "subscribe_error").
 					String(),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return ctx, err
@@ -237,7 +248,8 @@ func stage1(
 				).
 				String(),
 			&gotgbot.SendMessageOpts{
-				ParseMode: "html",
+				DisableNotification: isSilenced,
+				ParseMode:           "html",
 			},
 		)
 		return ctx, err

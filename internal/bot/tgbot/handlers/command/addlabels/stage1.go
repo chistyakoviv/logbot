@@ -37,6 +37,11 @@ func stage1(
 			return ctx, middleware.ErrMissingLangMiddleware
 		}
 
+		isSilenced, ok := ctx.Value(middleware.SilenceKey).(bool)
+		if !ok {
+			return ctx, middleware.ErrMissingSilenceMiddleware
+		}
+
 		labels := make([]string, 0)
 		for _, label := range strings.Split(msg.Text, ",") {
 			trimmedLabel := strings.TrimSpace(label)
@@ -50,7 +55,8 @@ func stage1(
 				msg.Chat.Id,
 				i18n.T(lang, "addlabels_no_labels_error"),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return ctx, err
@@ -82,7 +88,8 @@ func stage1(
 					T(lang, "addlabels_error").
 					String(),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return ctx, err
@@ -113,7 +120,8 @@ func stage1(
 					T(lang, "addlabels_error").
 					String(),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return ctx, err
@@ -137,7 +145,8 @@ func stage1(
 					T(lang, "addlabels_error").
 					String(),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return ctx, err
@@ -181,7 +190,8 @@ func stage1(
 					T(lang, "addlabels_failed_apply_labels_error").
 					String(),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return ctx, err
@@ -203,7 +213,8 @@ func stage1(
 				T(lang, "addlabels_success").
 				String(),
 			&gotgbot.SendMessageOpts{
-				ParseMode: "html",
+				DisableNotification: isSilenced,
+				ParseMode:           "html",
 			},
 		)
 		if err != nil {

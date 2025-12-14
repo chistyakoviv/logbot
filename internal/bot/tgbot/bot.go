@@ -85,9 +85,9 @@ func (tgb *TgBot) init() {
 
 	// Add all command handlers.
 	for name, command := range tgb.commands {
-		dispatcher.AddHandler(handlers.NewCommand(name, command.Handler))
+		dispatcher.AddHandler(handlers.NewCommand(name, command.GetHandler()))
 		// Register all the callbacks the command provides
-		for cbName, cb := range command.Callbacks {
+		for cbName, cb := range command.GetCallbacks() {
 			dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix(cbName), cb))
 		}
 	}

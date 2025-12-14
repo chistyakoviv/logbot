@@ -33,9 +33,12 @@ func begin(
 			return ctx, middleware.ErrMissingLangMiddleware
 		}
 
-		var err error
+		isSilenced, ok := ctx.Value(middleware.SilenceKey).(bool)
+		if !ok {
+			return ctx, middleware.ErrMissingSilenceMiddleware
+		}
 
-		_, err = commands.ResetByKey(
+		_, err := commands.ResetByKey(
 			ctx,
 			&model.CommandKey{
 				ChatId: msg.Chat.Id,
@@ -62,7 +65,8 @@ func begin(
 					T(lang, "subscribe_error").
 					String(),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return ctx, err
@@ -84,7 +88,8 @@ func begin(
 				T(lang, "subscribe_begin").
 				String(),
 			&gotgbot.SendMessageOpts{
-				ParseMode: "html",
+				DisableNotification: isSilenced,
+				ParseMode:           "html",
 			},
 		)
 		return ctx, err

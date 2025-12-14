@@ -16,6 +16,10 @@ const CommandName = "setlang"
 const SetLangCbName = "setlang"
 const langParam = "lang"
 
+type setlangCommand struct {
+	command.TgCommand
+}
+
 func New(
 	ctx context.Context,
 	mw middlewares.TgMiddlewareInterface,
@@ -23,12 +27,19 @@ func New(
 	i18n I18n.I18nInterface,
 	commands commands.ServiceInterface,
 	userSettings user_settings.ServiceInterface,
-) *command.TgCommand {
-	return &command.TgCommand{
-		Handler: mw.Pipe(begin(logger, i18n)).Handler(ctx),
-		Stages:  []handlers.Response{},
-		Callbacks: map[string]handlers.Response{
-			SetLangCbName: mw.Pipe(setlangCb(logger, i18n, userSettings)).Handler(ctx),
+) command.TgCommandInterface {
+	return &setlangCommand{
+		TgCommand: command.TgCommand{
+			Handler: mw.Pipe(begin(logger, i18n)).Handler(ctx),
+			Callbacks: map[string]handlers.Response{
+				SetLangCbName: mw.Pipe(setlangCb(logger, i18n, userSettings)).Handler(ctx),
+			},
 		},
 	}
+}
+
+func (c *setlangCommand) ApplyDescription(lang string, i18n I18n.I18nChainInterface) {
+	i18n.
+		Appendf("\n\n/%s - ", CommandName).
+		T(lang, "setlang_description")
 }

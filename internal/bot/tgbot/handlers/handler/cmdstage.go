@@ -59,11 +59,13 @@ func commandStageHandler(ctx context.Context,
 			return nil
 		}
 
-		if command.Stage < 0 || command.Stage >= len(tgCommand.Stages) {
+		stages := tgCommand.GetStages()
+
+		if command.Stage < 0 || command.Stage >= len(stages) {
 			logger.Error("command stage is out of range", slog.Int("stage", command.Stage))
 			return nil
 		}
 
-		return tgCommand.Stages[command.Stage](b, ectx)
+		return stages[command.Stage](b, ectx)
 	}
 }

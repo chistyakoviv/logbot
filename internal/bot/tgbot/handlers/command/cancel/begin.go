@@ -36,6 +36,11 @@ func begin(
 			return ctx, middleware.ErrMissingLangMiddleware
 		}
 
+		isSilenced, ok := ctx.Value(middleware.SilenceKey).(bool)
+		if !ok {
+			return ctx, middleware.ErrMissingSilenceMiddleware
+		}
+
 		currCommand, err := commands.FindByKey(
 			ctx,
 			&model.CommandKey{
@@ -57,7 +62,8 @@ func begin(
 					T(lang, "cancel_command_error").
 					String(),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return ctx, err
@@ -75,7 +81,8 @@ func begin(
 					T(lang, "cancel_no_current_command").
 					String(),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return ctx, err
@@ -106,7 +113,8 @@ func begin(
 					T(lang, "cancel_command_error").
 					String(),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return ctx, err
@@ -126,7 +134,8 @@ func begin(
 			T(lang, "cancel_command").
 			String()
 		_, err = b.SendMessage(msg.Chat.Id, message, &gotgbot.SendMessageOpts{
-			ParseMode: "html",
+			DisableNotification: isSilenced,
+			ParseMode:           "html",
 		})
 		return ctx, err
 	}

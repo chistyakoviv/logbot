@@ -31,6 +31,11 @@ func begin(
 			return ctx, middleware.ErrMissingLangMiddleware
 		}
 
+		isSilenced, ok := ctx.Value(middleware.SilenceKey).(bool)
+		if !ok {
+			return ctx, middleware.ErrMissingSilenceMiddleware
+		}
+
 		var langs []gotgbot.InlineKeyboardButton
 		for _, lang := range i18n.GetLangs() {
 			queryParams := url.Values{}
@@ -57,7 +62,8 @@ func begin(
 				T(lang, "setlang_select_language").
 				String(),
 			&gotgbot.SendMessageOpts{
-				ParseMode: "html",
+				DisableNotification: isSilenced,
+				ParseMode:           "html",
 				ReplyMarkup: gotgbot.InlineKeyboardMarkup{
 					InlineKeyboard: [][]gotgbot.InlineKeyboardButton{langs},
 				},

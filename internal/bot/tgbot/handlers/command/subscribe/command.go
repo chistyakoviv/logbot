@@ -19,6 +19,10 @@ const (
 	stageProjectName
 )
 
+type subscribeCommand struct {
+	command.TgCommand
+}
+
 func New(
 	ctx context.Context,
 	mw middlewares.TgMiddlewareInterface,
@@ -27,13 +31,21 @@ func New(
 	i18n i18n.I18nInterface,
 	subscriptions subscriptions.ServiceInterface,
 	commands commands.ServiceInterface,
-) *command.TgCommand {
+) command.TgCommandInterface {
 	mw = mw.Pipe(mwSuperuser)
-	return &command.TgCommand{
-		Handler: mw.Pipe(begin(logger, i18n, commands)).Handler(ctx),
-		Stages: []handlers.Response{
-			mw.Pipe(stage0(logger, i18n, subscriptions, commands)).Handler(ctx),
-			mw.Pipe(stage1(logger, i18n, subscriptions, commands)).Handler(ctx),
+	return &subscribeCommand{
+		TgCommand: command.TgCommand{
+			Handler: mw.Pipe(begin(logger, i18n, commands)).Handler(ctx),
+			Stages: []handlers.Response{
+				mw.Pipe(stage0(logger, i18n, subscriptions, commands)).Handler(ctx),
+				mw.Pipe(stage1(logger, i18n, subscriptions, commands)).Handler(ctx),
+			},
 		},
 	}
+}
+
+func (c *subscribeCommand) ApplyDescription(lang string, i18n i18n.I18nChainInterface) {
+	i18n.
+		Appendf("\n\n/%s - ", CommandName).
+		T(lang, "subscribe_description")
 }

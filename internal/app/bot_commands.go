@@ -13,6 +13,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/mute"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/rmlabels"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/setlang"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/silence"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/start"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/subscribe"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/subscriptions"
@@ -37,10 +38,11 @@ func BuildTgCommands(
 	mwLang := resolveTgLangMiddleware(c)
 	mwSuperuser := resolveTgSuperuserMiddleware(c)
 	mwSubscription := resolveTgSubscriptionMiddleware(c)
+	mwSilence := resolveTgSilenceMiddleware(c)
 
-	// Lang middleware must be the first
-	mw = mw.Pipe(mwLang)
-	return command.TgCommands{
+	// Lang middleware must be the first, silence must be the second
+	mw = mw.Pipe(mwLang).Pipe(mwSilence)
+	tgCommands := command.TgCommands{
 		start.CommandName: start.New(
 			ctx,
 			mw,
@@ -123,12 +125,6 @@ func BuildTgCommands(
 			srvCommands,
 			srvChatSettings,
 		),
-		help.CommandName: help.New(
-			ctx,
-			mw,
-			logger,
-			i18n,
-		),
 		gentoken.CommandName: gentoken.New(
 			ctx,
 			mw,
@@ -142,5 +138,29 @@ func BuildTgCommands(
 			i18n,
 			srvSubscriptions,
 		),
+		silence.CommandName: silence.New(
+			ctx,
+			mw,
+			mwSubscription,
+			logger,
+			i18n,
+			srvCommands,
+			srvChatSettings,
+		),
 	}
+
+	// The help command requires all commands as a dependency,
+	// but the help command itself is command, so commands cannot be
+	// constructed before the help command.
+	// Use a little trick to overcome this problem by constructing
+	// the help command after all commands are constructed.
+	tgCommands[help.CommandName] = help.New(
+		ctx,
+		mw,
+		logger,
+		i18n,
+		tgCommands,
+	)
+
+	return tgCommands
 }

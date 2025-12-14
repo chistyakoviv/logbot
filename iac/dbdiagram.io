@@ -23,7 +23,8 @@ Ref logs_sub: subscriptions.token - logs.token
 Table chat_settings {
   chat_id bigint [primary key, not null]
   collapse_period int [default: 0, note: 'Timeout period during which no notfications are sent for identical logs']
-  silence_until timestamp [default: 0, note: 'Timeout period during which no notifications are sent']
+  mute_until timestamp [default: 0, note: 'Timeout period during which no notifications are sent']
+  silence_until timestamp [default: 0, note: 'Timeout period during which notifications are sent silently']
   updated_at timestamp
 }
 

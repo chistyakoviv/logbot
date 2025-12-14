@@ -32,6 +32,11 @@ func begin(
 			return ctx, middleware.ErrMissingLangMiddleware
 		}
 
+		isSilenced, ok := ctx.Value(middleware.SilenceKey).(bool)
+		if !ok {
+			return ctx, middleware.ErrMissingSilenceMiddleware
+		}
+
 		entries, err := labelsService.FindAllByChat(ctx, msg.Chat.Id)
 		if err != nil {
 			logger.Error("error occurred while retrieving labels", slogger.Err(err))
@@ -51,7 +56,8 @@ func begin(
 					T(lang, "labels_error").
 					String(),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return ctx, err
@@ -74,7 +80,8 @@ func begin(
 					T(lang, "labels_empty").
 					String(),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return ctx, err
@@ -112,7 +119,8 @@ func begin(
 			msg.Chat.Id,
 			messageBuilder.String(),
 			&gotgbot.SendMessageOpts{
-				ParseMode: "html",
+				DisableNotification: isSilenced,
+				ParseMode:           "html",
 			},
 		)
 

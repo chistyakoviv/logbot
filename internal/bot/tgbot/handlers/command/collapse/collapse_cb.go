@@ -34,6 +34,11 @@ func collapseCb(
 			return ctx, middleware.ErrMissingLangMiddleware
 		}
 
+		isSilenced, ok := ctx.Value(middleware.SilenceKey).(bool)
+		if !ok {
+			return ctx, middleware.ErrMissingSilenceMiddleware
+		}
+
 		query, err := url.Parse(cb.Data)
 		if err != nil {
 			logger.Error("error occurred while parsing the callback data", slogger.Err(err))
@@ -41,7 +46,8 @@ func collapseCb(
 				cb.Message.GetChat().Id,
 				i18n.T(lang, "callback_data_parse_error"),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return ctx, err
@@ -55,7 +61,8 @@ func collapseCb(
 				cb.Message.GetChat().Id,
 				i18n.T(lang, "callback_data_parse_error"),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return ctx, err
@@ -66,7 +73,8 @@ func collapseCb(
 				cb.Message.GetChat().Id,
 				i18n.T(lang, "callback_data_parse_error"),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return ctx, err
@@ -87,7 +95,8 @@ func collapseCb(
 				cb.Message.GetChat().Id,
 				i18n.T(lang, "callback_data_parse_error"),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return ctx, err
@@ -108,7 +117,8 @@ func collapseCb(
 				cb.Message.GetChat().Id,
 				i18n.T(lang, "callback_failed_to_answer"),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return ctx, err
@@ -136,7 +146,8 @@ func collapseCb(
 				).
 				String(),
 			&gotgbot.SendMessageOpts{
-				ParseMode: "html",
+				DisableNotification: isSilenced,
+				ParseMode:           "html",
 			},
 		)
 		return ctx, err

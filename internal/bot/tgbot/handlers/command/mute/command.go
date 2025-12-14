@@ -35,6 +35,10 @@ var periods = []mutePeriod{
 	{"3 days", time.Hour * 24 * 3},
 }
 
+type muteCommand struct {
+	command.TgCommand
+}
+
 func New(
 	ctx context.Context,
 	mw middlewares.TgMiddlewareInterface,
@@ -43,13 +47,20 @@ func New(
 	i18n I18n.I18nInterface,
 	commands commands.ServiceInterface,
 	chatSettings chat_settings.ServiceInterface,
-) *command.TgCommand {
+) command.TgCommandInterface {
 	mw = mw.Pipe(mwSubscription)
-	return &command.TgCommand{
-		Handler: mw.Pipe(begin(logger, i18n)).Handler(ctx),
-		Stages:  []handlers.Response{},
-		Callbacks: map[string]handlers.Response{
-			muteCbName: mw.Pipe(muteCb(logger, i18n, chatSettings)).Handler(ctx),
+	return &muteCommand{
+		TgCommand: command.TgCommand{
+			Handler: mw.Pipe(begin(logger, i18n)).Handler(ctx),
+			Callbacks: map[string]handlers.Response{
+				muteCbName: mw.Pipe(muteCb(logger, i18n, chatSettings)).Handler(ctx),
+			},
 		},
 	}
+}
+
+func (c *muteCommand) ApplyDescription(lang string, i18n I18n.I18nChainInterface) {
+	i18n.
+		Appendf("\n\n/%s - ", CommandName).
+		T(lang, "mute_description")
 }

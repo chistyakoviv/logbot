@@ -118,6 +118,10 @@ func New() *I18n {
 				"subscriptions_error":        en.SubscriptionsError,
 				"subscriptions_list":         en.SubscriptionsList,
 				"subscriptions_description":  en.SubscriptionsDescription,
+
+				"silence_select_period": en.SilenceSelectPeriod,
+				"silence_period_set":    en.SilencePeriodSet,
+				"silence_description":   en.SilenceDescription,
 			},
 		},
 	}

@@ -35,6 +35,11 @@ func stage0(
 			return ctx, middleware.ErrMissingLangMiddleware
 		}
 
+		isSilenced, ok := ctx.Value(middleware.SilenceKey).(bool)
+		if !ok {
+			return ctx, middleware.ErrMissingSilenceMiddleware
+		}
+
 		userSet := make(map[string]bool, 0)
 		if msg.Entities != nil {
 			for _, entity := range msg.Entities {
@@ -66,7 +71,8 @@ func stage0(
 					T(lang, "rmlabels_no_mentions_error").
 					String(),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return ctx, err
@@ -107,7 +113,8 @@ func stage0(
 					T(lang, "rmlabels_save_mentions_error").
 					String(),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return ctx, err
@@ -129,7 +136,8 @@ func stage0(
 				T(lang, "rmlabels_enter_labels").
 				String(),
 			&gotgbot.SendMessageOpts{
-				ParseMode: "html",
+				DisableNotification: isSilenced,
+				ParseMode:           "html",
 			},
 		)
 		if err != nil {

@@ -121,25 +121,21 @@ func New(
 		}
 
 		now := time.Now().UTC()
-		var settings *model.ChatSettings
 		for _, subscription := range subscriptions {
-			settings, err = chatSettings.Find(ctx, subscription.ChatId)
+			settings, err := chatSettings.Find(ctx, subscription.ChatId)
 			if err != nil {
 				if !errors.Is(err, db.ErrNotFound) {
 					logger.Error("failed to find chat settings", slogger.Err(err))
 					continue
 				}
-				// Use default chat settings
-				settings = &model.ChatSettings{}
+				// Settings have default values when not found in DB
 			}
 
 			// Skip notification if chat is muted
-			if !settings.MuteUntil.IsZero() && now.Before(settings.MuteUntil) {
-				// Chat is silenced
+			if ok, muteTimeRemaining := settings.IsMuted(now); ok {
 				logger.Debug(
 					"Notification wasn’t sent because this chat is muted",
-					slog.Duration("mute_time_remaining",
-						settings.MuteUntil.Sub(now)),
+					slog.Duration("mute_time_remaining", muteTimeRemaining),
 				)
 				continue
 			}
@@ -149,14 +145,8 @@ func New(
 				Token:  log.Token,
 				Hash:   log.Hash,
 			})
-			if err != nil && !errors.Is(err, db.ErrNotFound) {
-				logger.Error("failed to find former log with token and hash", slogger.Err(err))
-				continue
-			}
 			// Skip notification if it was sent recently
-			timeSinceLastSent := now.Sub(lastSentTimestamp)
-			if err == nil && settings.CollapsePeriod > 0 && timeSinceLastSent < settings.CollapsePeriod {
-				// Notification falls within collapse period
+			if ok, timeSinceLastSent := settings.IsCollapsed(now, lastSentTimestamp); ok {
 				logger.Debug(
 					"Notification wasn’t sent because it falls within the collapse period",
 					slog.Duration("time_since_last_sent", timeSinceLastSent),
@@ -243,9 +233,14 @@ func New(
 				message.WriteString("\n```")
 			}
 
+			isSilenced, silenceTimeRemaining := settings.IsSilenced(now)
+			if isSilenced {
+				logger.Debug("Notifications are silenced", slog.Duration("silence_time_remaining", silenceTimeRemaining))
+			}
+
 			err = tgBot.SendMessage(subscription.ChatId, message.String(), &gotgbot.SendMessageOpts{
 				// Send silent notification
-				// DisableNotification: true,
+				DisableNotification: isSilenced,
 				// ParseMode: "MarkdownV2",
 				ParseMode: "Markdown",
 			})

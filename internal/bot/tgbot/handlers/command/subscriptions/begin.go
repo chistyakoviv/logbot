@@ -32,6 +32,11 @@ func begin(
 			return ctx, middleware.ErrMissingLangMiddleware
 		}
 
+		isSilenced, ok := ctx.Value(middleware.SilenceKey).(bool)
+		if !ok {
+			return ctx, middleware.ErrMissingSilenceMiddleware
+		}
+
 		subs, err := subscriptions.FindByChatId(ctx, msg.Chat.Id)
 		if err != nil {
 			logger.Error("error occurred while retrieving subscriptions", slogger.Err(err))
@@ -51,7 +56,8 @@ func begin(
 					T(lang, "subscriptions_error").
 					String(),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return ctx, err
@@ -74,7 +80,8 @@ func begin(
 					T(lang, "subscriptions_empty").
 					String(),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return ctx, err
@@ -110,7 +117,8 @@ func begin(
 			msg.Chat.Id,
 			message.String(),
 			&gotgbot.SendMessageOpts{
-				ParseMode: "html",
+				DisableNotification: isSilenced,
+				ParseMode:           "html",
 			},
 		)
 		return ctx, err

@@ -23,7 +23,8 @@ func (r *repository) Find(ctx context.Context, chatId int64) (*model.ChatSetting
 	var row ChatSettingsRow
 	if err := r.db.DB().Getx(ctx, &row, q); err != nil {
 		if errors.Is(err, db.ErrNotFound) {
-			return nil, err
+			// Return settings with default values
+			return &model.ChatSettings{ChatId: chatId}, err
 		}
 		return nil, fmt.Errorf("%s: %w", q.Name, err)
 	}
