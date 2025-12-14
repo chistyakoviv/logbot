@@ -167,7 +167,10 @@ func (a *app) Run(ctx context.Context) {
 				return
 			case <-ticker.C:
 				now := time.Now().UTC()
-				logs.DeleteOlderThan(ctx, now.Add(-cfg.LogCleaner.Retain))
+				err := logs.DeleteOlderThan(ctx, now.Add(-cfg.LogCleaner.Retain))
+				if err != nil {
+					logger.Error("failed to delete old logs", slogger.Err(err))
+				}
 			}
 		}
 	}()
