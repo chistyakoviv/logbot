@@ -2,6 +2,7 @@ package logs
 
 import (
 	"context"
+	"time"
 
 	"github.com/chistyakoviv/logbot/internal/db"
 	"github.com/chistyakoviv/logbot/internal/model"
@@ -15,6 +16,7 @@ type ServiceInterface interface {
 	Delete(ctx context.Context, id int) error
 	DeleteByToken(ctx context.Context, token uuid.UUID) error
 	DeleteByHash(ctx context.Context, hash string) error
+	DeleteOlderThan(ctx context.Context, timestamp time.Time) error
 }
 
 type service struct {

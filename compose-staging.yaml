@@ -10,6 +10,8 @@ services:
       LOGBOT_READ_TIMEOUT: 1s
       LOGBOT_WRITE_TIMEOUT: 1s
       LOGBOT_IDLE_TIMEOUT: 5s
+      LOGBOT_LOG_CLEANER_INTERVAL: 10m
+      LOGBOT_LOG_CLEANER_RETAIN: 672h
       POSTGRES_DSN: postgres://${DB_USER}:${DB_PASSWORD}@logbot-pg:5432/${DB_NAME}?sslmode=disable
     networks:
       - traefik-public

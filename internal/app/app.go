@@ -49,6 +49,7 @@ func (a *app) Run(ctx context.Context) {
 	logger := resolveLogger(a.container)
 	dq := resolveDeferredQ(a.container)
 	bot := resolveTgBot(a.container)
+	logs := resolveLogsService(a.container)
 
 	logger.Debug("Application is running in DEBUG mode")
 
@@ -143,6 +144,32 @@ func (a *app) Run(ctx context.Context) {
 		)
 
 		bot.Start(ctx)
+	}()
+
+	// Log cleaner
+	go func() {
+		logger.Info(
+			"starting log cleaner",
+			slog.String("interval", cfg.LogCleaner.Interval.String()),
+			slog.String("retain", cfg.LogCleaner.Retain.String()),
+		)
+
+		ticker := time.NewTicker(cfg.LogCleaner.Interval)
+		dq.Add(func() error {
+			// Free resources to avoid leaks
+			ticker.Stop()
+			return nil
+		})
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				now := time.Now().UTC()
+				logs.DeleteOlderThan(ctx, now.Add(-cfg.LogCleaner.Retain))
+			}
+		}
 	}()
 
 	// Graceful Shutdown

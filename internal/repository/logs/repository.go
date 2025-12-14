@@ -2,6 +2,7 @@ package logs
 
 import (
 	"context"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/chistyakoviv/logbot/internal/db"
@@ -15,6 +16,7 @@ type RepositoryInterface interface {
 	Delete(ctx context.Context, id int) error
 	DeleteByToken(ctx context.Context, token uuid.UUID) error
 	DeleteByHash(ctx context.Context, hash string) error
+	DeleteOlderThan(ctx context.Context, timestamp time.Time) error
 }
 
 type repository struct {
