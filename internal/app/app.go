@@ -12,6 +12,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/chistyakoviv/logbot/internal/db"
 	"github.com/chistyakoviv/logbot/internal/di"
 	"github.com/chistyakoviv/logbot/internal/lib/slogger"
 )
@@ -168,7 +169,7 @@ func (a *app) Run(ctx context.Context) {
 			case <-ticker.C:
 				now := time.Now().UTC()
 				err := logs.DeleteOlderThan(ctx, now.Add(-cfg.LogCleaner.Retain))
-				if err != nil {
+				if err != nil && !errors.Is(err, db.ErrNotFound) {
 					logger.Error("failed to delete old logs", slogger.Err(err))
 				}
 			}
