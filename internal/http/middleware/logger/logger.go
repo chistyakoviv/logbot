@@ -9,8 +9,6 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 )
 
-const requestId = "request_id"
-
 func New(logger *slog.Logger) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		logger := logger.With(
@@ -25,7 +23,7 @@ func New(logger *slog.Logger) func(next http.Handler) http.Handler {
 				slog.String("path", r.URL.Path),
 				slog.String("remote_addr", r.RemoteAddr),
 				slog.String("user_agent", r.UserAgent()),
-				slog.String(requestId, middleware.GetReqID(r.Context())),
+				slog.String("request_id", middleware.GetReqID(r.Context())),
 			)
 			ww := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
 

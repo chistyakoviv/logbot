@@ -1,21 +1,35 @@
 package handler
 
 import (
+	"io"
 	"log/slog"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot"
 	"github.com/chistyakoviv/logbot/internal/i18n"
+	"github.com/chistyakoviv/logbot/internal/parser"
 )
 
-func NewJoin(logger *slog.Logger, i18n i18n.I18nInterface) handlers.Response {
-	return joinHandler(logger, i18n)
+func NewJoin(
+	logger *slog.Logger,
+	i18n i18n.I18nInterface,
+	panicWriter io.Writer,
+	stackParser parser.StackParser,
+) handlers.Response {
+	return joinHandler(logger, i18n, panicWriter, stackParser)
 }
 
-func joinHandler(logger *slog.Logger, i18n i18n.I18nInterface) handlers.Response {
+func joinHandler(
+	logger *slog.Logger,
+	i18n i18n.I18nInterface,
+	panicWriter io.Writer,
+	stackParser parser.StackParser,
+) handlers.Response {
 	lang := i18n.DefaultLang()
 	return func(b *gotgbot.Bot, ctx *ext.Context) error {
+		tgbot.TgRecoverer(panicWriter, stackParser, logger)
 		msg := ctx.EffectiveMessage
 
 		for _, member := range msg.NewChatMembers {

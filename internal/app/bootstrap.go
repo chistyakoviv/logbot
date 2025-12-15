@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"io"
 	"log"
 	"log/slog"
 	"net/http"
@@ -25,10 +26,12 @@ import (
 	"github.com/chistyakoviv/logbot/internal/deferredq"
 	"github.com/chistyakoviv/logbot/internal/di"
 	mwLogger "github.com/chistyakoviv/logbot/internal/http/middleware/logger"
+	"github.com/chistyakoviv/logbot/internal/http/middleware/recoverer"
 	"github.com/chistyakoviv/logbot/internal/i18n"
 	"github.com/chistyakoviv/logbot/internal/lib/slogger"
 	"github.com/chistyakoviv/logbot/internal/loghasher"
 	"github.com/chistyakoviv/logbot/internal/markdown"
+	"github.com/chistyakoviv/logbot/internal/parser"
 	"github.com/chistyakoviv/logbot/internal/rbac"
 	"github.com/chistyakoviv/logbot/internal/repository/chat_settings"
 	"github.com/chistyakoviv/logbot/internal/repository/commands"
@@ -44,8 +47,9 @@ import (
 	srvLogs "github.com/chistyakoviv/logbot/internal/service/logs"
 	srvSubscriptions "github.com/chistyakoviv/logbot/internal/service/subscriptions"
 	srvUserSettings "github.com/chistyakoviv/logbot/internal/service/user_settings"
-	"github.com/go-chi/chi/middleware"
+	"github.com/chistyakoviv/logbot/internal/writer"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -82,6 +86,44 @@ func bootstrap(ctx context.Context, c di.Container) {
 		return logger
 	})
 
+	c.RegisterSingleton("stackParser", func(c di.Container) parser.StackParser {
+		cfg := resolveConfig(c)
+		var stackParser parser.StackParser
+
+		switch cfg.Env {
+		case config.EnvProd:
+			// Do not use colors in production
+			stackParser = parser.NewSimpleStackParser()
+		case config.EnvDev:
+			stackParser = parser.NewSimpleStackParser()
+		default:
+			// Use colors in development
+			stackParser = parser.NewPrettyStackParser()
+		}
+
+		return stackParser
+	})
+
+	c.RegisterSingleton("panicWriter", func(c di.Container) io.Writer {
+		cfg := resolveConfig(c)
+		logger := resolveLogger(c)
+
+		var panicWriter io.Writer
+
+		switch cfg.Env {
+		case config.EnvProd:
+			// Write panics to logger in production
+			panicWriter = writer.NewPanicLoggerWriter(logger)
+		case config.EnvDev:
+			panicWriter = writer.NewPanicLoggerWriter(logger)
+		default:
+			// Write panics to stderr in development
+			panicWriter = os.Stderr
+		}
+
+		return panicWriter
+	})
+
 	c.RegisterSingleton("db", func(c di.Container) db.Client {
 		cfg := resolveConfig(c)
 		logger := resolveLogger(c)
@@ -110,10 +152,12 @@ func bootstrap(ctx context.Context, c di.Container) {
 	c.RegisterSingleton("router", func(c di.Container) *chi.Mux {
 		router := chi.NewRouter()
 		logger := resolveLogger(c)
+		panicWriter := resolvePanicWriter(c)
+		stackParser := resolveStackParser(c)
 
 		router.Use(middleware.RequestID)
 		router.Use(mwLogger.New(logger))
-		router.Use(middleware.Recoverer)
+		router.Use(recoverer.New(panicWriter, stackParser, logger))
 		router.Use(middleware.NoCache)
 
 		return router
@@ -148,13 +192,25 @@ func bootstrap(ctx context.Context, c di.Container) {
 		logger := resolveLogger(c)
 		i18n := resolveI18n(c)
 		tgCommands := resolveTgCommands(c)
-		return handler.NewCommandStage(ctx, logger, i18n, resolveCommandsService(c), tgCommands)
+		panicWriter := resolvePanicWriter(c)
+		stackParser := resolveStackParser(c)
+		return handler.NewCommandStage(
+			ctx,
+			logger,
+			i18n,
+			resolveCommandsService(c),
+			tgCommands,
+			panicWriter,
+			stackParser,
+		)
 	})
 
 	c.RegisterSingleton("tgJoin", func(c di.Container) handlers.Response {
 		logger := resolveLogger(c)
 		i18n := resolveI18n(c)
-		return handler.NewJoin(logger, i18n)
+		panicWriter := resolvePanicWriter(c)
+		stackParser := resolveStackParser(c)
+		return handler.NewJoin(logger, i18n, panicWriter, stackParser)
 	})
 
 	c.RegisterSingleton("tgCommands", func(c di.Container) command.TgCommands {
@@ -235,7 +291,7 @@ func bootstrap(ctx context.Context, c di.Container) {
 	})
 
 	c.RegisterSingleton("tgMiddleware", func(c di.Container) tgMiddlewares.TgMiddlewareInterface {
-		return tgMiddlewares.NewMiddleware()
+		return tgMiddlewares.NewMiddleware(resolvePanicWriter(c), resolveStackParser(c), resolveLogger(c))
 	})
 
 	// Middlewares

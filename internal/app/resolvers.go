@@ -1,6 +1,7 @@
 package app
 
 import (
+	"io"
 	"log"
 	"log/slog"
 	"net/http"
@@ -17,6 +18,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/i18n"
 	"github.com/chistyakoviv/logbot/internal/loghasher"
 	"github.com/chistyakoviv/logbot/internal/markdown"
+	"github.com/chistyakoviv/logbot/internal/parser"
 	"github.com/chistyakoviv/logbot/internal/rbac"
 	"github.com/chistyakoviv/logbot/internal/repository/chat_settings"
 	"github.com/chistyakoviv/logbot/internal/repository/commands"
@@ -57,6 +59,26 @@ func resolveLogger(c di.Container) *slog.Logger {
 	}
 
 	return logger
+}
+
+func resolveStackParser(c di.Container) parser.StackParser {
+	stackParser, err := di.Resolve[parser.StackParser](c, "stackParser")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve stack parser definition: %v", err)
+	}
+
+	return stackParser
+}
+
+func resolvePanicWriter(c di.Container) io.Writer {
+	panicWriter, err := di.Resolve[io.Writer](c, "panicWriter")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve panic writer definition: %v", err)
+	}
+
+	return panicWriter
 }
 
 func resolveDbClient(c di.Container) db.Client {
