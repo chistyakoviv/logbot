@@ -21,7 +21,7 @@ type Config struct {
 type LogCleaner struct {
 	Interval time.Duration `yaml:"interval" env:"LOGBOT_LOG_CLEANER_INTERVAL" env-default:"10m"`
 	// 672 hours is 4 weeks
-	Retain time.Duration `yaml:"retain" env:"LOGBOT_LOG_CLEANER_RETAIN" env-default:"672h"`
+	Retention time.Duration `yaml:"retention" env:"LOGBOT_LOG_CLEANER_RETENTION" env-default:"672h"`
 }
 
 type Postgres struct {

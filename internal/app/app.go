@@ -150,10 +150,26 @@ func (a *app) Run(ctx context.Context) {
 	// Log cleaner
 	go func() {
 		logger.Info(
-			"starting log cleaner",
+			"starting the log cleaner",
 			slog.String("interval", cfg.LogCleaner.Interval.String()),
-			slog.String("retain", cfg.LogCleaner.Retain.String()),
+			slog.String("retention", cfg.LogCleaner.Retention.String()),
 		)
+
+		if cfg.LogCleaner.Interval <= 0 {
+			logger.Info(
+				"The log cleaner is disabled",
+				slog.String("interval", cfg.LogCleaner.Interval.String()),
+			)
+			return
+		}
+
+		if cfg.LogCleaner.Retention <= 0 {
+			logger.Info(
+				"The log cleaner retention policy is configured to preserve logs indefinitely",
+				slog.String("retention", cfg.LogCleaner.Retention.String()),
+			)
+			return
+		}
 
 		ticker := time.NewTicker(cfg.LogCleaner.Interval)
 		dq.Add(func() error {
@@ -167,7 +183,7 @@ func (a *app) Run(ctx context.Context) {
 				return
 			case <-ticker.C:
 				now := time.Now().UTC()
-				err := logs.DeleteOlderThan(ctx, now.Add(-cfg.LogCleaner.Retain))
+				err := logs.DeleteOlderThan(ctx, now.Add(-cfg.LogCleaner.Retention))
 				if err != nil && !errors.Is(err, db.ErrNotFound) {
 					logger.Error("failed to delete old logs", slogger.Err(err))
 				}
