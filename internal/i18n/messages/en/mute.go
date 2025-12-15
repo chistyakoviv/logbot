@@ -9,5 +9,5 @@ var MuteSelectPeriod = []string{
 }
 
 var MutePeriodSet = []string{
-	"Notifications will be muted for errors for the next %v.",
+	"Error notifications will be disabled for the next %v.",
 }
