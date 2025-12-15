@@ -157,7 +157,6 @@ func (a *app) Run(ctx context.Context) {
 
 		ticker := time.NewTicker(cfg.LogCleaner.Interval)
 		dq.Add(func() error {
-			// Free resources to avoid leaks
 			ticker.Stop()
 			return nil
 		})

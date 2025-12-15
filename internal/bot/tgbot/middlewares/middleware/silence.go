@@ -9,7 +9,6 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares"
-	"github.com/chistyakoviv/logbot/internal/db"
 	I18n "github.com/chistyakoviv/logbot/internal/i18n"
 	"github.com/chistyakoviv/logbot/internal/service/chat_settings"
 )
@@ -36,8 +35,8 @@ func Silence(
 			slog.String("from", msg.From.Username),
 		)
 
-		settings, err := chatSettings.Find(ctx, msg.Chat.Id)
-		if err != nil && !errors.Is(err, db.ErrNotFound) {
+		settings, err := chatSettings.FindOrDefaults(ctx, msg.Chat.Id)
+		if err != nil {
 			return ctx, err
 		}
 

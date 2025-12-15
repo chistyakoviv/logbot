@@ -13,7 +13,6 @@ import (
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/chistyakoviv/logbot/internal/bot"
-	"github.com/chistyakoviv/logbot/internal/db"
 	"github.com/chistyakoviv/logbot/internal/http/handlers"
 	"github.com/chistyakoviv/logbot/internal/lib/http/response"
 	"github.com/chistyakoviv/logbot/internal/lib/slogger"
@@ -122,13 +121,10 @@ func New(
 
 		now := time.Now().UTC()
 		for _, subscription := range subscriptions {
-			settings, err := chatSettings.Find(ctx, subscription.ChatId)
+			settings, err := chatSettings.FindOrDefaults(ctx, subscription.ChatId)
 			if err != nil {
-				if !errors.Is(err, db.ErrNotFound) {
-					logger.Error("failed to find chat settings", slogger.Err(err))
-					continue
-				}
-				// Settings have default values when not found in DB
+				logger.Error("failed to get chat settings", slogger.Err(err))
+				continue
 			}
 
 			// Skip notification if chat is muted
