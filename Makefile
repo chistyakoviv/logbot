@@ -2,9 +2,6 @@ DOCKER_COMPOSE_FILE ?= compose.yaml
 IMAGE_TAG ?= latest
 
 # Project commands
-cli-test:
-	docker compose -f ${DOCKER_COMPOSE_FILE} run --rm logbot-go-cli sh -c "CONFIG_PATH=config/local.yml go run cmd/logbot/main.go"
-
 migrate-status:
 	docker compose -f ${DOCKER_COMPOSE_FILE} run --rm logbot-go-cli make logbot-migrate-status
 
@@ -64,7 +61,7 @@ version:
 	git tag "${TAG}"
 	git push origin "${TAG}"
 
-local-domain:
+domain:
 	ngrok http 80
 
 # Docker commands
