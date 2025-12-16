@@ -40,8 +40,14 @@ func (s *prettyStackParser) Parse(debugStack []byte, rvr any) ([]byte, error) {
 	buf := &bytes.Buffer{}
 
 	buf.WriteString("\n")
-	s.cyan.Fprint(buf, " panic: ")
-	s.blue.Fprintf(buf, "%v", rvr)
+	_, err = s.cyan.Fprint(buf, " panic: ")
+	if err != nil {
+		return nil, err
+	}
+	_, err = s.blue.Fprintf(buf, "%v", rvr)
+	if err != nil {
+		return nil, err
+	}
 	buf.WriteString("\n\n")
 
 	// process debug stack info
@@ -89,6 +95,7 @@ func (s *prettyStackParser) decorateLine(line string, num int) (string, error) {
 }
 
 func (s *prettyStackParser) decorateFuncCallLine(line string, num int) (string, error) {
+	var err error
 	idx := strings.LastIndex(line, "(")
 	if idx < 0 {
 		return "", errors.New("not a func call line")
@@ -116,20 +123,33 @@ func (s *prettyStackParser) decorateFuncCallLine(line string, num int) (string, 
 	methodColor := s.green
 
 	if num == 0 {
-		s.red.Fprint(buf, " -> ")
+		_, err = s.red.Fprint(buf, " -> ")
+		if err != nil {
+			return "", err
+		}
 		pkgColor = s.magenta
 		methodColor = s.red
 	} else {
-		s.white.Fprint(buf, "    ")
+		_, err = s.white.Fprint(buf, "    ")
+		if err != nil {
+			return "", err
+		}
 	}
-	pkgColor.Fprint(buf, pkg)
-	methodColor.Fprint(buf, method)
+	_, err = pkgColor.Fprint(buf, pkg)
+	if err != nil {
+		return "", err
+	}
+	_, err = methodColor.Fprint(buf, method)
+	if err != nil {
+		return "", err
+	}
 	buf.WriteString("\n")
 	// s.black.Fprint(buf, addr)
 	return buf.String(), nil
 }
 
 func (s *prettyStackParser) decorateSourceLine(line string, num int) (string, error) {
+	var err error
 	idx := strings.LastIndex(line, ".go:")
 	if idx < 0 {
 		return "", errors.New("not a source line")
@@ -151,15 +171,27 @@ func (s *prettyStackParser) decorateSourceLine(line string, num int) (string, er
 	lineColor := s.green
 
 	if num == 1 {
-		s.red.Fprint(buf, " ->   ")
+		_, err = s.red.Fprint(buf, " ->   ")
+		if err != nil {
+			return "", err
+		}
 		fileColor = s.red
 		lineColor = s.magenta
 	} else {
 		buf.WriteString("      ")
 	}
-	s.white.Fprint(buf, dir)
-	fileColor.Fprint(buf, file)
-	lineColor.Fprint(buf, lineno)
+	_, err = s.white.Fprint(buf, dir)
+	if err != nil {
+		return "", err
+	}
+	_, err = fileColor.Fprint(buf, file)
+	if err != nil {
+		return "", err
+	}
+	_, err = lineColor.Fprint(buf, lineno)
+	if err != nil {
+		return "", err
+	}
 	if num == 1 {
 		buf.WriteString("\n")
 	}

@@ -1,21 +1,17 @@
-package handler
+package command
 
 import (
 	"context"
 	"errors"
-	"io"
 	"log/slog"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
-	"github.com/chistyakoviv/logbot/internal/bot/tgbot"
-	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command"
 	"github.com/chistyakoviv/logbot/internal/db"
 	"github.com/chistyakoviv/logbot/internal/i18n"
 	"github.com/chistyakoviv/logbot/internal/lib/slogger"
 	"github.com/chistyakoviv/logbot/internal/model"
-	"github.com/chistyakoviv/logbot/internal/parser"
 	"github.com/chistyakoviv/logbot/internal/service/commands"
 )
 
@@ -24,26 +20,21 @@ func NewCommandStage(
 	logger *slog.Logger,
 	i18n i18n.I18nInterface,
 	commands commands.ServiceInterface,
-	tgCommands command.TgCommands,
-	panicWriter io.Writer,
-	stackParser parser.StackParser,
+	tgCommands TgCommands,
 ) handlers.Response {
-	return commandStageHandler(ctx, logger, commands, tgCommands, panicWriter, stackParser)
+	return commandStageHandler(ctx, logger, commands, tgCommands)
 }
 
 func commandStageHandler(ctx context.Context,
 	logger *slog.Logger,
 	commands commands.ServiceInterface,
-	tgCommands command.TgCommands,
-	panicWriter io.Writer,
-	stackParser parser.StackParser,
+	tgCommands TgCommands,
 ) handlers.Response {
 	return func(b *gotgbot.Bot, ectx *ext.Context) error {
-		tgbot.TgRecoverer(panicWriter, stackParser, logger)
 		msg := ectx.EffectiveMessage
 
 		logger.Debug(
-			"try to find ongoing command",
+			"execute the next stage of the current command",
 			slog.String("chat", msg.Chat.Title),
 			slog.String("from", msg.From.Username),
 		)

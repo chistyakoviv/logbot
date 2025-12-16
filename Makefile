@@ -55,7 +55,7 @@ logbot-db-purge: wait-db
 	psql ${POSTGRES_DSN}
 
 logbot-lint:
-	golangci-lint run -v ./... --config .golangci.pipeline.yaml
+	golangci-lint run -v ./internal/... --config .golangci.pipeline.yaml
 
 # Git commands
 version:

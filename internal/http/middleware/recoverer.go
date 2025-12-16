@@ -1,4 +1,4 @@
-package recoverer
+package middleware
 
 // The original work was derived from Goji's middleware, source:
 // https://github.com/zenazn/goji/tree/master/web/middleware
@@ -13,7 +13,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/parser"
 )
 
-func New(
+func NewRecoverer(
 	panicWriter io.Writer,
 	stackParser parser.StackParser,
 	logger *slog.Logger,
@@ -27,13 +27,17 @@ func New(
 						// to the client is aborted, this should not be logged
 						panic(rvr)
 					}
+					var writeErr error
 					debugStack := debug.Stack()
 					out, err := stackParser.Parse(debugStack, rvr)
 					if err != nil {
 						logger.Error("failed to parse stack", slogger.Err(err))
-						panicWriter.Write(debugStack)
+						_, writeErr = panicWriter.Write(debugStack)
 					} else {
-						panicWriter.Write(out)
+						_, writeErr = panicWriter.Write(out)
+					}
+					if writeErr != nil {
+						logger.Error("failed to write stack", slogger.Err(err))
 					}
 
 					if r.Header.Get("Connection") != "Upgrade" {

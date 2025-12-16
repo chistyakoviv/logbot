@@ -25,8 +25,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/db/transaction"
 	"github.com/chistyakoviv/logbot/internal/deferredq"
 	"github.com/chistyakoviv/logbot/internal/di"
-	mwLogger "github.com/chistyakoviv/logbot/internal/http/middleware/logger"
-	"github.com/chistyakoviv/logbot/internal/http/middleware/recoverer"
+	httpMiddleware "github.com/chistyakoviv/logbot/internal/http/middleware"
 	"github.com/chistyakoviv/logbot/internal/i18n"
 	"github.com/chistyakoviv/logbot/internal/lib/slogger"
 	"github.com/chistyakoviv/logbot/internal/loghasher"
@@ -113,9 +112,9 @@ func bootstrap(ctx context.Context, c di.Container) {
 		switch cfg.Env {
 		case config.EnvProd:
 			// Write panics to logger in production
-			panicWriter = writer.NewPanicLoggerWriter(logger)
+			panicWriter = writer.NewLoggerPanicWriter(logger)
 		case config.EnvDev:
-			panicWriter = writer.NewPanicLoggerWriter(logger)
+			panicWriter = writer.NewLoggerPanicWriter(logger)
 		default:
 			// Write panics to stderr in development
 			panicWriter = os.Stderr
@@ -156,8 +155,8 @@ func bootstrap(ctx context.Context, c di.Container) {
 		stackParser := resolveStackParser(c)
 
 		router.Use(middleware.RequestID)
-		router.Use(mwLogger.New(logger))
-		router.Use(recoverer.New(panicWriter, stackParser, logger))
+		router.Use(httpMiddleware.NewLogger(logger))
+		router.Use(httpMiddleware.NewRecoverer(panicWriter, stackParser, logger))
 		router.Use(middleware.NoCache)
 
 		return router
@@ -192,16 +191,12 @@ func bootstrap(ctx context.Context, c di.Container) {
 		logger := resolveLogger(c)
 		i18n := resolveI18n(c)
 		tgCommands := resolveTgCommands(c)
-		panicWriter := resolvePanicWriter(c)
-		stackParser := resolveStackParser(c)
-		return handler.NewCommandStage(
+		return command.NewCommandStage(
 			ctx,
 			logger,
 			i18n,
 			resolveCommandsService(c),
 			tgCommands,
-			panicWriter,
-			stackParser,
 		)
 	})
 

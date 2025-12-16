@@ -1,4 +1,4 @@
-package logger
+package middleware
 
 import (
 	"net/http"
@@ -9,7 +9,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 )
 
-func New(logger *slog.Logger) func(next http.Handler) http.Handler {
+func NewLogger(logger *slog.Logger) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		logger := logger.With(
 			slog.String("component", "middleware/logger"),
