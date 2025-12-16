@@ -42,8 +42,6 @@ formatters:
 exclusions:
   generated: lax
   paths:
-    # Add chmod 777 to the data directory so that the linter can access it
-    - data
     - .cache
     - third_party$
     - builtin$

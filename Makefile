@@ -55,7 +55,8 @@ logbot-db-purge: wait-db
 	psql ${POSTGRES_DSN}
 
 logbot-lint:
-	golangci-lint run -v ./internal/... --config .golangci.pipeline.yaml
+# Scan directories separately to avoid golangci-lint access errors caused by directories owned by root
+	golangci-lint run -v ./internal/... ./cmd/... --config .golangci.pipeline.yaml
 
 # Git commands
 version:
