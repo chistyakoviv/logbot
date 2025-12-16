@@ -9,7 +9,7 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot"
 	"github.com/chistyakoviv/logbot/internal/i18n"
-	"github.com/chistyakoviv/logbot/internal/parser"
+	"github.com/chistyakoviv/logbot/internal/lib/parser"
 )
 
 func NewJoin(

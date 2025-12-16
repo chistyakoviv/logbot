@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"runtime/debug"
 
+	"github.com/chistyakoviv/logbot/internal/lib/parser"
 	"github.com/chistyakoviv/logbot/internal/lib/slogger"
-	"github.com/chistyakoviv/logbot/internal/parser"
 )
 
 func NewRecoverer(

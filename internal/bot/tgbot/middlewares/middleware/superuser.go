@@ -9,7 +9,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares"
 	"github.com/chistyakoviv/logbot/internal/constants"
 	I18n "github.com/chistyakoviv/logbot/internal/i18n"
-	"github.com/chistyakoviv/logbot/internal/rbac"
+	"github.com/chistyakoviv/logbot/internal/lib/rbac"
 	errs "github.com/pkg/errors"
 )
 

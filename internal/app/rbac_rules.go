@@ -3,7 +3,7 @@ package app
 import (
 	"fmt"
 
-	"github.com/chistyakoviv/logbot/internal/rbac"
+	"github.com/chistyakoviv/logbot/internal/lib/rbac"
 )
 
 type superuserRule struct{}
