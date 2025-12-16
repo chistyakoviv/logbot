@@ -17,13 +17,13 @@ type gentokenCommand struct {
 
 func New(
 	ctx context.Context,
-	mw middlewares.TgMiddlewareInterface,
+	mw middlewares.TgMiddlewareChainInterface,
 	logger *slog.Logger,
 	i18n I18n.I18nInterface,
 ) command.TgCommandInterface {
 	return &gentokenCommand{
 		TgCommand: command.TgCommand{
-			Handler: mw.Pipe(begin(logger, i18n)).Handler(ctx),
+			StartHandler: mw.Handler(ctx, begin(logger, i18n)),
 		},
 	}
 }

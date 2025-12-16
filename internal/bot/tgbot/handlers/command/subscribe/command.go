@@ -25,20 +25,18 @@ type subscribeCommand struct {
 
 func New(
 	ctx context.Context,
-	mw middlewares.TgMiddlewareInterface,
-	mwSuperuser middlewares.TgMiddlewareHandler,
+	mw middlewares.TgMiddlewareChainInterface,
 	logger *slog.Logger,
 	i18n i18n.I18nInterface,
 	subscriptions subscriptions.ServiceInterface,
 	commands commands.ServiceInterface,
 ) command.TgCommandInterface {
-	mw = mw.Pipe(mwSuperuser)
 	return &subscribeCommand{
 		TgCommand: command.TgCommand{
-			Handler: mw.Pipe(begin(logger, i18n, commands)).Handler(ctx),
-			Stages: []handlers.Response{
-				mw.Pipe(stage0(logger, i18n, subscriptions, commands)).Handler(ctx),
-				mw.Pipe(stage1(logger, i18n, subscriptions, commands)).Handler(ctx),
+			StartHandler: mw.Handler(ctx, begin(logger, i18n, commands)),
+			StageHandlers: []handlers.Response{
+				mw.Handler(ctx, stage0(logger, i18n, subscriptions, commands)),
+				mw.Handler(ctx, stage1(logger, i18n, subscriptions, commands)),
 			},
 		},
 	}

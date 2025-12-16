@@ -21,30 +21,33 @@ var (
 	ErrMissingLangMiddleware error = errors.New("missing lang middleware")
 )
 
-func Lang(logger *slog.Logger, userSettings user_settings.ServiceInterface) middlewares.TgMiddlewareHandler {
-	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) (context.Context, error) {
-		msg := ectx.EffectiveMessage
+func Lang(logger *slog.Logger, userSettings user_settings.ServiceInterface) middlewares.TgMiddleware {
+	fn := func(next middlewares.TgMiddlewareHandler) middlewares.TgMiddlewareHandler {
+		return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) error {
+			msg := ectx.EffectiveMessage
 
-		logger.Debug(
-			"lang middleware",
-			slog.Int64("chat_id", msg.Chat.Id),
-			slog.String("from", msg.From.Username),
-		)
-
-		lang, err := userSettings.GetLang(ctx, msg.From.Id)
-		if err != nil && !errors.Is(err, db.ErrNotFound) {
-			logger.Error("error occurred while getting the user's language", slogger.Err(err))
-			_, err := b.SendMessage(
-				msg.Chat.Id,
-				"Failed to get the user's language. Please check the log for more information.",
-				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
-				},
+			logger.Debug(
+				"lang middleware",
+				slog.Int64("chat_id", msg.Chat.Id),
+				slog.String("from", msg.From.Username),
 			)
-			return ctx, err
-		}
 
-		ctx = context.WithValue(ctx, LangKey, lang)
-		return ctx, nil
+			lang, err := userSettings.GetLang(ctx, msg.From.Id)
+			if err != nil && !errors.Is(err, db.ErrNotFound) {
+				logger.Error("error occurred while getting the user's language", slogger.Err(err))
+				_, err := b.SendMessage(
+					msg.Chat.Id,
+					"Failed to get the user's language. Please check the log for more information.",
+					&gotgbot.SendMessageOpts{
+						ParseMode: "html",
+					},
+				)
+				return err
+			}
+
+			ctx = context.WithValue(ctx, LangKey, lang)
+			return next(ctx, b, ectx)
+		}
 	}
+	return fn
 }

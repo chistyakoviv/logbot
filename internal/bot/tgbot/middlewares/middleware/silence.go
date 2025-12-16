@@ -25,24 +25,27 @@ func Silence(
 	logger *slog.Logger,
 	i18n I18n.I18nInterface,
 	chatSettings chat_settings.ServiceInterface,
-) middlewares.TgMiddlewareHandler {
-	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) (context.Context, error) {
-		msg := ectx.EffectiveMessage
+) middlewares.TgMiddleware {
+	fn := func(next middlewares.TgMiddlewareHandler) middlewares.TgMiddlewareHandler {
+		return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) error {
+			msg := ectx.EffectiveMessage
 
-		logger.Debug(
-			"silence middleware",
-			slog.Int64("chat_id", msg.Chat.Id),
-			slog.String("from", msg.From.Username),
-		)
+			logger.Debug(
+				"silence middleware",
+				slog.Int64("chat_id", msg.Chat.Id),
+				slog.String("from", msg.From.Username),
+			)
 
-		settings, err := chatSettings.FindOrDefaults(ctx, msg.Chat.Id)
-		if err != nil {
-			return ctx, err
+			settings, err := chatSettings.FindOrDefaults(ctx, msg.Chat.Id)
+			if err != nil {
+				return err
+			}
+
+			isSilenced, _ := settings.IsSilenced(time.Now().UTC())
+
+			ctx = context.WithValue(ctx, SilenceKey, isSilenced)
+			return next(ctx, b, ectx)
 		}
-
-		isSilenced, _ := settings.IsSilenced(time.Now().UTC())
-
-		ctx = context.WithValue(ctx, SilenceKey, isSilenced)
-		return ctx, nil
 	}
+	return fn
 }

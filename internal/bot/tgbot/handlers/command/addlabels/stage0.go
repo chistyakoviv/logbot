@@ -20,7 +20,7 @@ func stage0(
 	i18n I18n.I18nInterface,
 	commands commands.ServiceInterface,
 ) middlewares.TgMiddlewareHandler {
-	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) (context.Context, error) {
+	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) error {
 		msg := ectx.EffectiveMessage
 
 		logger.Debug(
@@ -32,12 +32,12 @@ func stage0(
 
 		lang, ok := ctx.Value(middleware.LangKey).(string)
 		if !ok {
-			return ctx, middleware.ErrMissingLangMiddleware
+			return middleware.ErrMissingLangMiddleware
 		}
 
 		isSilenced, ok := ctx.Value(middleware.SilenceKey).(bool)
 		if !ok {
-			return ctx, middleware.ErrMissingSilenceMiddleware
+			return middleware.ErrMissingSilenceMiddleware
 		}
 
 		userSet := make(map[string]bool, 0)
@@ -75,7 +75,7 @@ func stage0(
 					ParseMode:           "html",
 				},
 			)
-			return ctx, err
+			return err
 		}
 
 		users := make([]string, 0, len(userSet))
@@ -117,7 +117,7 @@ func stage0(
 					ParseMode:           "html",
 				},
 			)
-			return ctx, err
+			return err
 		}
 
 		_, err = b.SendMessage(
@@ -141,9 +141,9 @@ func stage0(
 			},
 		)
 		if err != nil {
-			return ctx, err
+			return err
 		}
 
-		return ctx, nil
+		return nil
 	}
 }

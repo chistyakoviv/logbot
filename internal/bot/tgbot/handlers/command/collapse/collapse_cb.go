@@ -20,7 +20,7 @@ func collapseCb(
 	i18n I18n.I18nInterface,
 	chatSettings chat_settings.ServiceInterface,
 ) middlewares.TgMiddlewareHandler {
-	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) (context.Context, error) {
+	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) error {
 		cb := ectx.CallbackQuery
 
 		logger.Debug(
@@ -31,12 +31,12 @@ func collapseCb(
 
 		lang, ok := ctx.Value(middleware.LangKey).(string)
 		if !ok {
-			return ctx, middleware.ErrMissingLangMiddleware
+			return middleware.ErrMissingLangMiddleware
 		}
 
 		isSilenced, ok := ctx.Value(middleware.SilenceKey).(bool)
 		if !ok {
-			return ctx, middleware.ErrMissingSilenceMiddleware
+			return middleware.ErrMissingSilenceMiddleware
 		}
 
 		query, err := url.Parse(cb.Data)
@@ -50,7 +50,7 @@ func collapseCb(
 					ParseMode:           "html",
 				},
 			)
-			return ctx, err
+			return err
 		}
 		queryParams := query.Query()
 		rawPeriod := queryParams.Get(collapsePeriodParam)
@@ -65,7 +65,7 @@ func collapseCb(
 					ParseMode:           "html",
 				},
 			)
-			return ctx, err
+			return err
 		}
 		if periodIdx < 0 || periodIdx >= len(periods) {
 			logger.Error("period out of range error", slog.Attr{Key: "index", Value: slog.IntValue(periodIdx)})
@@ -77,7 +77,7 @@ func collapseCb(
 					ParseMode:           "html",
 				},
 			)
-			return ctx, err
+			return err
 		}
 
 		period := periods[periodIdx].Duration
@@ -99,7 +99,7 @@ func collapseCb(
 					ParseMode:           "html",
 				},
 			)
-			return ctx, err
+			return err
 		}
 
 		_, err = cb.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
@@ -121,7 +121,7 @@ func collapseCb(
 					ParseMode:           "html",
 				},
 			)
-			return ctx, err
+			return err
 		}
 
 		_, err = b.SendMessage(
@@ -150,6 +150,6 @@ func collapseCb(
 				ParseMode:           "html",
 			},
 		)
-		return ctx, err
+		return err
 	}
 }

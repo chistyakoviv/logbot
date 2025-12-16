@@ -41,19 +41,17 @@ type muteCommand struct {
 
 func New(
 	ctx context.Context,
-	mw middlewares.TgMiddlewareInterface,
-	mwSubscription middlewares.TgMiddlewareHandler,
+	mw middlewares.TgMiddlewareChainInterface,
 	logger *slog.Logger,
 	i18n I18n.I18nInterface,
 	commands commands.ServiceInterface,
 	chatSettings chat_settings.ServiceInterface,
 ) command.TgCommandInterface {
-	mw = mw.Pipe(mwSubscription)
 	return &muteCommand{
 		TgCommand: command.TgCommand{
-			Handler: mw.Pipe(begin(logger, i18n)).Handler(ctx),
-			Callbacks: map[string]handlers.Response{
-				muteCbName: mw.Pipe(muteCb(logger, i18n, chatSettings)).Handler(ctx),
+			StartHandler: mw.Handler(ctx, begin(logger, i18n)),
+			CallbackHandlers: map[string]handlers.Response{
+				muteCbName: mw.Handler(ctx, muteCb(logger, i18n, chatSettings)),
 			},
 		},
 	}

@@ -21,7 +21,7 @@ func begin(
 	i18n I18n.I18nInterface,
 	commands commands.ServiceInterface,
 ) middlewares.TgMiddlewareHandler {
-	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) (context.Context, error) {
+	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) error {
 		msg := ectx.EffectiveMessage
 
 		logger.Debug(
@@ -33,12 +33,12 @@ func begin(
 
 		lang, ok := ctx.Value(middleware.LangKey).(string)
 		if !ok {
-			return ctx, middleware.ErrMissingLangMiddleware
+			return middleware.ErrMissingLangMiddleware
 		}
 
 		isSilenced, ok := ctx.Value(middleware.SilenceKey).(bool)
 		if !ok {
-			return ctx, middleware.ErrMissingSilenceMiddleware
+			return middleware.ErrMissingSilenceMiddleware
 		}
 
 		currCommand, err := commands.FindByKey(
@@ -66,7 +66,7 @@ func begin(
 					ParseMode:           "html",
 				},
 			)
-			return ctx, err
+			return err
 		}
 		if errors.Is(err, db.ErrNotFound) || currCommand.Stage == model.NoStage {
 			_, err := b.SendMessage(
@@ -85,7 +85,7 @@ func begin(
 					ParseMode:           "html",
 				},
 			)
-			return ctx, err
+			return err
 		}
 
 		_, err = commands.CompleteByKey(
@@ -117,7 +117,7 @@ func begin(
 					ParseMode:           "html",
 				},
 			)
-			return ctx, err
+			return err
 		}
 
 		message := i18n.
@@ -137,6 +137,6 @@ func begin(
 			DisableNotification: isSilenced,
 			ParseMode:           "html",
 		})
-		return ctx, err
+		return err
 	}
 }

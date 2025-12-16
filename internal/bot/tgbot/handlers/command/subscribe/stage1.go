@@ -22,7 +22,7 @@ func stage1(
 	subscriptions subscriptions.ServiceInterface,
 	commands commands.ServiceInterface,
 ) middlewares.TgMiddlewareHandler {
-	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) (context.Context, error) {
+	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) error {
 		msg := ectx.EffectiveMessage
 		projectName := strings.Trim(msg.Text, " ")
 
@@ -35,12 +35,12 @@ func stage1(
 
 		lang, ok := ctx.Value(middleware.LangKey).(string)
 		if !ok {
-			return ctx, middleware.ErrMissingLangMiddleware
+			return middleware.ErrMissingLangMiddleware
 		}
 
 		isSilenced, ok := ctx.Value(middleware.SilenceKey).(bool)
 		if !ok {
-			return ctx, middleware.ErrMissingSilenceMiddleware
+			return middleware.ErrMissingSilenceMiddleware
 		}
 
 		if len(projectName) > model.MaxProjectNameLength {
@@ -64,7 +64,7 @@ func stage1(
 					ParseMode:           "html",
 				},
 			)
-			return ctx, err
+			return err
 		}
 
 		var err error
@@ -97,7 +97,7 @@ func stage1(
 					ParseMode:           "html",
 				},
 			)
-			return ctx, err
+			return err
 		}
 
 		cmd, err := commands.FindByKey(
@@ -129,7 +129,7 @@ func stage1(
 					ParseMode:           "html",
 				},
 			)
-			return ctx, err
+			return err
 		}
 
 		token, ok := cmd.Data["token"].(string)
@@ -155,7 +155,7 @@ func stage1(
 					ParseMode:           "html",
 				},
 			)
-			return ctx, err
+			return err
 		}
 
 		_, subErr := subscriptions.Find(ctx, token, msg.Chat.Id)
@@ -180,7 +180,7 @@ func stage1(
 					ParseMode:           "html",
 				},
 			)
-			return ctx, err
+			return err
 		}
 
 		_, err = subscriptions.Subscribe(ctx, &model.SubscriptionInfo{
@@ -210,7 +210,7 @@ func stage1(
 					ParseMode:           "html",
 				},
 			)
-			return ctx, err
+			return err
 		}
 
 		_, err = b.SendMessage(
@@ -252,6 +252,6 @@ func stage1(
 				ParseMode:           "html",
 			},
 		)
-		return ctx, err
+		return err
 	}
 }

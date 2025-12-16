@@ -22,7 +22,7 @@ func stage1(
 	labelsService labels.ServiceInterface,
 	commands commands.ServiceInterface,
 ) middlewares.TgMiddlewareHandler {
-	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) (context.Context, error) {
+	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) error {
 		msg := ectx.EffectiveMessage
 
 		logger.Debug(
@@ -34,12 +34,12 @@ func stage1(
 
 		lang, ok := ctx.Value(middleware.LangKey).(string)
 		if !ok {
-			return ctx, middleware.ErrMissingLangMiddleware
+			return middleware.ErrMissingLangMiddleware
 		}
 
 		isSilenced, ok := ctx.Value(middleware.SilenceKey).(bool)
 		if !ok {
-			return ctx, middleware.ErrMissingSilenceMiddleware
+			return middleware.ErrMissingSilenceMiddleware
 		}
 
 		labels := make([]string, 0)
@@ -59,7 +59,7 @@ func stage1(
 					ParseMode:           "html",
 				},
 			)
-			return ctx, err
+			return err
 		}
 
 		var err error
@@ -92,7 +92,7 @@ func stage1(
 					ParseMode:           "html",
 				},
 			)
-			return ctx, err
+			return err
 		}
 
 		cmd, err := commands.FindByKey(
@@ -124,7 +124,7 @@ func stage1(
 					ParseMode:           "html",
 				},
 			)
-			return ctx, err
+			return err
 		}
 		rawUsers, ok := cmd.Data["users"].([]interface{})
 		if !ok {
@@ -149,7 +149,7 @@ func stage1(
 					ParseMode:           "html",
 				},
 			)
-			return ctx, err
+			return err
 		}
 
 		users := make([]string, len(rawUsers))
@@ -194,7 +194,7 @@ func stage1(
 					ParseMode:           "html",
 				},
 			)
-			return ctx, err
+			return err
 		}
 
 		_, err = b.SendMessage(
@@ -219,9 +219,9 @@ func stage1(
 		)
 		if err != nil {
 			logger.Error("error occurred while adding labels", slogger.Err(err))
-			return ctx, err
+			return err
 		}
 
-		return ctx, nil
+		return nil
 	}
 }

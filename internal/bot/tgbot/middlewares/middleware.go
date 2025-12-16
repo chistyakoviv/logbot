@@ -3,78 +3,55 @@ package middlewares
 import (
 	"context"
 	"errors"
-	"io"
-	"log/slog"
-	"slices"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
-	"github.com/chistyakoviv/logbot/internal/bot/tgbot"
-	"github.com/chistyakoviv/logbot/internal/lib/parser"
 )
 
 var (
 	ErrMiddlewareCanceled = errors.New("middleware canceled")
 )
 
-type TgMiddlewareHandler func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) (context.Context, error)
+type TgMiddlewareHandler func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) error
+type TgMiddleware func(next TgMiddlewareHandler) TgMiddlewareHandler
 
-type TgMiddlewareInterface interface {
-	Handler(ctx context.Context) handlers.Response
-	Pipe(next TgMiddlewareHandler) TgMiddlewareInterface
+type TgMiddlewareChainInterface interface {
+	Handler(context.Context, TgMiddlewareHandler) handlers.Response
+	Pipe(TgMiddleware) TgMiddlewareChainInterface
 }
 
 type middleware struct {
-	panicWriter io.Writer
-	stackParser parser.StackParser
-	handler     TgMiddlewareHandler
-	prev        *middleware
-	logger      *slog.Logger
+	mw   TgMiddleware
+	prev *middleware
 }
 
-func NewMiddleware(
-	panicWriter io.Writer,
-	stackParser parser.StackParser,
-	logger *slog.Logger,
-) TgMiddlewareInterface {
+func NewMiddleware() TgMiddlewareChainInterface {
+	return (*middleware)(nil)
+}
+
+func (m *middleware) Pipe(mw TgMiddleware) TgMiddlewareChainInterface {
 	return &middleware{
-		panicWriter: panicWriter,
-		stackParser: stackParser,
-		logger:      logger,
+		prev: m,
+		mw:   mw,
 	}
 }
 
-func (m *middleware) Pipe(next TgMiddlewareHandler) TgMiddlewareInterface {
-	return &middleware{
-		prev:        m,
-		handler:     next,
-		logger:      m.logger,
-		stackParser: m.stackParser,
-		panicWriter: m.panicWriter,
-	}
-}
-
-func (m *middleware) Handler(ctx context.Context) handlers.Response {
+func (m *middleware) Handler(ctx context.Context, handler TgMiddlewareHandler) handlers.Response {
 	// Traverse the middleware chain once when creating the handler
-	handlers := make([]TgMiddlewareHandler, 0)
-	for cur := m; cur.prev != nil; cur = cur.prev {
-		handlers = append(handlers, cur.handler)
+	// chain := make([]TgMiddleware, 0)
+	for cur := m; cur != nil; cur = cur.prev {
+		handler = cur.mw(handler)
 	}
-	slices.Reverse(handlers)
+	// slices.Reverse(chain)
+	// for _, mw := range chain {
+	// 	handler = mw(handler)
+	// }
 	return func(b *gotgbot.Bot, ectx *ext.Context) error {
-		defer tgbot.TgRecoverer(m.panicWriter, m.stackParser, m.logger)
-		var err error
-		for _, handler := range handlers {
-			if ctx, err = handler(ctx, b, ectx); err != nil {
-				// Middleware can break the chain (e.g. if auth failed),
-				// so return immediately in this case
-				if errors.Is(err, ErrMiddlewareCanceled) {
-					return nil
-				}
-				return err
-			}
+		err := handler(ctx, b, ectx)
+		if errors.Is(err, ErrMiddlewareCanceled) {
+			return nil
 		}
-		return nil
+		return err
 	}
 }

@@ -1,4 +1,4 @@
-package writer
+package panic_writer
 
 import (
 	"io"

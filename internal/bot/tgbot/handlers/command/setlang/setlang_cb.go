@@ -23,7 +23,7 @@ func setlangCb(
 	i18n I18n.I18nInterface,
 	userSettings user_settings.ServiceInterface,
 ) middlewares.TgMiddlewareHandler {
-	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) (context.Context, error) {
+	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) error {
 		cb := ectx.CallbackQuery
 
 		logger.Debug(
@@ -34,7 +34,7 @@ func setlangCb(
 
 		isSilenced, ok := ctx.Value(middleware.SilenceKey).(bool)
 		if !ok {
-			return ctx, middleware.ErrMissingSilenceMiddleware
+			return middleware.ErrMissingSilenceMiddleware
 		}
 
 		lang, currLangErr := userSettings.GetLang(ctx, cb.From.Id)
@@ -48,7 +48,7 @@ func setlangCb(
 					ParseMode:           "html",
 				},
 			)
-			return ctx, err
+			return err
 		}
 
 		query, err := url.Parse(cb.Data)
@@ -62,7 +62,7 @@ func setlangCb(
 					ParseMode:           "html",
 				},
 			)
-			return ctx, err
+			return err
 		}
 		queryParams := query.Query()
 		newLang := queryParams.Get(langParam)
@@ -81,9 +81,9 @@ func setlangCb(
 						ParseMode:           "html",
 					},
 				)
-				return ctx, err
+				return err
 			}
-			return ctx, err
+			return err
 		}
 		newLangCode := i18n.GetLangCode(newLang)
 		// Check if the selected language is supported
@@ -101,9 +101,9 @@ func setlangCb(
 						ParseMode:           "html",
 					},
 				)
-				return ctx, err
+				return err
 			}
-			return ctx, err
+			return err
 		}
 		_, err = userSettings.Update(ctx, cb.From.Id, &model.UserSettingsInfo{
 			Username: cb.From.Username,
@@ -119,7 +119,7 @@ func setlangCb(
 					ParseMode:           "html",
 				},
 			)
-			return ctx, err
+			return err
 		}
 
 		_, err = cb.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
@@ -135,8 +135,8 @@ func setlangCb(
 					ParseMode:           "html",
 				},
 			)
-			return ctx, err
+			return err
 		}
-		return ctx, err
+		return err
 	}
 }

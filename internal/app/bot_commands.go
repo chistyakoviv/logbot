@@ -39,9 +39,15 @@ func BuildTgCommands(
 	mwSuperuser := resolveTgSuperuserMiddleware(c)
 	mwSubscription := resolveTgSubscriptionMiddleware(c)
 	mwSilence := resolveTgSilenceMiddleware(c)
+	// gotgbot intercepts panics before the router recoverer,
+	// so a custom recoverer is required.
+	mwRecoverer := resolveTgRecovererMiddleware(c)
 
 	// Lang middleware must be the first, silence must be the second
-	mw = mw.Pipe(mwLang).Pipe(mwSilence)
+	mw = mw.
+		Pipe(mwRecoverer).
+		Pipe(mwLang).
+		Pipe(mwSilence)
 	tgCommands := command.TgCommands{
 		start.CommandName: start.New(
 			ctx,
@@ -58,8 +64,7 @@ func BuildTgCommands(
 		),
 		subscribe.CommandName: subscribe.New(
 			ctx,
-			mw,
-			mwSuperuser,
+			mw.Pipe(mwSuperuser),
 			logger,
 			i18n,
 			srvSubscriptions,
@@ -67,8 +72,7 @@ func BuildTgCommands(
 		),
 		unsubscribe.CommandName: unsubscribe.New(
 			ctx,
-			mw,
-			mwSuperuser,
+			mw.Pipe(mwSuperuser),
 			logger,
 			i18n,
 			srvSubscriptions,
@@ -84,8 +88,7 @@ func BuildTgCommands(
 		),
 		addlabels.CommandName: addlabels.New(
 			ctx,
-			mw,
-			mwSubscription,
+			mw.Pipe(mwSubscription),
 			logger,
 			i18n,
 			srvLabels,
@@ -93,8 +96,7 @@ func BuildTgCommands(
 		),
 		rmlabels.CommandName: rmlabels.New(
 			ctx,
-			mw,
-			mwSubscription,
+			mw.Pipe(mwSubscription),
 			logger,
 			i18n,
 			srvLabels,
@@ -109,8 +111,7 @@ func BuildTgCommands(
 		),
 		collapse.CommandName: collapse.New(
 			ctx,
-			mw,
-			mwSubscription,
+			mw.Pipe(mwSubscription),
 			logger,
 			i18n,
 			srvCommands,
@@ -118,8 +119,7 @@ func BuildTgCommands(
 		),
 		mute.CommandName: mute.New(
 			ctx,
-			mw,
-			mwSubscription,
+			mw.Pipe(mwSubscription),
 			logger,
 			i18n,
 			srvCommands,
@@ -140,8 +140,7 @@ func BuildTgCommands(
 		),
 		silence.CommandName: silence.New(
 			ctx,
-			mw,
-			mwSubscription,
+			mw.Pipe(mwSubscription),
 			logger,
 			i18n,
 			srvCommands,

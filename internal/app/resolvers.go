@@ -18,8 +18,8 @@ import (
 	"github.com/chistyakoviv/logbot/internal/lib/deferredq"
 	"github.com/chistyakoviv/logbot/internal/lib/loghasher"
 	"github.com/chistyakoviv/logbot/internal/lib/markdown"
-	"github.com/chistyakoviv/logbot/internal/lib/parser"
 	"github.com/chistyakoviv/logbot/internal/lib/rbac"
+	"github.com/chistyakoviv/logbot/internal/lib/stack_parser"
 	"github.com/chistyakoviv/logbot/internal/repository/chat_settings"
 	"github.com/chistyakoviv/logbot/internal/repository/commands"
 	"github.com/chistyakoviv/logbot/internal/repository/labels"
@@ -61,8 +61,8 @@ func resolveLogger(c di.Container) *slog.Logger {
 	return logger
 }
 
-func resolveStackParser(c di.Container) parser.StackParser {
-	stackParser, err := di.Resolve[parser.StackParser](c, "stackParser")
+func resolveStackParser(c di.Container) stack_parser.StackParser {
+	stackParser, err := di.Resolve[stack_parser.StackParser](c, "stackParser")
 
 	if err != nil {
 		log.Fatalf("Couldn't resolve stack parser definition: %v", err)
@@ -211,8 +211,8 @@ func resolveRbac(c di.Container) rbac.ManagerInterface {
 	return rbac
 }
 
-func resolveTgMiddleware(c di.Container) tgMiddlewares.TgMiddlewareInterface {
-	middleware, err := di.Resolve[tgMiddlewares.TgMiddlewareInterface](c, "tgMiddleware")
+func resolveTgMiddleware(c di.Container) tgMiddlewares.TgMiddlewareChainInterface {
+	middleware, err := di.Resolve[tgMiddlewares.TgMiddlewareChainInterface](c, "tgMiddleware")
 
 	if err != nil {
 		log.Fatalf("Couldn't resolve middleware definition: %v", err)
@@ -242,8 +242,8 @@ func resolveMarkdowner(c di.Container) markdown.MarkdownerInterface {
 }
 
 // MIddlewares
-func resolveTgLangMiddleware(c di.Container) tgMiddlewares.TgMiddlewareHandler {
-	middleware, err := di.Resolve[tgMiddlewares.TgMiddlewareHandler](c, "tgLangMiddleware")
+func resolveTgLangMiddleware(c di.Container) tgMiddlewares.TgMiddleware {
+	middleware, err := di.Resolve[tgMiddlewares.TgMiddleware](c, "tgLangMiddleware")
 
 	if err != nil {
 		log.Fatalf("Couldn't resolve lang middleware definition: %v", err)
@@ -252,8 +252,8 @@ func resolveTgLangMiddleware(c di.Container) tgMiddlewares.TgMiddlewareHandler {
 	return middleware
 }
 
-func resolveTgSubscriptionMiddleware(c di.Container) tgMiddlewares.TgMiddlewareHandler {
-	middleware, err := di.Resolve[tgMiddlewares.TgMiddlewareHandler](c, "tgSubscriptionMiddleware")
+func resolveTgSubscriptionMiddleware(c di.Container) tgMiddlewares.TgMiddleware {
+	middleware, err := di.Resolve[tgMiddlewares.TgMiddleware](c, "tgSubscriptionMiddleware")
 
 	if err != nil {
 		log.Fatalf("Couldn't resolve subscription middleware definition: %v", err)
@@ -262,8 +262,8 @@ func resolveTgSubscriptionMiddleware(c di.Container) tgMiddlewares.TgMiddlewareH
 	return middleware
 }
 
-func resolveTgSuperuserMiddleware(c di.Container) tgMiddlewares.TgMiddlewareHandler {
-	middleware, err := di.Resolve[tgMiddlewares.TgMiddlewareHandler](c, "tgSuperuserMiddleware")
+func resolveTgSuperuserMiddleware(c di.Container) tgMiddlewares.TgMiddleware {
+	middleware, err := di.Resolve[tgMiddlewares.TgMiddleware](c, "tgSuperuserMiddleware")
 
 	if err != nil {
 		log.Fatalf("Couldn't resolve superuser middleware definition: %v", err)
@@ -272,11 +272,21 @@ func resolveTgSuperuserMiddleware(c di.Container) tgMiddlewares.TgMiddlewareHand
 	return middleware
 }
 
-func resolveTgSilenceMiddleware(c di.Container) tgMiddlewares.TgMiddlewareHandler {
-	middleware, err := di.Resolve[tgMiddlewares.TgMiddlewareHandler](c, "tgSilenceMiddleware")
+func resolveTgSilenceMiddleware(c di.Container) tgMiddlewares.TgMiddleware {
+	middleware, err := di.Resolve[tgMiddlewares.TgMiddleware](c, "tgSilenceMiddleware")
 
 	if err != nil {
 		log.Fatalf("Couldn't resolve silence middleware definition: %v", err)
+	}
+
+	return middleware
+}
+
+func resolveTgRecovererMiddleware(c di.Container) tgMiddlewares.TgMiddleware {
+	middleware, err := di.Resolve[tgMiddlewares.TgMiddleware](c, "tgRecovererMiddleware")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve recoverer middleware definition: %v", err)
 	}
 
 	return middleware

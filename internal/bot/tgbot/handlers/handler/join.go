@@ -1,36 +1,37 @@
 package handler
 
 import (
-	"io"
+	"context"
 	"log/slog"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
-	"github.com/chistyakoviv/logbot/internal/bot/tgbot"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares/middleware"
 	"github.com/chistyakoviv/logbot/internal/i18n"
-	"github.com/chistyakoviv/logbot/internal/lib/parser"
 )
 
 func NewJoin(
+	ctx context.Context,
+	mw middlewares.TgMiddlewareChainInterface,
 	logger *slog.Logger,
 	i18n i18n.I18nInterface,
-	panicWriter io.Writer,
-	stackParser parser.StackParser,
 ) handlers.Response {
-	return joinHandler(logger, i18n, panicWriter, stackParser)
+	return mw.Handler(ctx, joinHandler(logger, i18n))
 }
 
 func joinHandler(
 	logger *slog.Logger,
 	i18n i18n.I18nInterface,
-	panicWriter io.Writer,
-	stackParser parser.StackParser,
-) handlers.Response {
-	lang := i18n.DefaultLang()
-	return func(b *gotgbot.Bot, ctx *ext.Context) error {
-		tgbot.TgRecoverer(panicWriter, stackParser, logger)
-		msg := ctx.EffectiveMessage
+) middlewares.TgMiddlewareHandler {
+	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) error {
+		msg := ectx.EffectiveMessage
+
+		lang, ok := ctx.Value(middleware.LangKey).(string)
+		if !ok {
+			return middleware.ErrMissingLangMiddleware
+		}
 
 		for _, member := range msg.NewChatMembers {
 			if member.Id == b.Id {

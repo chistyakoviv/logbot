@@ -25,7 +25,7 @@ func stage0(
 	subscriptions subscriptions.ServiceInterface,
 	commands commands.ServiceInterface,
 ) middlewares.TgMiddlewareHandler {
-	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) (context.Context, error) {
+	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) error {
 		msg := ectx.EffectiveMessage
 		token := strings.Trim(msg.Text, " ")
 
@@ -38,12 +38,12 @@ func stage0(
 
 		lang, ok := ctx.Value(middleware.LangKey).(string)
 		if !ok {
-			return ctx, middleware.ErrMissingLangMiddleware
+			return middleware.ErrMissingLangMiddleware
 		}
 
 		isSilenced, ok := ctx.Value(middleware.SilenceKey).(bool)
 		if !ok {
-			return ctx, middleware.ErrMissingSilenceMiddleware
+			return middleware.ErrMissingSilenceMiddleware
 		}
 
 		var err error
@@ -68,7 +68,7 @@ func stage0(
 					ParseMode:           "html",
 				},
 			)
-			return ctx, err
+			return err
 		}
 		sub, unsubErr := subscriptions.Find(ctx, token, msg.Chat.Id)
 		if errors.Is(unsubErr, db.ErrNotFound) {
@@ -92,7 +92,7 @@ func stage0(
 					ParseMode:           "html",
 				},
 			)
-			return ctx, err
+			return err
 		}
 
 		_, err = commands.CompleteByKey(
@@ -127,7 +127,7 @@ func stage0(
 					ParseMode:           "html",
 				},
 			)
-			return ctx, err
+			return err
 		}
 
 		_, err = subscriptions.Unsubscribe(ctx, token, msg.Chat.Id)
@@ -153,7 +153,7 @@ func stage0(
 					ParseMode:           "html",
 				},
 			)
-			return ctx, err
+			return err
 		}
 
 		_, err = b.SendMessage(
@@ -187,6 +187,6 @@ func stage0(
 				ParseMode:           "html",
 			},
 		)
-		return ctx, err
+		return err
 	}
 }

@@ -17,14 +17,14 @@ type helpCommand struct {
 
 func New(
 	ctx context.Context,
-	mw middlewares.TgMiddlewareInterface,
+	mw middlewares.TgMiddlewareChainInterface,
 	logger *slog.Logger,
 	i18n I18n.I18nInterface,
 	tgCommands command.TgCommands,
 ) command.TgCommandInterface {
 	return &helpCommand{
 		TgCommand: command.TgCommand{
-			Handler: mw.Pipe(begin(logger, i18n, tgCommands)).Handler(ctx),
+			StartHandler: mw.Handler(ctx, begin(logger, i18n, tgCommands)),
 		},
 	}
 }

@@ -13,47 +13,49 @@ import (
 	errs "github.com/pkg/errors"
 )
 
-func Superuser(logger *slog.Logger, i18n I18n.I18nInterface, rbac rbac.ManagerInterface) middlewares.TgMiddlewareHandler {
-	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) (context.Context, error) {
-		msg := ectx.EffectiveMessage
+func Superuser(logger *slog.Logger, i18n I18n.I18nInterface, rbac rbac.ManagerInterface) middlewares.TgMiddleware {
+	fn := func(next middlewares.TgMiddlewareHandler) middlewares.TgMiddlewareHandler {
+		return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) error {
+			msg := ectx.EffectiveMessage
 
-		logger.Debug(
-			"superuser middleware",
-			slog.Int64("chat_id", msg.Chat.Id),
-			slog.String("from", msg.From.Username),
-		)
-
-		lang, ok := ctx.Value(LangKey).(string)
-		if !ok {
-			return ctx, ErrMissingLangMiddleware
-		}
-
-		if !rbac.UserHasPermission(msg.From.Id, constants.PermissionManage, nil) {
-			_, err := b.SendMessage(
-				msg.Chat.Id,
-				i18n.
-					Chain().
-					T(
-						lang,
-						"mention",
-						I18n.WithArgs([]any{
-							msg.From.Id,
-							msg.From.Username,
-						}),
-					).
-					Append("\n").
-					T(lang, "access_denied").
-					String(),
-				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
-				},
+			logger.Debug(
+				"superuser middleware",
+				slog.Int64("chat_id", msg.Chat.Id),
+				slog.String("from", msg.From.Username),
 			)
-			if err != nil {
-				return ctx, err
-			}
-			return ctx, errs.Wrap(middlewares.ErrMiddlewareCanceled, "access denied")
-		}
 
-		return ctx, nil
+			lang, ok := ctx.Value(LangKey).(string)
+			if !ok {
+				return ErrMissingLangMiddleware
+			}
+
+			if !rbac.UserHasPermission(msg.From.Id, constants.PermissionManage, nil) {
+				_, err := b.SendMessage(
+					msg.Chat.Id,
+					i18n.
+						Chain().
+						T(
+							lang,
+							"mention",
+							I18n.WithArgs([]any{
+								msg.From.Id,
+								msg.From.Username,
+							}),
+						).
+						Append("\n").
+						T(lang, "access_denied").
+						String(),
+					&gotgbot.SendMessageOpts{
+						ParseMode: "html",
+					},
+				)
+				if err != nil {
+					return err
+				}
+				return errs.Wrap(middlewares.ErrMiddlewareCanceled, "access denied")
+			}
+			return next(ctx, b, ectx)
+		}
 	}
+	return fn
 }

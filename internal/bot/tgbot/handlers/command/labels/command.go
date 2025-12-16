@@ -18,14 +18,14 @@ type labelsCommand struct {
 
 func New(
 	ctx context.Context,
-	mw middlewares.TgMiddlewareInterface,
+	mw middlewares.TgMiddlewareChainInterface,
 	logger *slog.Logger,
 	i18n i18n.I18nInterface,
 	labels labels.ServiceInterface,
 ) command.TgCommandInterface {
 	return &labelsCommand{
 		TgCommand: command.TgCommand{
-			Handler: mw.Pipe(begin(logger, i18n, labels)).Handler(ctx),
+			StartHandler: mw.Handler(ctx, begin(logger, i18n, labels)),
 		},
 	}
 }

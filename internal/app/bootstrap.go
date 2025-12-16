@@ -29,10 +29,10 @@ import (
 	"github.com/chistyakoviv/logbot/internal/lib/deferredq"
 	"github.com/chistyakoviv/logbot/internal/lib/loghasher"
 	"github.com/chistyakoviv/logbot/internal/lib/markdown"
-	"github.com/chistyakoviv/logbot/internal/lib/parser"
+	"github.com/chistyakoviv/logbot/internal/lib/panic_writer"
 	"github.com/chistyakoviv/logbot/internal/lib/rbac"
 	"github.com/chistyakoviv/logbot/internal/lib/slogger"
-	"github.com/chistyakoviv/logbot/internal/lib/writer"
+	"github.com/chistyakoviv/logbot/internal/lib/stack_parser"
 	"github.com/chistyakoviv/logbot/internal/repository/chat_settings"
 	"github.com/chistyakoviv/logbot/internal/repository/commands"
 	"github.com/chistyakoviv/logbot/internal/repository/labels"
@@ -85,19 +85,19 @@ func bootstrap(ctx context.Context, c di.Container) {
 		return logger
 	})
 
-	c.RegisterSingleton("stackParser", func(c di.Container) parser.StackParser {
+	c.RegisterSingleton("stackParser", func(c di.Container) stack_parser.StackParser {
 		cfg := resolveConfig(c)
-		var stackParser parser.StackParser
+		var stackParser stack_parser.StackParser
 
 		switch cfg.Env {
 		case config.EnvProd:
 			// Do not use colors in production
-			stackParser = parser.NewSimpleStackParser()
+			stackParser = stack_parser.NewSimpleStackParser()
 		case config.EnvDev:
-			stackParser = parser.NewSimpleStackParser()
+			stackParser = stack_parser.NewSimpleStackParser()
 		default:
 			// Use colors in development
-			stackParser = parser.NewPrettyStackParser()
+			stackParser = stack_parser.NewPrettyStackParser()
 		}
 
 		return stackParser
@@ -112,9 +112,9 @@ func bootstrap(ctx context.Context, c di.Container) {
 		switch cfg.Env {
 		case config.EnvProd:
 			// Write panics to logger in production
-			panicWriter = writer.NewLoggerPanicWriter(logger)
+			panicWriter = panic_writer.NewLoggerPanicWriter(logger)
 		case config.EnvDev:
-			panicWriter = writer.NewLoggerPanicWriter(logger)
+			panicWriter = panic_writer.NewLoggerPanicWriter(logger)
 		default:
 			// Write panics to stderr in development
 			panicWriter = os.Stderr
@@ -203,9 +203,14 @@ func bootstrap(ctx context.Context, c di.Container) {
 	c.RegisterSingleton("tgJoin", func(c di.Container) handlers.Response {
 		logger := resolveLogger(c)
 		i18n := resolveI18n(c)
-		panicWriter := resolvePanicWriter(c)
-		stackParser := resolveStackParser(c)
-		return handler.NewJoin(logger, i18n, panicWriter, stackParser)
+		mw := resolveTgMiddleware(c)
+
+		// Middlewares
+		mwRecoverer := resolveTgRecovererMiddleware(c)
+		mwLang := resolveTgLangMiddleware(c)
+
+		mw = mw.Pipe(mwRecoverer).Pipe(mwLang)
+		return handler.NewJoin(ctx, mw, logger, i18n)
 	})
 
 	c.RegisterSingleton("tgCommands", func(c di.Container) command.TgCommands {
@@ -285,25 +290,29 @@ func bootstrap(ctx context.Context, c di.Container) {
 		return markdown.NewMarkdowner()
 	})
 
-	c.RegisterSingleton("tgMiddleware", func(c di.Container) tgMiddlewares.TgMiddlewareInterface {
-		return tgMiddlewares.NewMiddleware(resolvePanicWriter(c), resolveStackParser(c), resolveLogger(c))
+	c.RegisterSingleton("tgMiddleware", func(c di.Container) tgMiddlewares.TgMiddlewareChainInterface {
+		return tgMiddlewares.NewMiddleware()
 	})
 
 	// Middlewares
-	c.RegisterSingleton("tgLangMiddleware", func(c di.Container) tgMiddlewares.TgMiddlewareHandler {
+	c.RegisterSingleton("tgLangMiddleware", func(c di.Container) tgMiddlewares.TgMiddleware {
 		return tgMiddleware.Lang(resolveLogger(c), resolveUserSettingsService(c))
 	})
 
-	c.RegisterSingleton("tgSubscriptionMiddleware", func(c di.Container) tgMiddlewares.TgMiddlewareHandler {
+	c.RegisterSingleton("tgSubscriptionMiddleware", func(c di.Container) tgMiddlewares.TgMiddleware {
 		return tgMiddleware.Subscription(resolveLogger(c), resolveI18n(c), resolveSubscriptionsService(c))
 	})
 
-	c.RegisterSingleton("tgSuperuserMiddleware", func(c di.Container) tgMiddlewares.TgMiddlewareHandler {
+	c.RegisterSingleton("tgSuperuserMiddleware", func(c di.Container) tgMiddlewares.TgMiddleware {
 		return tgMiddleware.Superuser(resolveLogger(c), resolveI18n(c), resolveRbac(c))
 	})
 
-	c.RegisterSingleton("tgSilenceMiddleware", func(c di.Container) tgMiddlewares.TgMiddlewareHandler {
+	c.RegisterSingleton("tgSilenceMiddleware", func(c di.Container) tgMiddlewares.TgMiddleware {
 		return tgMiddleware.Silence(resolveLogger(c), resolveI18n(c), resolveChatSettingsService(c))
+	})
+
+	c.RegisterSingleton("tgRecovererMiddleware", func(c di.Container) tgMiddlewares.TgMiddleware {
+		return tgMiddleware.Recoverer(resolveLogger(c), resolvePanicWriter(c), resolveStackParser(c))
 	})
 
 	// Repositories

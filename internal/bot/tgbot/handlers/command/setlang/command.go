@@ -22,7 +22,7 @@ type setlangCommand struct {
 
 func New(
 	ctx context.Context,
-	mw middlewares.TgMiddlewareInterface,
+	mw middlewares.TgMiddlewareChainInterface,
 	logger *slog.Logger,
 	i18n I18n.I18nInterface,
 	commands commands.ServiceInterface,
@@ -30,9 +30,9 @@ func New(
 ) command.TgCommandInterface {
 	return &setlangCommand{
 		TgCommand: command.TgCommand{
-			Handler: mw.Pipe(begin(logger, i18n)).Handler(ctx),
-			Callbacks: map[string]handlers.Response{
-				SetLangCbName: mw.Pipe(setlangCb(logger, i18n, userSettings)).Handler(ctx),
+			StartHandler: mw.Handler(ctx, begin(logger, i18n)),
+			CallbackHandlers: map[string]handlers.Response{
+				SetLangCbName: mw.Handler(ctx, setlangCb(logger, i18n, userSettings)),
 			},
 		},
 	}

@@ -7,30 +7,30 @@ import (
 
 type TgCommandInterface interface {
 	ApplyDescription(lang string, i18n I18n.I18nChainInterface)
-	GetHandler() handlers.Response
-	GetStages() []handlers.Response
-	GetCallbacks() map[string]handlers.Response
+	GetStartHandler() handlers.Response
+	GetStageHandlers() []handlers.Response
+	GetCallbackHandlers() map[string]handlers.Response
 }
 
 type TgCommand struct {
-	Handler   handlers.Response
-	Stages    []handlers.Response
-	Callbacks map[string]handlers.Response
+	StartHandler     handlers.Response
+	StageHandlers    []handlers.Response
+	CallbackHandlers map[string]handlers.Response
 }
 
 func (c *TgCommand) ApplyDescription(lang string, i18n I18n.I18nChainInterface) {
 }
 
-func (c *TgCommand) GetHandler() handlers.Response {
-	return c.Handler
+func (c *TgCommand) GetStartHandler() handlers.Response {
+	return c.StartHandler
 }
 
-func (c *TgCommand) GetStages() []handlers.Response {
-	return c.Stages
+func (c *TgCommand) GetStageHandlers() []handlers.Response {
+	return c.StageHandlers
 }
 
-func (c *TgCommand) GetCallbacks() map[string]handlers.Response {
-	return c.Callbacks
+func (c *TgCommand) GetCallbackHandlers() map[string]handlers.Response {
+	return c.CallbackHandlers
 }
 
 type TgCommands map[string]TgCommandInterface

@@ -25,7 +25,8 @@ func NewCommandStage(
 	return commandStageHandler(ctx, logger, commands, tgCommands)
 }
 
-func commandStageHandler(ctx context.Context,
+func commandStageHandler(
+	ctx context.Context,
 	logger *slog.Logger,
 	commands commands.ServiceInterface,
 	tgCommands TgCommands,
@@ -58,7 +59,7 @@ func commandStageHandler(ctx context.Context,
 			return nil
 		}
 
-		stages := tgCommand.GetStages()
+		stages := tgCommand.GetStageHandlers()
 
 		if command.Stage < 0 || command.Stage >= len(stages) {
 			logger.Error("command stage is out of range", slog.Int("stage", command.Stage))

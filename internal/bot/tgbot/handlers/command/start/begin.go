@@ -15,7 +15,7 @@ func begin(
 	logger *slog.Logger,
 	i18n I18n.I18nInterface,
 ) middlewares.TgMiddlewareHandler {
-	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) (context.Context, error) {
+	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) error {
 		msg := ectx.EffectiveMessage
 
 		logger.Debug(
@@ -27,12 +27,12 @@ func begin(
 
 		lang, ok := ctx.Value(middleware.LangKey).(string)
 		if !ok {
-			return ctx, middleware.ErrMissingLangMiddleware
+			return middleware.ErrMissingLangMiddleware
 		}
 
 		isSilenced, ok := ctx.Value(middleware.SilenceKey).(bool)
 		if !ok {
-			return ctx, middleware.ErrMissingSilenceMiddleware
+			return middleware.ErrMissingSilenceMiddleware
 		}
 
 		message := i18n.
@@ -50,6 +50,6 @@ func begin(
 			DisableNotification: isSilenced,
 			ParseMode:           "html",
 		})
-		return ctx, err
+		return err
 	}
 }
