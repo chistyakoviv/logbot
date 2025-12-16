@@ -191,11 +191,12 @@ func bootstrap(ctx context.Context, c di.Container) {
 		logger := resolveLogger(c)
 		i18n := resolveI18n(c)
 		tgCommands := resolveTgCommands(c)
+		srvCommands := resolveCommandsService(c)
 		return command.NewCommandStage(
 			ctx,
 			logger,
 			i18n,
-			resolveCommandsService(c),
+			srvCommands,
 			tgCommands,
 		)
 	})

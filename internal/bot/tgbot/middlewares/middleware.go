@@ -38,15 +38,12 @@ func (m *middleware) Pipe(mw TgMiddleware) TgMiddlewareChainInterface {
 }
 
 func (m *middleware) Handler(ctx context.Context, handler TgMiddlewareHandler) handlers.Response {
-	// Traverse the middleware chain once when creating the handler
-	// chain := make([]TgMiddleware, 0)
+	// Traverse the middleware chain once when creating the handler.
+	// Middleware returns a new handler that wraps the original handler with additional logic and then invokes the original handler.
+	// The chain must be built backwards so that the previous middleware wraps the next middleware to ensure correct execution order.
 	for cur := m; cur != nil; cur = cur.prev {
 		handler = cur.mw(handler)
 	}
-	// slices.Reverse(chain)
-	// for _, mw := range chain {
-	// 	handler = mw(handler)
-	// }
 	return func(b *gotgbot.Bot, ectx *ext.Context) error {
 		err := handler(ctx, b, ectx)
 		if errors.Is(err, ErrMiddlewareCanceled) {
