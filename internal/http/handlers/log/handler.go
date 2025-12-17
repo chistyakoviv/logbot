@@ -45,7 +45,7 @@ func New(
 
 		var reqBatch []LogRequest
 		switch raw[0] {
-		// Request from Fluend
+		// Request from Fluentd
 		case '{':
 			var req LogRequest
 			if err := json.Unmarshal(raw, &req); err != nil {
