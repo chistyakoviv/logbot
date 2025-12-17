@@ -15,7 +15,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/bot"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command"
-	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/handler"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/event"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/messages"
 	tgMiddlewares "github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares"
 	tgMiddleware "github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares/middleware"
@@ -212,7 +212,7 @@ func bootstrap(ctx context.Context, c di.Container) {
 		mwLang := resolveTgLangMiddleware(c)
 
 		mw = mw.Pipe(mwRecoverer).Pipe(mwLang)
-		return handler.NewJoin(ctx, mw, logger, i18n)
+		return event.NewJoin(ctx, mw, logger, i18n)
 	})
 
 	c.RegisterSingleton("tgCommands", func(c di.Container) command.TgCommands {
