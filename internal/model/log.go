@@ -25,5 +25,4 @@ type LogInfo struct {
 	ContainerId   string
 	Node          string
 	NodeId        string
-	Hash          string
 }

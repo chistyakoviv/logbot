@@ -12,7 +12,8 @@ import (
 type RepositoryInterface interface {
 	Create(ctx context.Context, lastSent *model.LastSent) (*model.LastSent, error)
 	Update(ctx context.Context, lastSent *model.LastSent) (*model.LastSent, error)
-	LastSent(ctx context.Context, lastSentKey *model.LastSentKey) (time.Time, error)
+	UpdateOrCreate(ctx context.Context, lastSent *model.LastSent) (*model.LastSent, error)
+	LastSentOrDefault(ctx context.Context, lastSentKey *model.LastSentKey) (time.Time, error)
 	FindByKey(ctx context.Context, lastSentKey *model.LastSentKey) (*model.LastSent, error)
 }
 

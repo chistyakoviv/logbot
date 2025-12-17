@@ -16,6 +16,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/handler"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/messages"
 	tgMiddlewares "github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares"
 	tgMiddleware "github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares/middleware"
 	"github.com/chistyakoviv/logbot/internal/config"
@@ -26,6 +27,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/di"
 	httpMiddleware "github.com/chistyakoviv/logbot/internal/http/middleware"
 	"github.com/chistyakoviv/logbot/internal/i18n"
+	"github.com/chistyakoviv/logbot/internal/lib/chrono"
 	"github.com/chistyakoviv/logbot/internal/lib/deferredq"
 	"github.com/chistyakoviv/logbot/internal/lib/loghasher"
 	"github.com/chistyakoviv/logbot/internal/lib/markdown"
@@ -43,7 +45,6 @@ import (
 	srvChatSettings "github.com/chistyakoviv/logbot/internal/service/chat_settings"
 	srvCommands "github.com/chistyakoviv/logbot/internal/service/commands"
 	srvLabels "github.com/chistyakoviv/logbot/internal/service/labels"
-	srvLastSent "github.com/chistyakoviv/logbot/internal/service/last_sent"
 	srvLogs "github.com/chistyakoviv/logbot/internal/service/logs"
 	srvSubscriptions "github.com/chistyakoviv/logbot/internal/service/subscriptions"
 	srvUserSettings "github.com/chistyakoviv/logbot/internal/service/user_settings"
@@ -291,11 +292,21 @@ func bootstrap(ctx context.Context, c di.Container) {
 		return markdown.NewMarkdowner()
 	})
 
+	c.RegisterSingleton("chrono", func(c di.Container) chrono.Chrono {
+		return chrono.New()
+	})
+
+	// Report messages
+	c.RegisterSingleton("errorReportMessage", func(c di.Container) messages.ErrorReportMessageInterface {
+		return messages.NewErrorReportMessage(resolveMarkdowner(c))
+	})
+
+	// Tg middleware
 	c.RegisterSingleton("tgMiddleware", func(c di.Container) tgMiddlewares.TgMiddlewareChainInterface {
 		return tgMiddlewares.NewMiddleware()
 	})
 
-	// Middlewares
+	// Tg middlewares
 	c.RegisterSingleton("tgLangMiddleware", func(c di.Container) tgMiddlewares.TgMiddleware {
 		return tgMiddleware.Lang(resolveLogger(c), resolveUserSettingsService(c))
 	})
@@ -367,10 +378,18 @@ func bootstrap(ctx context.Context, c di.Container) {
 	})
 
 	c.RegisterSingleton("logsService", func(c di.Container) srvLogs.ServiceInterface {
-		return srvLogs.NewService(resolveLogsRepository(c), resolveTxManager(c))
-	})
-
-	c.RegisterSingleton("lastSentService", func(c di.Container) srvLastSent.ServiceInterface {
-		return srvLastSent.NewService(resolveLastSentRepository(c), resolveTxManager(c))
+		return srvLogs.NewService(
+			resolveLogsRepository(c),
+			resolveSubscriptionsRepository(c),
+			resolveChatSettingsRepository(c),
+			resolveLabelsRepository(c),
+			resolveLastSentRepository(c),
+			resolveLogHasher(c),
+			resolveChrono(c),
+			resolveTgBot(c),
+			resolveErrorReportMessage(c),
+			resolveLogger(c),
+			resolveTxManager(c),
+		)
 	})
 }

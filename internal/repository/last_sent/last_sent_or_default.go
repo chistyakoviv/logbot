@@ -10,7 +10,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/model"
 )
 
-func (r *repository) LastSent(ctx context.Context, lastSentKey *model.LastSentKey) (time.Time, error) {
+func (r *repository) LastSentOrDefault(ctx context.Context, lastSentKey *model.LastSentKey) (time.Time, error) {
 	q := db.Query{
 		Name: "repository.last_sent.last_sent",
 		Sqlizer: r.sq.Select(lastSentTableColumnUpdatedAt).

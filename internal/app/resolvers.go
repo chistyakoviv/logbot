@@ -10,11 +10,13 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
 	"github.com/chistyakoviv/logbot/internal/bot"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command"
+	"github.com/chistyakoviv/logbot/internal/bot/tgbot/messages"
 	tgMiddlewares "github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares"
 	"github.com/chistyakoviv/logbot/internal/config"
 	"github.com/chistyakoviv/logbot/internal/db"
 	"github.com/chistyakoviv/logbot/internal/di"
 	"github.com/chistyakoviv/logbot/internal/i18n"
+	"github.com/chistyakoviv/logbot/internal/lib/chrono"
 	"github.com/chistyakoviv/logbot/internal/lib/deferredq"
 	"github.com/chistyakoviv/logbot/internal/lib/loghasher"
 	"github.com/chistyakoviv/logbot/internal/lib/markdown"
@@ -30,7 +32,6 @@ import (
 	srvChatSettings "github.com/chistyakoviv/logbot/internal/service/chat_settings"
 	srvCommands "github.com/chistyakoviv/logbot/internal/service/commands"
 	srvLabels "github.com/chistyakoviv/logbot/internal/service/labels"
-	srvLastSent "github.com/chistyakoviv/logbot/internal/service/last_sent"
 	srvLogs "github.com/chistyakoviv/logbot/internal/service/logs"
 	srvSubscriptions "github.com/chistyakoviv/logbot/internal/service/subscriptions"
 	srvUserSettings "github.com/chistyakoviv/logbot/internal/service/user_settings"
@@ -211,16 +212,6 @@ func resolveRbac(c di.Container) rbac.ManagerInterface {
 	return rbac
 }
 
-func resolveTgMiddleware(c di.Container) tgMiddlewares.TgMiddlewareChainInterface {
-	middleware, err := di.Resolve[tgMiddlewares.TgMiddlewareChainInterface](c, "tgMiddleware")
-
-	if err != nil {
-		log.Fatalf("Couldn't resolve middleware definition: %v", err)
-	}
-
-	return middleware
-}
-
 func resolveLogHasher(c di.Container) loghasher.HasherInterface {
 	hasher, err := di.Resolve[loghasher.HasherInterface](c, "logHasher")
 
@@ -241,7 +232,39 @@ func resolveMarkdowner(c di.Container) markdown.MarkdownerInterface {
 	return markdowner
 }
 
-// MIddlewares
+func resolveChrono(c di.Container) chrono.Chrono {
+	chrono, err := di.Resolve[chrono.Chrono](c, "chrono")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve chrono definition: %v", err)
+	}
+
+	return chrono
+}
+
+// Report messages
+func resolveErrorReportMessage(c di.Container) messages.ErrorReportMessageInterface {
+	message, err := di.Resolve[messages.ErrorReportMessageInterface](c, "errorReportMessage")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve error report message definition: %v", err)
+	}
+
+	return message
+}
+
+// Tg middleware
+func resolveTgMiddleware(c di.Container) tgMiddlewares.TgMiddlewareChainInterface {
+	middleware, err := di.Resolve[tgMiddlewares.TgMiddlewareChainInterface](c, "tgMiddleware")
+
+	if err != nil {
+		log.Fatalf("Couldn't resolve middleware definition: %v", err)
+	}
+
+	return middleware
+}
+
+// Tg middlewares
 func resolveTgLangMiddleware(c di.Container) tgMiddlewares.TgMiddleware {
 	middleware, err := di.Resolve[tgMiddlewares.TgMiddleware](c, "tgLangMiddleware")
 
@@ -419,16 +442,6 @@ func resolveLogsService(c di.Container) srvLogs.ServiceInterface {
 
 	if err != nil {
 		log.Fatalf("Couldn't resolve logs service definition: %v", err)
-	}
-
-	return service
-}
-
-func resolveLastSentService(c di.Container) srvLastSent.ServiceInterface {
-	service, err := di.Resolve[srvLastSent.ServiceInterface](c, "lastSentService")
-
-	if err != nil {
-		log.Fatalf("Couldn't resolve last sent service definition: %v", err)
 	}
 
 	return service

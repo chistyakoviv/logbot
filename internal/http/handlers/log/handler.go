@@ -1,54 +1,37 @@
 package log
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"io"
 	"log/slog"
 	"net/http"
-	"sort"
-	"time"
 
-	"github.com/PaulSonOfLars/gotgbot/v2"
-	"github.com/chistyakoviv/logbot/internal/bot"
 	"github.com/chistyakoviv/logbot/internal/http/handlers"
 	"github.com/chistyakoviv/logbot/internal/lib/http/response"
-	"github.com/chistyakoviv/logbot/internal/lib/loghasher"
-	"github.com/chistyakoviv/logbot/internal/lib/markdown"
 	"github.com/chistyakoviv/logbot/internal/lib/slogger"
 	"github.com/chistyakoviv/logbot/internal/model"
-	srvChatSettings "github.com/chistyakoviv/logbot/internal/service/chat_settings"
-	srvLabels "github.com/chistyakoviv/logbot/internal/service/labels"
-	srvLastSent "github.com/chistyakoviv/logbot/internal/service/last_sent"
 	srvLogs "github.com/chistyakoviv/logbot/internal/service/logs"
-	srvSubscriptions "github.com/chistyakoviv/logbot/internal/service/subscriptions"
 	"github.com/go-chi/render"
-	"github.com/go-playground/validator/v10"
 )
-
-const stackTraceKey = "stack"
 
 func New(
 	ctx context.Context,
 	logger *slog.Logger,
 	validation handlers.Validator,
-	tgBot bot.Bot,
-	loghasher loghasher.HasherInterface,
-	markdowner markdown.MarkdownerInterface,
 	logs srvLogs.ServiceInterface,
-	subscriptions srvSubscriptions.ServiceInterface,
-	chatSettings srvChatSettings.ServiceInterface,
-	labels srvLabels.ServiceInterface,
-	lastSent srvLastSent.ServiceInterface,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var req LogRequest
+		defer func() {
+			_ = r.Body.Close()
+		}()
+
+		var raw json.RawMessage
 
 		// TODO: implement middlewares to handle request parsing
 		// in case there will be more than one handler
-		err := render.DecodeJSON(r.Body, &req)
+		err := render.DecodeJSON(r.Body, &raw)
 		if errors.Is(err, io.EOF) {
 			// Encounter such error if request body is empty
 			// Handle it separately
@@ -59,208 +42,63 @@ func New(
 
 			return
 		}
-		if err != nil {
+
+		var reqBatch []LogRequest
+		switch raw[0] {
+		// Request from Fluend
+		case '{':
+			var req LogRequest
+			if err := json.Unmarshal(raw, &req); err != nil {
+				logger.Error("failed to decode request body", slogger.Err(err))
+
+				render.Status(r, http.StatusBadRequest)
+				render.JSON(w, r, response.Error("failed to decode request"))
+				return
+			}
+			reqBatch = append(reqBatch, req)
+		// Request from Fluent Bit
+		case '[':
+			if err := json.Unmarshal(raw, &reqBatch); err != nil {
+				logger.Error("failed to decode request body", slogger.Err(err))
+
+				render.Status(r, http.StatusBadRequest)
+				render.JSON(w, r, response.Error("failed to decode request"))
+				return
+			}
+		default:
 			logger.Error("failed to decode request body", slogger.Err(err))
 
 			render.Status(r, http.StatusBadRequest)
 			render.JSON(w, r, response.Error("failed to decode request"))
-
 			return
 		}
 
-		logger.Debug("request body is decoded", slog.Any("request", req))
+		logger.Debug("request body is decoded", slog.Any("request", reqBatch))
 
-		if err := validation.Struct(req); err != nil {
-			validationErr := err.(validator.ValidationErrors)
+		for _, req := range reqBatch {
+			if err := validation.Struct(req); err != nil {
+				// validationErr := err.(validator.ValidationErrors)
+				logger.Error("invalid request entry", slogger.Err(err))
+				continue
+			}
 
-			logger.Error("invalid request", slogger.Err(err))
-
-			render.Status(r, http.StatusBadRequest)
-			render.JSON(w, r, response.ValidationError(validationErr))
-
-			return
-		}
-
-		subscriptions, err := subscriptions.FindByToken(ctx, req.Token)
-		if err != nil {
-			logger.Error("failed to check subscription", slogger.Err(err))
-
-			render.Status(r, http.StatusInternalServerError)
-			render.JSON(w, r, response.Error("failed to check subscription"))
-
-			return
-		}
-		if len(subscriptions) == 0 {
-			logger.Error("subscription not found")
-
-			render.Status(r, http.StatusNotFound)
-			render.JSON(w, r, response.Error("subscription not found"))
-
-			return
-		}
-
-		logInfo := &model.LogInfo{
-			Data:          req.Log,
-			Service:       req.Labels.Service,
-			ContainerName: req.Labels.ContainerName,
-			ContainerId:   req.Labels.ContainerId,
-			Node:          req.Labels.Node,
-			NodeId:        req.Labels.NodeId,
-			Token:         req.Token,
-			Hash:          loghasher.Hash(req.Log),
-		}
-		log, err := logs.Create(ctx, logInfo)
-		if err != nil {
-			logger.Error("failed to create log", slogger.Err(err))
-
-			render.Status(r, http.StatusInternalServerError)
-			render.JSON(w, r, response.Error("failed to create log"))
-
-			return
-		}
-
-		now := time.Now().UTC()
-		for _, subscription := range subscriptions {
-			settings, err := chatSettings.FindOrDefaults(ctx, subscription.ChatId)
+			logInfo := &model.LogInfo{
+				Data:          req.Log,
+				Service:       req.Labels.Service,
+				ContainerName: req.Labels.ContainerName,
+				ContainerId:   req.Labels.ContainerId,
+				Node:          req.Labels.Node,
+				NodeId:        req.Labels.NodeId,
+				Token:         req.Token,
+			}
+			_, err := logs.Create(ctx, logInfo)
 			if err != nil {
-				logger.Error("failed to get chat settings", slogger.Err(err))
-				continue
-			}
-
-			// Skip notification if chat is muted
-			if ok, muteTimeRemaining := settings.IsMuted(now); ok {
-				logger.Debug(
-					"Notification wasn’t sent because this chat is muted",
-					slog.Duration("mute_time_remaining", muteTimeRemaining),
-				)
-				continue
-			}
-
-			lastSentTimestamp := lastSent.Get(ctx, &model.LastSentKey{
-				ChatId: subscription.ChatId,
-				Token:  log.Token,
-				Hash:   log.Hash,
-			})
-			// Skip notification if it was sent recently
-			if ok, timeSinceLastSent := settings.IsCollapsed(now, lastSentTimestamp); ok {
-				logger.Debug(
-					"Notification wasn’t sent because it falls within the collapse period",
-					slog.Duration("time_since_last_sent", timeSinceLastSent),
-				)
-				continue
-			}
-
-			subscribers, err := labels.FindByChatIdAndLabel(ctx, subscription.ChatId, log.Service)
-			if err != nil {
-				logger.Error(
-					"failed to find subscribers",
-					slog.Attr{Key: "label", Value: slog.StringValue(log.Service)},
-					slogger.Err(err),
-				)
-				continue
-			}
-
-			if len(subscribers) == 0 {
-				// No subscribers for this label in this chat
-				continue
-			}
-
-			var message bytes.Buffer
-			for i, subscriber := range subscribers {
-				message.WriteString("@")
-				message.WriteString(subscriber.Username)
-				if i < len(subscribers)-1 {
-					message.WriteString(", ")
-				}
-			}
-
-			message.WriteString("\n\n*Project ")
-			message.WriteString(subscription.ProjectName)
-			message.WriteString("*\n")
-
-			message.WriteString("\n*Info*\n")
-
-			message.WriteString("service: `")
-			message.WriteString(log.Service)
-			message.WriteString("`\n")
-
-			if len(log.ContainerId) > 0 {
-				message.WriteString("container id: `")
-				message.WriteString(log.ContainerId)
-				message.WriteString("`\n")
-			}
-
-			if len(log.NodeId) > 0 {
-				message.WriteString("node id: `")
-				message.WriteString(log.NodeId)
-				message.WriteString("`\n")
-			}
-			message.WriteString("\n*Data*\n")
-
-			var decodedData map[string]string
-			err = json.Unmarshal([]byte(log.Data), &decodedData)
-
-			if err == nil {
-				keys := make([]string, 0, len(decodedData))
-				for key := range decodedData {
-					if key != stackTraceKey {
-						keys = append(keys, key)
-					}
-				}
-				// Always print entries in the same order
-				sort.Strings(keys)
-				for _, key := range keys {
-					message.WriteString(markdowner.Escape(key))
-					message.WriteString(": ")
-					message.WriteString(markdowner.Escape(decodedData[key]))
-					message.WriteString("\n")
-				}
-
-				// Print stack trace in code block
-				if code, ok := decodedData[stackTraceKey]; ok {
-					message.WriteString("```\n")
-					message.WriteString(code)
-					message.WriteString("\n```")
-				}
-			} else {
-				// Log data is in an unexpected format, print it in code block
-				message.WriteString("```\n")
-				message.WriteString(log.Data)
-				message.WriteString("\n```")
-			}
-
-			isSilenced, silenceTimeRemaining := settings.IsSilenced(now)
-			if isSilenced {
-				logger.Debug("Notifications are silenced", slog.Duration("silence_time_remaining", silenceTimeRemaining))
-			}
-
-			err = tgBot.SendMessage(subscription.ChatId, message.String(), &gotgbot.SendMessageOpts{
-				// Send silent notification
-				DisableNotification: isSilenced,
-				// ParseMode: "MarkdownV2",
-				ParseMode: "Markdown",
-			})
-			if err != nil {
-				logger.Error(
-					"failed to send message to chat",
-					slog.Int64("chat_id", subscription.ChatId),
-					slogger.Err(err),
-				)
-			} else {
-				_, err = lastSent.Update(ctx, &model.LastSentKey{
-					ChatId: subscription.ChatId,
-					Token:  log.Token,
-					Hash:   log.Hash,
-				})
-				if err != nil {
-					logger.Error("failed to update last sent", slogger.Err(err))
-				}
+				logger.Error("failed to create log", slogger.Err(err))
 			}
 		}
 
 		render.JSON(w, r, LogResponse{
 			Response: response.OK(),
-			Id:       log.Id,
 		})
 	}
 }
