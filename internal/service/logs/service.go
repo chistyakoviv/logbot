@@ -37,7 +37,7 @@ type service struct {
 	loghasher               loghasher.HasherInterface
 	chrono                  chrono.Chrono
 	tgBot                   bot.Bot
-	tgErrorReportMessage    messages.ErrorReportMessageInterface
+	errorReportMessage      messages.ErrorReportMessageInterface
 	logger                  *slog.Logger
 	txManager               db.TxManager
 }
@@ -51,7 +51,7 @@ func NewService(
 	loghasher loghasher.HasherInterface,
 	chrono chrono.Chrono,
 	tgBot bot.Bot,
-	tgErrorReportMessage messages.ErrorReportMessageInterface,
+	errorReportMessage messages.ErrorReportMessageInterface,
 	logger *slog.Logger,
 	txManager db.TxManager,
 ) ServiceInterface {
@@ -64,7 +64,7 @@ func NewService(
 		loghasher:               loghasher,
 		chrono:                  chrono,
 		tgBot:                   tgBot,
-		tgErrorReportMessage:    tgErrorReportMessage,
+		errorReportMessage:      errorReportMessage,
 		logger:                  logger,
 		txManager:               txManager,
 	}

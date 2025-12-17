@@ -81,7 +81,7 @@ func (s *service) Create(ctx context.Context, logInfo *model.LogInfo) (*model.Lo
 			s.logger.Debug("Notifications are silenced", slog.Duration("silence_time_remaining", silenceTimeRemaining))
 		}
 
-		message := s.tgErrorReportMessage.Create(log, subscription, subscribers)
+		message := s.errorReportMessage.Create(log, subscription, subscribers)
 
 		err = s.tgBot.SendMessage(subscription.ChatId, message, &gotgbot.SendMessageOpts{
 			// Send silent notification

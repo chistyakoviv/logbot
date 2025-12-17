@@ -6,5 +6,4 @@ import (
 
 type LogResponse struct {
 	response.Response
-	Id int `json:"id"`
 }
