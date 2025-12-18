@@ -19,10 +19,12 @@ func begin(
 	tgCommands command.TgCommands,
 ) middlewares.TgMiddlewareHandler {
 	// Output commands in lexicographic order
-	commandNames := make([]string, 0, len(tgCommands))
+	commandNames := make([]string, 0, len(tgCommands)+1)
 	for name := range tgCommands {
 		commandNames = append(commandNames, name)
 	}
+	// Trick to add itself to the list of commands
+	commandNames = append(commandNames, CommandName)
 	sort.Strings(commandNames)
 	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) error {
 		msg := ectx.EffectiveMessage

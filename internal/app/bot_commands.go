@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command/addlabels"
@@ -160,6 +161,8 @@ func BuildTgCommands(
 		i18n,
 		tgCommands,
 	)
+
+	logger.Debug("commands from builder", slog.Any("commands", tgCommands))
 
 	return tgCommands
 }
