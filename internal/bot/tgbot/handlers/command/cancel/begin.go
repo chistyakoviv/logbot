@@ -68,7 +68,7 @@ func begin(
 			)
 			return err
 		}
-		if errors.Is(err, db.ErrNotFound) || currCommand.Stage == model.NoStage {
+		if errors.Is(err, db.ErrNotFound) || !currCommand.IsInProgress() {
 			_, err := b.SendMessage(
 				msg.Chat.Id,
 				i18n.

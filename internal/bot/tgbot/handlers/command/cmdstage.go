@@ -44,7 +44,7 @@ func commandStageHandler(
 			ChatId: msg.Chat.Id,
 			UserId: msg.From.Id,
 		})
-		if errors.Is(err, db.ErrNotFound) || (command != nil && command.Stage == model.NoStage) {
+		if errors.Is(err, db.ErrNotFound) || (command != nil && !command.IsInProgress()) {
 			logger.Debug("no ongoing command")
 			return nil
 		}

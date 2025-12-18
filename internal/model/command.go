@@ -13,6 +13,10 @@ type Command struct {
 	UpdatedAt time.Time
 }
 
+func (c *Command) IsInProgress() bool {
+	return c.Stage != NoStage
+}
+
 type CommandInfo struct {
 	Name   string
 	ChatId int64
