@@ -2,7 +2,6 @@ package labels
 
 import (
 	"context"
-	"slices"
 	"time"
 
 	"github.com/chistyakoviv/logbot/internal/model"
@@ -21,10 +20,14 @@ func (s *service) DeleteByKey(ctx context.Context, key *model.LabelKey, labels [
 		UpdatedAt: time.Now(),
 	}
 
-	for _, l := range oldLabel.Labels {
-		// Skip if the label in the list of labels to delete
-		if !slices.Contains(labels, l) {
-			newLabel.Labels = append(newLabel.Labels, l)
+	labelsToDelete := make(map[string]bool, len(labels))
+	for _, label := range labels {
+		labelsToDelete[label] = true
+	}
+
+	for _, label := range oldLabel.Labels {
+		if !labelsToDelete[label] {
+			newLabel.Labels = append(newLabel.Labels, label)
 		}
 	}
 

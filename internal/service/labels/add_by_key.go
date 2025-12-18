@@ -3,6 +3,7 @@ package labels
 import (
 	"context"
 	"errors"
+	"maps"
 	"slices"
 	"time"
 
@@ -14,7 +15,7 @@ func (s *service) AddByKey(ctx context.Context, key *model.LabelKey, labels []st
 	newLabel := &model.Label{
 		ChatId:    key.ChatId,
 		Username:  key.Username,
-		Labels:    labels,
+		Labels:    nil,
 		UpdatedAt: time.Now(),
 	}
 
@@ -27,13 +28,16 @@ func (s *service) AddByKey(ctx context.Context, key *model.LabelKey, labels []st
 		return s.labelsRepository.Create(ctx, newLabel)
 	}
 
-	newLabel.Labels = make([]string, 0, len(oldLabel.Labels)+len(labels))
-	newLabel.Labels = append(newLabel.Labels, oldLabel.Labels...)
-	for _, l := range labels {
-		if !slices.Contains(newLabel.Labels, l) {
-			newLabel.Labels = append(newLabel.Labels, l)
-		}
+	labelsSet := make(map[string]bool, len(oldLabel.Labels)+len(labels))
+	for _, lable := range oldLabel.Labels {
+		labelsSet[lable] = true
 	}
+	for _, label := range labels {
+		labelsSet[label] = true
+	}
+
+	newLabel.Labels = make([]string, 0, len(labelsSet))
+	newLabel.Labels = slices.AppendSeq(newLabel.Labels, maps.Keys(labelsSet))
 
 	return s.labelsRepository.Update(ctx, newLabel)
 }
