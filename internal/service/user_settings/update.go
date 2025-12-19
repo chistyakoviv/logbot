@@ -9,7 +9,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/model"
 )
 
-// TODO: execute in transaction to avoid concurrent creation
+// TODO: execute in transaction to avoid concurrent creation issues
 func (s *service) Update(ctx context.Context, userId int64, in *model.UserSettingsInfo) (*model.UserSettings, error) {
 	userSettings := &model.UserSettings{
 		UserId:    userId,
