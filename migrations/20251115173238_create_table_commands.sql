@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS commands (
     name VARCHAR NOT NULL,
     user_id BIGINT NOT NULL,
     chat_id BIGINT NOT NULL,
-    stage INTEGER NOT NULL DEFAULT -1,
+    stage INTEGER NOT NULL DEFAULT 0,
     data JSONB DEFAULT NULL,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
     PRIMARY KEY (user_id, chat_id)
