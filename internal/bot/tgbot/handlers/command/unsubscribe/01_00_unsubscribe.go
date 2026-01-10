@@ -1,4 +1,4 @@
-package rmlabels
+package unsubscribe
 
 import (
 	"context"
@@ -15,23 +15,25 @@ import (
 	"github.com/chistyakoviv/logbot/internal/lib/slogger"
 	"github.com/chistyakoviv/logbot/internal/model"
 	"github.com/chistyakoviv/logbot/internal/service/commands"
-	"github.com/chistyakoviv/logbot/internal/service/labels"
+	"github.com/chistyakoviv/logbot/internal/service/subscriptions"
+	"github.com/google/uuid"
 )
 
-func stage1(
+func unsubscribe(
 	logger *slog.Logger,
 	i18n I18n.I18nInterface,
-	labelsService labels.ServiceInterface,
+	subscriptions subscriptions.ServiceInterface,
 	commands commands.ServiceInterface,
 ) middlewares.TgMiddlewareHandler {
 	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) error {
 		msg := ectx.EffectiveMessage
+		token := strings.Trim(msg.Text, " ")
 
 		logger.Debug(
-			"rm label command: retrieve labels to remove",
+			"unsubscribe command: unsubscribe",
 			slog.Int64("chat_id", msg.Chat.Id),
 			slog.String("user", msg.From.Username),
-			slog.String("label", msg.Text),
+			slog.String("token", token),
 		)
 
 		lang, ok := ctx.Value(middleware.LangKey).(string)
@@ -44,18 +46,47 @@ func stage1(
 			return middleware.ErrMissingSilenceMiddleware
 		}
 
-		labels := make([]string, 0)
-		for _, label := range strings.Split(msg.Text, ",") {
-			trimmedLabel := strings.TrimSpace(label)
-			if len(trimmedLabel) > 0 && !strings.Contains(trimmedLabel, " ") {
-				labels = append(labels, trimmedLabel)
-			}
-		}
-
-		if len(labels) == 0 {
-			_, err := b.SendMessage(
+		var err error
+		if err := uuid.Validate(token); err != nil {
+			_, _ = b.SendMessage(
 				msg.Chat.Id,
-				i18n.T(lang, "rmlabels_no_labels_error"),
+				i18n.
+					Chain().
+					T(
+						lang,
+						"mention",
+						I18n.WithArgs([]any{
+							msg.From.Id,
+							msg.From.Username,
+						}),
+					).
+					Append("\n").
+					T(lang, "unsubscribe_invalid_token").
+					String(),
+				&gotgbot.SendMessageOpts{
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
+				},
+			)
+			return err
+		}
+		sub, unsubErr := subscriptions.Find(ctx, token, msg.Chat.Id)
+		if errors.Is(unsubErr, db.ErrNotFound) {
+			_, _ = b.SendMessage(
+				msg.Chat.Id,
+				i18n.
+					Chain().
+					T(
+						lang,
+						"mention",
+						I18n.WithArgs([]any{
+							msg.From.Id,
+							msg.From.Username,
+						}),
+					).
+					Append("\n").
+					T(lang, "unsubscribe_token_not_exists").
+					String(),
 				&gotgbot.SendMessageOpts{
 					DisableNotification: isSilenced,
 					ParseMode:           "html",
@@ -64,7 +95,6 @@ func stage1(
 			return err
 		}
 
-		var err error
 		_, err = commands.CompleteByKey(
 			ctx,
 			&model.CommandKey{
@@ -72,111 +102,12 @@ func stage1(
 				UserId: msg.From.Id,
 			},
 		)
-		if err != nil {
-			logger.Error("error occurred while removing labels: failed to complete command", slogger.Err(err))
-			_, err := b.SendMessage(
-				msg.Chat.Id,
-				i18n.
-					Chain().
-					T(
-						lang,
-						"mention",
-						I18n.WithArgs([]any{
-							msg.From.Id,
-							msg.From.Username,
-						}),
-					).
-					Append("\n").
-					T(lang, "rmlabels_error").
-					String(),
-				&gotgbot.SendMessageOpts{
-					DisableNotification: isSilenced,
-					ParseMode:           "html",
-				},
-			)
-			return err
-		}
-
-		cmd, err := commands.FindByKey(
-			ctx,
-			&model.CommandKey{
-				ChatId: msg.Chat.Id,
-				UserId: msg.From.Id,
-			},
-		)
-		if err != nil {
-			logger.Error("error occurred while removing labels: failed to fetch command data", slogger.Err(err))
-			_, err := b.SendMessage(
-				msg.Chat.Id,
-				i18n.
-					Chain().
-					T(
-						lang,
-						"mention",
-						I18n.WithArgs([]any{
-							msg.From.Id,
-							msg.From.Username,
-						}),
-					).
-					Append("\n").
-					T(lang, "rmlabels_error").
-					String(),
-				&gotgbot.SendMessageOpts{
-					DisableNotification: isSilenced,
-					ParseMode:           "html",
-				},
-			)
-			return err
-		}
-		rawUsers, ok := cmd.Data["users"].([]interface{})
-		if !ok {
-			logger.Error("error occurred while removing labels: failed to unmarshal command data, missing users")
-			_, err := b.SendMessage(
-				msg.Chat.Id,
-				i18n.
-					Chain().
-					T(
-						lang,
-						"mention",
-						I18n.WithArgs([]any{
-							msg.From.Id,
-							msg.From.Username,
-						}),
-					).
-					Append("\n").
-					T(lang, "rmlabels_error").
-					String(),
-				&gotgbot.SendMessageOpts{
-					DisableNotification: isSilenced,
-					ParseMode:           "html",
-				},
-			)
-			return err
-		}
-
-		users := make([]string, len(rawUsers))
-		for i, user := range rawUsers {
-			users[i] = user.(string)
-		}
-
-		hasError := false
-		for _, user := range users {
-			_, err = labelsService.DeleteByKey(
-				ctx,
-				&model.LabelKey{
-					ChatId:   msg.Chat.Id,
-					Username: user,
-				},
-				labels,
-			)
-			if err != nil && !errors.Is(err, db.ErrNotFound) {
-				logger.Error("error occurred while removing labels", slogger.Err(err))
-				hasError = true
+		if err != nil || unsubErr != nil {
+			if err == nil {
+				err = unsubErr
 			}
-		}
-
-		if hasError {
-			_, err := b.SendMessage(
+			logger.Error("error occurred while unsubscribing", slogger.Err(err))
+			_, _ = b.SendMessage(
 				msg.Chat.Id,
 				i18n.
 					Chain().
@@ -189,7 +120,33 @@ func stage1(
 						}),
 					).
 					Append("\n").
-					T(lang, "rmlabels_failed_remove_labels_error").
+					T(lang, "unsubscribe_error").
+					String(),
+				&gotgbot.SendMessageOpts{
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
+				},
+			)
+			return err
+		}
+
+		_, err = subscriptions.Unsubscribe(ctx, token, msg.Chat.Id)
+		if err != nil {
+			logger.Error("error occurred while unsubscribing", slogger.Err(err))
+			_, _ = b.SendMessage(
+				msg.Chat.Id,
+				i18n.
+					Chain().
+					T(
+						lang,
+						"mention",
+						I18n.WithArgs([]any{
+							msg.From.Id,
+							msg.From.Username,
+						}),
+					).
+					Append("\n").
+					T(lang, "unsubscribe_error").
 					String(),
 				&gotgbot.SendMessageOpts{
 					DisableNotification: isSilenced,
@@ -212,18 +169,24 @@ func stage1(
 					}),
 				).
 				Append("\n").
-				T(lang, "rmlabels_success").
+				T(
+					lang,
+					"unsubscribe_complete",
+				).
+				Append("\n\n").
+				T(
+					lang,
+					"unsubscribe_project_name",
+					I18n.WithArgs([]any{
+						sub.ProjectName,
+					}),
+				).
 				String(),
 			&gotgbot.SendMessageOpts{
 				DisableNotification: isSilenced,
 				ParseMode:           "html",
 			},
 		)
-		if err != nil {
-			logger.Error("error occurred while removing labels", slogger.Err(err))
-			return err
-		}
-
-		return nil
+		return err
 	}
 }

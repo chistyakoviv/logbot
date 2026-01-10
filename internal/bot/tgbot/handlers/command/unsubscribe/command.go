@@ -28,9 +28,9 @@ func New(
 ) command.TgCommandInterface {
 	return &unsubscribeCommand{
 		TgCommand: command.TgCommand{
-			StartHandler: mw.Handler(ctx, begin(logger, i18n, commands)),
 			StageHandlers: []handlers.Response{
-				mw.Handler(ctx, stage0(logger, i18n, subscriptions, commands)),
+				mw.Handler(ctx, requestToken(logger, i18n, commands)),
+				mw.Handler(ctx, unsubscribe(logger, i18n, subscriptions, commands)),
 			},
 		},
 	}

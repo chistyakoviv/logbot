@@ -37,7 +37,7 @@ func New() *I18n {
 
 				"access_denied": en.AccessDenied,
 
-				"subscribe_begin":                 en.SubscribeBegin,
+				"subscribe_enter_token":           en.SubscribeEnterToken,
 				"subscribe_invalid_token":         en.SubscribeInvalidToken,
 				"subscribe_token_exists":          en.SubscribeTokenExists,
 				"subscribe_error":                 en.SubscribeError,
@@ -55,7 +55,7 @@ func New() *I18n {
 				"cancel_no_current_command": en.CancelNoCurrentCommand,
 				"cancel_description":        en.CancelDescription,
 
-				"unsubscribe_begin":            en.UnsubscribeBegin,
+				"unsubscribe_enter_token":      en.UnsubscribeEnterToken,
 				"unsubscribe_invalid_token":    en.UnsubscribeInvalidToken,
 				"unsubscribe_token_not_exists": en.UnsubscribeTokenNotExists,
 				"unsubscribe_error":            en.UnsubscribeError,

@@ -1,7 +1,8 @@
-package subscribe
+package rmlabels
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"strings"
 
@@ -13,24 +14,23 @@ import (
 	"github.com/chistyakoviv/logbot/internal/lib/slogger"
 	"github.com/chistyakoviv/logbot/internal/model"
 	"github.com/chistyakoviv/logbot/internal/service/commands"
-	"github.com/chistyakoviv/logbot/internal/service/subscriptions"
+	"github.com/chistyakoviv/logbot/internal/service/labels"
 )
 
-func stage1(
+func removeLabels(
 	logger *slog.Logger,
 	i18n I18n.I18nInterface,
-	subscriptions subscriptions.ServiceInterface,
+	labelsService labels.ServiceInterface,
 	commands commands.ServiceInterface,
 ) middlewares.TgMiddlewareHandler {
 	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) error {
 		msg := ectx.EffectiveMessage
-		projectName := strings.Trim(msg.Text, " ")
 
 		logger.Debug(
-			"subscribe command: retrieve project name",
+			"rm label command: remove labels",
 			slog.Int64("chat_id", msg.Chat.Id),
 			slog.String("user", msg.From.Username),
-			slog.String("project_name", projectName),
+			slog.String("label", msg.Text),
 		)
 
 		lang, ok := ctx.Value(middleware.LangKey).(string)
@@ -43,28 +43,24 @@ func stage1(
 			return middleware.ErrMissingSilenceMiddleware
 		}
 
-		if len(projectName) > model.MaxProjectNameLength {
-			_, err := b.SendMessage(
+		labels := make([]string, 0)
+		for _, label := range strings.Split(msg.Text, ",") {
+			trimmedLabel := strings.TrimSpace(label)
+			if len(trimmedLabel) > 0 && !strings.Contains(trimmedLabel, " ") {
+				labels = append(labels, trimmedLabel)
+			}
+		}
+
+		if len(labels) == 0 {
+			_, _ = b.SendMessage(
 				msg.Chat.Id,
-				i18n.
-					Chain().
-					T(
-						lang,
-						"mention",
-						I18n.WithArgs([]any{
-							msg.From.Id,
-							msg.From.Username,
-						}),
-					).
-					Append("\n").
-					T(lang, "subscribe_too_long_project_name").
-					String(),
+				i18n.T(lang, "rmlabels_no_labels_error"),
 				&gotgbot.SendMessageOpts{
 					DisableNotification: isSilenced,
 					ParseMode:           "html",
 				},
 			)
-			return err
+			return errors.New("no labels provided")
 		}
 
 		var err error
@@ -76,8 +72,8 @@ func stage1(
 			},
 		)
 		if err != nil {
-			logger.Error("error occurred while subscribing: failed to complete command", slogger.Err(err))
-			_, err := b.SendMessage(
+			logger.Error("error occurred while removing labels: failed to complete command", slogger.Err(err))
+			_, _ = b.SendMessage(
 				msg.Chat.Id,
 				i18n.
 					Chain().
@@ -90,7 +86,7 @@ func stage1(
 						}),
 					).
 					Append("\n").
-					T(lang, "subscribe_error").
+					T(lang, "rmlabels_error").
 					String(),
 				&gotgbot.SendMessageOpts{
 					DisableNotification: isSilenced,
@@ -108,8 +104,8 @@ func stage1(
 			},
 		)
 		if err != nil {
-			logger.Error("error occurred while subscribing: failed to fetch command data", slogger.Err(err))
-			_, err := b.SendMessage(
+			logger.Error("error occurred while removing labels: failed to fetch command data", slogger.Err(err))
+			_, _ = b.SendMessage(
 				msg.Chat.Id,
 				i18n.
 					Chain().
@@ -122,7 +118,7 @@ func stage1(
 						}),
 					).
 					Append("\n").
-					T(lang, "addlabels_error").
+					T(lang, "rmlabels_error").
 					String(),
 				&gotgbot.SendMessageOpts{
 					DisableNotification: isSilenced,
@@ -131,11 +127,10 @@ func stage1(
 			)
 			return err
 		}
-
-		token, ok := cmd.Data["token"].(string)
+		rawUsers, ok := cmd.Data["users"].([]interface{})
 		if !ok {
-			logger.Error("error occurred while subscribing: failed to unmarshal command data, missing token", slogger.Err(err))
-			_, err := b.SendMessage(
+			logger.Error("error occurred while removing labels: failed to unmarshal command data, missing users")
+			_, _ = b.SendMessage(
 				msg.Chat.Id,
 				i18n.
 					Chain().
@@ -148,7 +143,7 @@ func stage1(
 						}),
 					).
 					Append("\n").
-					T(lang, "subscribe_error").
+					T(lang, "rmlabels_error").
 					String(),
 				&gotgbot.SendMessageOpts{
 					DisableNotification: isSilenced,
@@ -158,39 +153,19 @@ func stage1(
 			return err
 		}
 
-		_, subErr := subscriptions.Find(ctx, token, msg.Chat.Id)
-		if subErr == nil {
-			_, err := b.SendMessage(
-				msg.Chat.Id,
-				i18n.
-					Chain().
-					T(
-						lang,
-						"mention",
-						I18n.WithArgs([]any{
-							msg.From.Id,
-							msg.From.Username,
-						}),
-					).
-					Append("\n").
-					T(lang, "subscribe_token_exists").
-					String(),
-				&gotgbot.SendMessageOpts{
-					DisableNotification: isSilenced,
-					ParseMode:           "html",
-				},
-			)
-			return err
+		users := make([]string, len(rawUsers))
+		for i, user := range rawUsers {
+			users[i] = user.(string)
 		}
 
-		_, err = subscriptions.Subscribe(ctx, &model.SubscriptionInfo{
-			ChatId:      msg.Chat.Id,
-			Token:       token,
-			ProjectName: projectName,
-		})
+		_, err = labelsService.DeleteByKey(
+			ctx,
+			msg.Chat.Id,
+			users,
+			labels,
+		)
 		if err != nil {
-			logger.Error("error occurred while subscribing", slogger.Err(err))
-			_, err := b.SendMessage(
+			_, _ = b.SendMessage(
 				msg.Chat.Id,
 				i18n.
 					Chain().
@@ -203,7 +178,7 @@ func stage1(
 						}),
 					).
 					Append("\n").
-					T(lang, "subscribe_error").
+					T(lang, "rmlabels_failed_remove_labels_error").
 					String(),
 				&gotgbot.SendMessageOpts{
 					DisableNotification: isSilenced,
@@ -226,32 +201,18 @@ func stage1(
 					}),
 				).
 				Append("\n").
-				T(
-					lang,
-					"subscribe_complete",
-				).
-				Append("\n\n").
-				T(
-					lang,
-					"subscribe_project_name",
-					I18n.WithArgs([]any{
-						projectName,
-					}),
-				).
-				Append("\n").
-				T(
-					lang,
-					"subscribe_token",
-					I18n.WithArgs([]any{
-						token,
-					}),
-				).
+				T(lang, "rmlabels_success").
 				String(),
 			&gotgbot.SendMessageOpts{
 				DisableNotification: isSilenced,
 				ParseMode:           "html",
 			},
 		)
-		return err
+		if err != nil {
+			logger.Error("error occurred while removing labels", slogger.Err(err))
+			return err
+		}
+
+		return nil
 	}
 }

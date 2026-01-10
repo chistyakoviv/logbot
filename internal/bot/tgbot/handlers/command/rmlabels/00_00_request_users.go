@@ -1,4 +1,4 @@
-package subscriptions
+package rmlabels
 
 import (
 	"context"
@@ -10,19 +10,20 @@ import (
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares/middleware"
 	I18n "github.com/chistyakoviv/logbot/internal/i18n"
 	"github.com/chistyakoviv/logbot/internal/lib/slogger"
-	"github.com/chistyakoviv/logbot/internal/service/subscriptions"
+	"github.com/chistyakoviv/logbot/internal/model"
+	"github.com/chistyakoviv/logbot/internal/service/commands"
 )
 
-func begin(
+func requestUsers(
 	logger *slog.Logger,
 	i18n I18n.I18nInterface,
-	subscriptions subscriptions.ServiceInterface,
+	commands commands.ServiceInterface,
 ) middlewares.TgMiddlewareHandler {
 	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) error {
 		msg := ectx.EffectiveMessage
 
 		logger.Debug(
-			"show subscriptions command",
+			"rm label command: initiate",
 			slog.Int64("chat_id", msg.Chat.Id),
 			slog.String("from", msg.From.Username),
 		)
@@ -37,10 +38,19 @@ func begin(
 			return middleware.ErrMissingSilenceMiddleware
 		}
 
-		subs, err := subscriptions.FindByChatId(ctx, msg.Chat.Id)
+		var err error
+		_, err = commands.SetCommandByKey(
+			ctx,
+			&model.CommandKey{
+				ChatId: msg.Chat.Id,
+				UserId: msg.From.Id,
+			},
+			CommandName,
+			nil,
+		)
 		if err != nil {
-			logger.Error("error occurred while retrieving subscriptions", slogger.Err(err))
-			_, err = b.SendMessage(
+			logger.Error("error occurred while removing a label", slogger.Err(err))
+			_, _ = b.SendMessage(
 				msg.Chat.Id,
 				i18n.
 					Chain().
@@ -53,7 +63,7 @@ func begin(
 						}),
 					).
 					Append("\n").
-					T(lang, "subscriptions_error").
+					T(lang, "rmlabels_error").
 					String(),
 				&gotgbot.SendMessageOpts{
 					DisableNotification: isSilenced,
@@ -61,61 +71,23 @@ func begin(
 				},
 			)
 			return err
-		}
-
-		if len(subs) == 0 {
-			_, err = b.SendMessage(
-				msg.Chat.Id,
-				i18n.
-					Chain().
-					T(
-						lang,
-						"mention",
-						I18n.WithArgs([]any{
-							msg.From.Id,
-							msg.From.Username,
-						}),
-					).
-					Append("\n").
-					T(lang, "subscriptions_empty").
-					String(),
-				&gotgbot.SendMessageOpts{
-					DisableNotification: isSilenced,
-					ParseMode:           "html",
-				},
-			)
-			return err
-		}
-
-		message := i18n.
-			Chain().
-			T(
-				lang,
-				"mention",
-				I18n.WithArgs([]any{
-					msg.From.Id,
-					msg.From.Username,
-				}),
-			).
-			Append("\n").
-			T(lang, "subscriptions_list")
-
-		for _, sub := range subs {
-			message.
-				Append("\n\n").
-				T(
-					lang,
-					"subscriptions_subscription",
-					I18n.WithArgs([]any{
-						sub.ProjectName,
-						sub.Token,
-					}),
-				)
 		}
 
 		_, err = b.SendMessage(
 			msg.Chat.Id,
-			message.String(),
+			i18n.
+				Chain().
+				T(
+					lang,
+					"mention",
+					I18n.WithArgs([]any{
+						msg.From.Id,
+						msg.From.Username,
+					}),
+				).
+				Append("\n").
+				T(lang, "rmlabels_enter_mentions").
+				String(),
 			&gotgbot.SendMessageOpts{
 				DisableNotification: isSilenced,
 				ParseMode:           "html",

@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 
+	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares"
 	"github.com/chistyakoviv/logbot/internal/i18n"
@@ -25,7 +26,9 @@ func New(
 ) command.TgCommandInterface {
 	return &labelsCommand{
 		TgCommand: command.TgCommand{
-			StartHandler: mw.Handler(ctx, begin(logger, i18n, labels)),
+			StageHandlers: []handlers.Response{
+				mw.Handler(ctx, listLabels(logger, i18n, labels)),
+			},
 		},
 	}
 }

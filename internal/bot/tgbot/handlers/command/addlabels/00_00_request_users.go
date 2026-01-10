@@ -1,27 +1,29 @@
-package setlang
+package addlabels
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
-	"net/url"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares/middleware"
 	I18n "github.com/chistyakoviv/logbot/internal/i18n"
+	"github.com/chistyakoviv/logbot/internal/lib/slogger"
+	"github.com/chistyakoviv/logbot/internal/model"
+	"github.com/chistyakoviv/logbot/internal/service/commands"
 )
 
-func begin(
+func reqeustUsers(
 	logger *slog.Logger,
 	i18n I18n.I18nInterface,
+	commands commands.ServiceInterface,
 ) middlewares.TgMiddlewareHandler {
 	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) error {
 		msg := ectx.EffectiveMessage
 
 		logger.Debug(
-			"set language command: initiate",
+			"add label command: request users to assign labels to",
 			slog.Int64("chat_id", msg.Chat.Id),
 			slog.String("from", msg.From.Username),
 		)
@@ -36,17 +38,42 @@ func begin(
 			return middleware.ErrMissingSilenceMiddleware
 		}
 
-		var langs []gotgbot.InlineKeyboardButton
-		for _, lang := range i18n.GetLangs() {
-			queryParams := url.Values{}
-			queryParams.Add(langParam, lang)
-			langs = append(langs, gotgbot.InlineKeyboardButton{
-				Text:         lang,
-				CallbackData: fmt.Sprintf("%s?%s", SetLangCbName, queryParams.Encode()),
-			})
+		var err error
+		_, err = commands.SetCommandByKey(
+			ctx,
+			&model.CommandKey{
+				ChatId: msg.Chat.Id,
+				UserId: msg.From.Id,
+			},
+			CommandName,
+			nil,
+		)
+		if err != nil {
+			logger.Error("error occurred while adding a label", slogger.Err(err))
+			_, _ = b.SendMessage(
+				msg.Chat.Id,
+				i18n.
+					Chain().
+					T(
+						lang,
+						"mention",
+						I18n.WithArgs([]any{
+							msg.From.Id,
+							msg.From.Username,
+						}),
+					).
+					Append("\n").
+					T(lang, "addlabels_error").
+					String(),
+				&gotgbot.SendMessageOpts{
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
+				},
+			)
+			return err
 		}
 
-		_, err := b.SendMessage(
+		_, err = b.SendMessage(
 			msg.Chat.Id,
 			i18n.
 				Chain().
@@ -59,14 +86,11 @@ func begin(
 					}),
 				).
 				Append("\n").
-				T(lang, "setlang_select_language").
+				T(lang, "addlabels_enter_mentions").
 				String(),
 			&gotgbot.SendMessageOpts{
 				DisableNotification: isSilenced,
 				ParseMode:           "html",
-				ReplyMarkup: gotgbot.InlineKeyboardMarkup{
-					InlineKeyboard: [][]gotgbot.InlineKeyboardButton{langs},
-				},
 			},
 		)
 		return err

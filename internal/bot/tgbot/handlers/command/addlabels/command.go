@@ -15,8 +15,9 @@ import (
 const CommandName = "addlabels"
 
 const (
-	stageMentions = iota
-	stageLabels
+	stageStart = iota
+	stageAcceptUsers
+	stageApplyLabels
 )
 
 type addlabelsCommand struct {
@@ -33,10 +34,17 @@ func New(
 ) command.TgCommandInterface {
 	return &addlabelsCommand{
 		TgCommand: command.TgCommand{
-			StartHandler: mw.Handler(ctx, begin(logger, i18n, commands)),
 			StageHandlers: []handlers.Response{
-				mw.Handler(ctx, stage0(logger, i18n, commands)),
-				mw.Handler(ctx, stage1(logger, i18n, labels, commands)),
+				mw.Handler(ctx, reqeustUsers(logger, i18n, commands)),
+				mw.Handler(
+					ctx,
+					command.
+						NewCommandChain().
+						Add(acceptUsers(logger, i18n, commands)).
+						Add(requestLabels(logger, i18n)).
+						Build(),
+				),
+				mw.Handler(ctx, applyLabels(logger, i18n, labels, commands)),
 			},
 		},
 	}

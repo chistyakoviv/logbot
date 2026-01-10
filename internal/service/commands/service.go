@@ -11,7 +11,7 @@ import (
 type ServiceInterface interface {
 	UpdateByKey(ctx context.Context, key *model.CommandKey, stage int, data map[string]interface{}) (*model.Command, error)
 	FindByKey(ctx context.Context, key *model.CommandKey) (*model.Command, error)
-	ResetByKey(ctx context.Context, key *model.CommandKey, name string, data map[string]interface{}) (*model.Command, error)
+	SetCommandByKey(ctx context.Context, key *model.CommandKey, name string, data map[string]interface{}) (*model.Command, error)
 	CompleteByKey(ctx context.Context, key *model.CommandKey) (*model.Command, error)
 }
 

@@ -1,4 +1,4 @@
-package silence
+package mute
 
 import (
 	"context"
@@ -16,7 +16,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/service/chat_settings"
 )
 
-func silenceCb(
+func muteCb(
 	logger *slog.Logger,
 	i18n I18n.I18nInterface,
 	chatSettings chat_settings.ServiceInterface,
@@ -25,7 +25,7 @@ func silenceCb(
 		cb := ectx.CallbackQuery
 
 		logger.Debug(
-			"silence command: button clicked",
+			"mute command: button clicked",
 			slog.Int64("chat_id", cb.Message.GetChat().Id),
 			slog.String("from", cb.From.Username),
 		)
@@ -35,28 +35,35 @@ func silenceCb(
 			return middleware.ErrMissingLangMiddleware
 		}
 
+		isSilenced, ok := ctx.Value(middleware.SilenceKey).(bool)
+		if !ok {
+			return middleware.ErrMissingSilenceMiddleware
+		}
+
 		query, err := url.Parse(cb.Data)
 		if err != nil {
 			logger.Error("error occurred while parsing the callback data", slogger.Err(err))
-			_, err := b.SendMessage(
+			_, _ = b.SendMessage(
 				cb.Message.GetChat().Id,
 				i18n.T(lang, "callback_data_parse_error"),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return err
 		}
 		queryParams := query.Query()
-		rawPeriod := queryParams.Get(silencePeriodParam)
+		rawPeriod := queryParams.Get(mutePeriodParam)
 		periodIdx, err := strconv.Atoi(rawPeriod)
 		if err != nil {
 			logger.Error("error occurred while parsing the callback data", slogger.Err(err))
-			_, err := b.SendMessage(
+			_, _ = b.SendMessage(
 				cb.Message.GetChat().Id,
 				i18n.T(lang, "callback_data_parse_error"),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return err
@@ -67,7 +74,8 @@ func silenceCb(
 				cb.Message.GetChat().Id,
 				i18n.T(lang, "callback_data_parse_error"),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return err
@@ -75,14 +83,15 @@ func silenceCb(
 
 		period := periods[periodIdx].Duration
 
-		_, err = chatSettings.UpdateSilenceUntil(ctx, cb.Message.GetChat().Id, time.Now().Add(period))
+		_, err = chatSettings.UpdateMuteUntil(ctx, cb.Message.GetChat().Id, time.Now().Add(period))
 		if err != nil {
-			logger.Error("error occurred while setting the silence period", slogger.Err(err))
+			logger.Error("error occurred while setting the collapse period", slogger.Err(err))
 			_, err := b.SendMessage(
 				cb.Message.GetChat().Id,
 				i18n.T(lang, "callback_data_parse_error"),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return err
@@ -91,7 +100,7 @@ func silenceCb(
 		_, err = cb.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
 			Text: i18n.T(
 				lang,
-				"silence_period_set",
+				"mute_period_set",
 				I18n.WithArgs([]any{
 					period,
 				}),
@@ -99,11 +108,12 @@ func silenceCb(
 		})
 		if err != nil {
 			logger.Error("failed to answer callback", slogger.Err(err))
-			_, err := b.SendMessage(
+			_, _ = b.SendMessage(
 				cb.Message.GetChat().Id,
 				i18n.T(lang, "callback_failed_to_answer"),
 				&gotgbot.SendMessageOpts{
-					ParseMode: "html",
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
 				},
 			)
 			return err
@@ -124,15 +134,14 @@ func silenceCb(
 				Append("\n").
 				T(
 					lang,
-					"silence_period_set",
+					"mute_period_set",
 					I18n.WithArgs([]any{
 						period,
 					}),
 				).
 				String(),
 			&gotgbot.SendMessageOpts{
-				// For the silence command notifications are always disabled
-				DisableNotification: true,
+				DisableNotification: isSilenced,
 				ParseMode:           "html",
 			},
 		)

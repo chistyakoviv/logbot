@@ -4,7 +4,7 @@ var UnsubscribeDescription = []string{
 	"Unsubscribe this chat from receiving error notifications (permission required).",
 }
 
-var UnsubscribeBegin = []string{
+var UnsubscribeEnterToken = []string{
 	"Enter your token.",
 }
 

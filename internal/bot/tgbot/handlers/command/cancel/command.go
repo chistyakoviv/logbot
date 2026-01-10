@@ -26,8 +26,9 @@ func New(
 ) command.TgCommandInterface {
 	return &cancelCommand{
 		TgCommand: command.TgCommand{
-			StartHandler:  mw.Handler(ctx, begin(logger, i18n, commands)),
-			StageHandlers: []handlers.Response{},
+			StageHandlers: []handlers.Response{
+				mw.Handler(ctx, cancel(logger, i18n, commands)),
+			},
 		},
 	}
 }

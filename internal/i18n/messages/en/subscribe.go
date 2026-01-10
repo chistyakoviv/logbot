@@ -4,7 +4,7 @@ var SubscribeDescription = []string{
 	"Subscribe this chat to receive error notifications (permission required).",
 }
 
-var SubscribeBegin = []string{
+var SubscribeEnterToken = []string{
 	"Enter your token.",
 }
 

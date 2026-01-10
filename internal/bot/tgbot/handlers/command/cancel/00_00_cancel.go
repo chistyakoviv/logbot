@@ -16,7 +16,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/service/commands"
 )
 
-func begin(
+func cancel(
 	logger *slog.Logger,
 	i18n I18n.I18nInterface,
 	commands commands.ServiceInterface,
@@ -50,7 +50,7 @@ func begin(
 		)
 		if err != nil && !errors.Is(err, db.ErrNotFound) {
 			logger.Error("error occurred while finding a command", slogger.Err(err))
-			_, err := b.SendMessage(
+			_, _ = b.SendMessage(
 				msg.Chat.Id,
 				i18n.
 					Chain().
@@ -69,7 +69,7 @@ func begin(
 			return err
 		}
 		if errors.Is(err, db.ErrNotFound) || !currCommand.IsInProgress() {
-			_, err := b.SendMessage(
+			_, _ = b.SendMessage(
 				msg.Chat.Id,
 				i18n.
 					Chain().

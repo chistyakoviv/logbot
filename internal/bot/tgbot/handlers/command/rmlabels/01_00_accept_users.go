@@ -1,7 +1,8 @@
-package addlabels
+package rmlabels
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"strconv"
 
@@ -15,7 +16,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/service/commands"
 )
 
-func stage0(
+func acceptUsers(
 	logger *slog.Logger,
 	i18n I18n.I18nInterface,
 	commands commands.ServiceInterface,
@@ -24,7 +25,7 @@ func stage0(
 		msg := ectx.EffectiveMessage
 
 		logger.Debug(
-			"add label command: retrieve users to assign labels to",
+			"rm label command: accept users to remove labels from",
 			slog.Int64("chat_id", msg.Chat.Id),
 			slog.String("user", msg.From.Username),
 			slog.String("labels", msg.Text),
@@ -43,7 +44,7 @@ func stage0(
 		userSet := make(map[string]bool, 0)
 		if msg.Entities != nil {
 			for _, entity := range msg.Entities {
-				logger.Info("entity", slog.Any("entiry", entity))
+				logger.Debug("entity", slog.Any("entity", entity))
 				if entity.Type == "text_mention" {
 					userSet[strconv.FormatInt(entity.User.Id, 10)] = true
 				}
@@ -55,7 +56,7 @@ func stage0(
 		}
 
 		if len(userSet) == 0 {
-			_, err := b.SendMessage(
+			_, _ = b.SendMessage(
 				msg.Chat.Id,
 				i18n.
 					Chain().
@@ -68,14 +69,14 @@ func stage0(
 						}),
 					).
 					Append("\n").
-					T(lang, "addlabels_no_mentions_error").
+					T(lang, "rmlabels_no_mentions_error").
 					String(),
 				&gotgbot.SendMessageOpts{
 					DisableNotification: isSilenced,
 					ParseMode:           "html",
 				},
 			)
-			return err
+			return errors.New("no mentions provided")
 		}
 
 		users := make([]string, 0, len(userSet))
@@ -90,14 +91,14 @@ func stage0(
 				ChatId: msg.Chat.Id,
 				UserId: msg.From.Id,
 			},
-			stageLabels,
+			stageRemoveLabels,
 			map[string]interface{}{
 				"users": users,
 			},
 		)
 		if err != nil {
 			logger.Error("error occurred while saving mentioned users", slogger.Err(err))
-			_, err := b.SendMessage(
+			_, _ = b.SendMessage(
 				msg.Chat.Id,
 				i18n.
 					Chain().
@@ -110,40 +111,14 @@ func stage0(
 						}),
 					).
 					Append("\n").
-					T(lang, "addlabels_save_mentions_error").
+					T(lang, "rmlabels_save_mentions_error").
 					String(),
 				&gotgbot.SendMessageOpts{
 					DisableNotification: isSilenced,
 					ParseMode:           "html",
 				},
 			)
-			return err
 		}
-
-		_, err = b.SendMessage(
-			msg.Chat.Id,
-			i18n.
-				Chain().
-				T(
-					lang,
-					"mention",
-					I18n.WithArgs([]any{
-						msg.From.Id,
-						msg.From.Username,
-					}),
-				).
-				Append("\n").
-				T(lang, "addlabels_enter_labels").
-				String(),
-			&gotgbot.SendMessageOpts{
-				DisableNotification: isSilenced,
-				ParseMode:           "html",
-			},
-		)
-		if err != nil {
-			return err
-		}
-
-		return nil
+		return err
 	}
 }

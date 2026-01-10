@@ -47,9 +47,11 @@ func New(
 ) command.TgCommandInterface {
 	return &silenceCommand{
 		TgCommand: command.TgCommand{
-			StartHandler: mw.Handler(ctx, begin(logger, i18n)),
+			StageHandlers: []handlers.Response{
+				mw.Handler(ctx, showMenu(logger, i18n)),
+			},
 			CallbackHandlers: map[string]handlers.Response{
-				silenceCbName: mw.Handler(ctx, silenceCb(logger, i18n, chatSettings)),
+				silenceCbName: mw.Handler(ctx, setSilenceCb(logger, i18n, chatSettings)),
 			},
 		},
 	}

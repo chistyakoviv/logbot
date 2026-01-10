@@ -1,4 +1,4 @@
-package addlabels
+package subscribe
 
 import (
 	"context"
@@ -14,7 +14,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/service/commands"
 )
 
-func begin(
+func requestToken(
 	logger *slog.Logger,
 	i18n I18n.I18nInterface,
 	commands commands.ServiceInterface,
@@ -23,7 +23,7 @@ func begin(
 		msg := ectx.EffectiveMessage
 
 		logger.Debug(
-			"add label command: initiate",
+			"subscribe command: initiate",
 			slog.Int64("chat_id", msg.Chat.Id),
 			slog.String("from", msg.From.Username),
 		)
@@ -38,8 +38,7 @@ func begin(
 			return middleware.ErrMissingSilenceMiddleware
 		}
 
-		var err error
-		_, err = commands.ResetByKey(
+		_, err := commands.SetCommandByKey(
 			ctx,
 			&model.CommandKey{
 				ChatId: msg.Chat.Id,
@@ -49,8 +48,8 @@ func begin(
 			nil,
 		)
 		if err != nil {
-			logger.Error("error occurred while adding a label", slogger.Err(err))
-			_, err = b.SendMessage(
+			logger.Error("error occurred while subscribing", slogger.Err(err))
+			_, _ = b.SendMessage(
 				msg.Chat.Id,
 				i18n.
 					Chain().
@@ -63,7 +62,7 @@ func begin(
 						}),
 					).
 					Append("\n").
-					T(lang, "addlabels_error").
+					T(lang, "subscribe_error").
 					String(),
 				&gotgbot.SendMessageOpts{
 					DisableNotification: isSilenced,
@@ -86,7 +85,7 @@ func begin(
 					}),
 				).
 				Append("\n").
-				T(lang, "addlabels_enter_mentions").
+				T(lang, "subscribe_enter_token").
 				String(),
 			&gotgbot.SendMessageOpts{
 				DisableNotification: isSilenced,

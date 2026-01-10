@@ -1,4 +1,4 @@
-package unsubscribe
+package subscribe
 
 import (
 	"context"
@@ -19,7 +19,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func stage0(
+func acceptToken(
 	logger *slog.Logger,
 	i18n I18n.I18nInterface,
 	subscriptions subscriptions.ServiceInterface,
@@ -30,7 +30,7 @@ func stage0(
 		token := strings.Trim(msg.Text, " ")
 
 		logger.Debug(
-			"unsubscribe command: retrieve token",
+			"subscribe command: accept token",
 			slog.Int64("chat_id", msg.Chat.Id),
 			slog.String("user", msg.From.Username),
 			slog.String("token", token),
@@ -48,7 +48,7 @@ func stage0(
 
 		var err error
 		if err := uuid.Validate(token); err != nil {
-			_, err := b.SendMessage(
+			_, _ = b.SendMessage(
 				msg.Chat.Id,
 				i18n.
 					Chain().
@@ -61,7 +61,7 @@ func stage0(
 						}),
 					).
 					Append("\n").
-					T(lang, "unsubscribe_invalid_token").
+					T(lang, "subscribe_invalid_token").
 					String(),
 				&gotgbot.SendMessageOpts{
 					DisableNotification: isSilenced,
@@ -70,9 +70,9 @@ func stage0(
 			)
 			return err
 		}
-		sub, unsubErr := subscriptions.Find(ctx, token, msg.Chat.Id)
-		if errors.Is(unsubErr, db.ErrNotFound) {
-			_, err := b.SendMessage(
+		_, subErr := subscriptions.Find(ctx, token, msg.Chat.Id)
+		if subErr == nil {
+			_, _ = b.SendMessage(
 				msg.Chat.Id,
 				i18n.
 					Chain().
@@ -85,7 +85,7 @@ func stage0(
 						}),
 					).
 					Append("\n").
-					T(lang, "unsubscribe_token_not_exists").
+					T(lang, "subscribe_token_exists").
 					String(),
 				&gotgbot.SendMessageOpts{
 					DisableNotification: isSilenced,
@@ -95,98 +95,43 @@ func stage0(
 			return err
 		}
 
-		_, err = commands.CompleteByKey(
+		_, err = commands.UpdateByKey(
 			ctx,
 			&model.CommandKey{
 				ChatId: msg.Chat.Id,
 				UserId: msg.From.Id,
 			},
-		)
-		if err != nil || unsubErr != nil {
-			if err == nil {
-				err = unsubErr
-			}
-			logger.Error("error occurred while unsubscribing", slogger.Err(err))
-			_, err := b.SendMessage(
-				msg.Chat.Id,
-				i18n.
-					Chain().
-					T(
-						lang,
-						"mention",
-						I18n.WithArgs([]any{
-							msg.From.Id,
-							msg.From.Username,
-						}),
-					).
-					Append("\n").
-					T(lang, "unsubscribe_error").
-					String(),
-				&gotgbot.SendMessageOpts{
-					DisableNotification: isSilenced,
-					ParseMode:           "html",
-				},
-			)
-			return err
-		}
-
-		_, err = subscriptions.Unsubscribe(ctx, token, msg.Chat.Id)
-		if err != nil {
-			logger.Error("error occurred while unsubscribing", slogger.Err(err))
-			_, err := b.SendMessage(
-				msg.Chat.Id,
-				i18n.
-					Chain().
-					T(
-						lang,
-						"mention",
-						I18n.WithArgs([]any{
-							msg.From.Id,
-							msg.From.Username,
-						}),
-					).
-					Append("\n").
-					T(lang, "unsubscribe_error").
-					String(),
-				&gotgbot.SendMessageOpts{
-					DisableNotification: isSilenced,
-					ParseMode:           "html",
-				},
-			)
-			return err
-		}
-
-		_, err = b.SendMessage(
-			msg.Chat.Id,
-			i18n.
-				Chain().
-				T(
-					lang,
-					"mention",
-					I18n.WithArgs([]any{
-						msg.From.Id,
-						msg.From.Username,
-					}),
-				).
-				Append("\n").
-				T(
-					lang,
-					"unsubscribe_complete",
-				).
-				Append("\n\n").
-				T(
-					lang,
-					"unsubscribe_project_name",
-					I18n.WithArgs([]any{
-						sub.ProjectName,
-					}),
-				).
-				String(),
-			&gotgbot.SendMessageOpts{
-				DisableNotification: isSilenced,
-				ParseMode:           "html",
+			stageAcceptSubscription,
+			map[string]any{
+				"token": token,
 			},
 		)
+		if err != nil || !errors.Is(subErr, db.ErrNotFound) {
+			if err == nil {
+				err = subErr
+			}
+			logger.Error("error occurred while subscribing", slogger.Err(err))
+			_, _ = b.SendMessage(
+				msg.Chat.Id,
+				i18n.
+					Chain().
+					T(
+						lang,
+						"mention",
+						I18n.WithArgs([]any{
+							msg.From.Id,
+							msg.From.Username,
+						}),
+					).
+					Append("\n").
+					T(lang, "subscribe_error").
+					String(),
+				&gotgbot.SendMessageOpts{
+					DisableNotification: isSilenced,
+					ParseMode:           "html",
+				},
+			)
+		}
 		return err
 	}
 }

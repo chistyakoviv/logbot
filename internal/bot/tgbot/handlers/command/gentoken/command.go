@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 
+	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares"
 	I18n "github.com/chistyakoviv/logbot/internal/i18n"
@@ -23,7 +24,9 @@ func New(
 ) command.TgCommandInterface {
 	return &gentokenCommand{
 		TgCommand: command.TgCommand{
-			StartHandler: mw.Handler(ctx, begin(logger, i18n)),
+			StageHandlers: []handlers.Response{
+				mw.Handler(ctx, gentoken(logger, i18n)),
+			},
 		},
 	}
 }

@@ -1,4 +1,4 @@
-package gentoken
+package start
 
 import (
 	"context"
@@ -9,10 +9,9 @@ import (
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares/middleware"
 	I18n "github.com/chistyakoviv/logbot/internal/i18n"
-	"github.com/google/uuid"
 )
 
-func begin(
+func start(
 	logger *slog.Logger,
 	i18n I18n.I18nInterface,
 ) middlewares.TgMiddlewareHandler {
@@ -20,7 +19,7 @@ func begin(
 		msg := ectx.EffectiveMessage
 
 		logger.Debug(
-			"generate UUID token command",
+			"message received",
 			slog.Int64("chat_id", msg.Chat.Id),
 			slog.String("from", msg.From.Username),
 			slog.String("message", msg.Text),
@@ -36,35 +35,21 @@ func begin(
 			return middleware.ErrMissingSilenceMiddleware
 		}
 
-		token := uuid.New()
 		message := i18n.
 			Chain().
-			T(
-				lang,
-				"mention",
-				I18n.WithArgs([]any{
-					msg.From.Id,
-					msg.From.Username,
-				}),
-			).
-			Append("\n").
-			T(
-				lang,
-				"gentoken_generated",
-				I18n.WithArgs([]any{
-					token.String(),
-				}),
-			).
+			T(lang, "greeting").
+			Append("\n\n").
+			T(lang, "description").
+			Append("\n\n").
+			T(lang, "intro").
+			Append("\n\n").
+			T(lang, "help").
 			String()
 
-		_, err := b.SendMessage(
-			msg.Chat.Id,
-			message,
-			&gotgbot.SendMessageOpts{
-				DisableNotification: isSilenced,
-				ParseMode:           "html",
-			},
-		)
+		_, err := b.SendMessage(msg.Chat.Id, message, &gotgbot.SendMessageOpts{
+			DisableNotification: isSilenced,
+			ParseMode:           "html",
+		})
 		return err
 	}
 }

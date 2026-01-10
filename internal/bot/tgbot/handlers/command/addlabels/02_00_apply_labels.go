@@ -2,6 +2,7 @@ package addlabels
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"strings"
 
@@ -16,7 +17,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/service/labels"
 )
 
-func stage1(
+func applyLabels(
 	logger *slog.Logger,
 	i18n I18n.I18nInterface,
 	labelsService labels.ServiceInterface,
@@ -26,7 +27,7 @@ func stage1(
 		msg := ectx.EffectiveMessage
 
 		logger.Debug(
-			"add label command: retrieve labels to assign",
+			"add label command: apply labels to users",
 			slog.Int64("chat_id", msg.Chat.Id),
 			slog.String("user", msg.From.Username),
 			slog.String("label", msg.Text),
@@ -51,7 +52,7 @@ func stage1(
 		}
 
 		if len(labels) == 0 {
-			_, err := b.SendMessage(
+			_, _ = b.SendMessage(
 				msg.Chat.Id,
 				i18n.T(lang, "addlabels_no_labels_error"),
 				&gotgbot.SendMessageOpts{
@@ -59,7 +60,7 @@ func stage1(
 					ParseMode:           "html",
 				},
 			)
-			return err
+			return errors.New("no labels provided")
 		}
 
 		var err error
@@ -72,7 +73,7 @@ func stage1(
 		)
 		if err != nil {
 			logger.Error("error occurred while adding labels: failed to complete command", slogger.Err(err))
-			_, err := b.SendMessage(
+			_, _ = b.SendMessage(
 				msg.Chat.Id,
 				i18n.
 					Chain().
@@ -104,7 +105,7 @@ func stage1(
 		)
 		if err != nil {
 			logger.Error("error occurred while adding labels: failed to fetch command data", slogger.Err(err))
-			_, err := b.SendMessage(
+			_, _ = b.SendMessage(
 				msg.Chat.Id,
 				i18n.
 					Chain().
@@ -129,7 +130,7 @@ func stage1(
 		rawUsers, ok := cmd.Data["users"].([]interface{})
 		if !ok {
 			logger.Error("error occurred while adding labels: failed to unmarshal command data, missing users")
-			_, err := b.SendMessage(
+			_, _ = b.SendMessage(
 				msg.Chat.Id,
 				i18n.
 					Chain().
@@ -157,24 +158,15 @@ func stage1(
 			users[i] = user.(string)
 		}
 
-		hasError := false
-		for _, user := range users {
-			_, err = labelsService.AddByKey(
-				ctx,
-				&model.LabelKey{
-					ChatId:   msg.Chat.Id,
-					Username: user,
-				},
-				labels,
-			)
-			if err != nil {
-				logger.Error("error occurred while adding labels", slogger.Err(err))
-				hasError = true
-			}
-		}
+		_, err = labelsService.AddByKey(
+			ctx,
+			msg.Chat.Id,
+			users,
+			labels,
+		)
 
-		if hasError {
-			_, err := b.SendMessage(
+		if err != nil {
+			_, _ = b.SendMessage(
 				msg.Chat.Id,
 				i18n.
 					Chain().
@@ -219,9 +211,8 @@ func stage1(
 		)
 		if err != nil {
 			logger.Error("error occurred while adding labels", slogger.Err(err))
-			return err
 		}
 
-		return nil
+		return err
 	}
 }

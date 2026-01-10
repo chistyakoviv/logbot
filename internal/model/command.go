@@ -2,7 +2,7 @@ package model
 
 import "time"
 
-const NoStage int = -1
+const NoStage int = 0
 
 type Command struct {
 	Name      string

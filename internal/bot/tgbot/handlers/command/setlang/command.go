@@ -30,9 +30,11 @@ func New(
 ) command.TgCommandInterface {
 	return &setlangCommand{
 		TgCommand: command.TgCommand{
-			StartHandler: mw.Handler(ctx, begin(logger, i18n)),
+			StageHandlers: []handlers.Response{
+				mw.Handler(ctx, showMenu(logger, i18n)),
+			},
 			CallbackHandlers: map[string]handlers.Response{
-				SetLangCbName: mw.Handler(ctx, setlangCb(logger, i18n, userSettings)),
+				SetLangCbName: mw.Handler(ctx, setLangCb(logger, i18n, userSettings)),
 			},
 		},
 	}

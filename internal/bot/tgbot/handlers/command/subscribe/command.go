@@ -15,8 +15,9 @@ import (
 const CommandName = "subscribe"
 
 const (
-	stageToken = iota
-	stageProjectName
+	stageStart = iota
+	stageAcceptToken
+	stageAcceptSubscription
 )
 
 type subscribeCommand struct {
@@ -33,10 +34,17 @@ func New(
 ) command.TgCommandInterface {
 	return &subscribeCommand{
 		TgCommand: command.TgCommand{
-			StartHandler: mw.Handler(ctx, begin(logger, i18n, commands)),
 			StageHandlers: []handlers.Response{
-				mw.Handler(ctx, stage0(logger, i18n, subscriptions, commands)),
-				mw.Handler(ctx, stage1(logger, i18n, subscriptions, commands)),
+				mw.Handler(ctx, requestToken(logger, i18n, commands)),
+				mw.Handler(
+					ctx,
+					command.
+						NewCommandChain().
+						Add(acceptToken(logger, i18n, subscriptions, commands)).
+						Add(requestProjectName(logger, i18n)).
+						Build(),
+				),
+				mw.Handler(ctx, acceptSubscription(logger, i18n, subscriptions, commands)),
 			},
 		},
 	}

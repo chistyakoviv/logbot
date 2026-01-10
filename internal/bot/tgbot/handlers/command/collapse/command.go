@@ -47,9 +47,11 @@ func New(
 ) command.TgCommandInterface {
 	return &collapseCommand{
 		TgCommand: command.TgCommand{
-			StartHandler: mw.Handler(ctx, begin(logger, i18n)),
+			StageHandlers: []handlers.Response{
+				mw.Handler(ctx, showMenu(logger, i18n)),
+			},
 			CallbackHandlers: map[string]handlers.Response{
-				collapseCbName: mw.Handler(ctx, collapseCb(logger, i18n, chatSettings)),
+				collapseCbName: mw.Handler(ctx, setCollapseCb(logger, i18n, chatSettings)),
 			},
 		},
 	}

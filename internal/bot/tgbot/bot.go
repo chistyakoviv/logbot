@@ -85,7 +85,11 @@ func (tgb *TgBot) init() {
 
 	// Add all command handlers.
 	for name, command := range tgb.commands {
-		dispatcher.AddHandler(handlers.NewCommand(name, command.GetStartHandler()))
+		cmdHandler, err := command.GetStageHandler(0)
+		if err != nil {
+			log.Fatalf("command %s has no start handler: %s", name, err.Error())
+		}
+		dispatcher.AddHandler(handlers.NewCommand(name, cmdHandler))
 		// Register all the callbacks the command provides
 		for cbName, cb := range command.GetCallbackHandlers() {
 			dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix(cbName), cb))

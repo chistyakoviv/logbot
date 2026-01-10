@@ -1,23 +1,17 @@
-package silence
+package addlabels
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
-	"net/url"
-	"strconv"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares/middleware"
 	I18n "github.com/chistyakoviv/logbot/internal/i18n"
-	"github.com/chistyakoviv/logbot/internal/utils"
 )
 
-const columns = 2
-
-func begin(
+func requestLabels(
 	logger *slog.Logger,
 	i18n I18n.I18nInterface,
 ) middlewares.TgMiddlewareHandler {
@@ -25,9 +19,10 @@ func begin(
 		msg := ectx.EffectiveMessage
 
 		logger.Debug(
-			"silence command: initiate",
+			"add label command: request labels to assign",
 			slog.Int64("chat_id", msg.Chat.Id),
-			slog.String("from", msg.From.Username),
+			slog.String("user", msg.From.Username),
+			slog.String("labels", msg.Text),
 		)
 
 		lang, ok := ctx.Value(middleware.LangKey).(string)
@@ -35,14 +30,9 @@ func begin(
 			return middleware.ErrMissingLangMiddleware
 		}
 
-		var buttons []gotgbot.InlineKeyboardButton
-		for idx, period := range periods {
-			queryParams := url.Values{}
-			queryParams.Add(silencePeriodParam, strconv.Itoa(idx))
-			buttons = append(buttons, gotgbot.InlineKeyboardButton{
-				Text:         period.Label,
-				CallbackData: fmt.Sprintf("%s?%s", silenceCbName, queryParams.Encode()),
-			})
+		isSilenced, ok := ctx.Value(middleware.SilenceKey).(bool)
+		if !ok {
+			return middleware.ErrMissingSilenceMiddleware
 		}
 
 		_, err := b.SendMessage(
@@ -58,15 +48,11 @@ func begin(
 					}),
 				).
 				Append("\n").
-				T(lang, "silence_select_period").
+				T(lang, "addlabels_enter_labels").
 				String(),
 			&gotgbot.SendMessageOpts{
-				// For the silence command notifications are always disabled
-				DisableNotification: true,
+				DisableNotification: isSilenced,
 				ParseMode:           "html",
-				ReplyMarkup: gotgbot.InlineKeyboardMarkup{
-					InlineKeyboard: utils.Chunk(buttons, columns),
-				},
 			},
 		)
 		return err

@@ -1,38 +1,31 @@
-package help
+package subscribe
 
 import (
 	"context"
 	"log/slog"
-	"sort"
+	"strings"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
-	"github.com/chistyakoviv/logbot/internal/bot/tgbot/handlers/command"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares/middleware"
 	I18n "github.com/chistyakoviv/logbot/internal/i18n"
+	"github.com/chistyakoviv/logbot/internal/model"
 )
 
-func begin(
+func requestProjectName(
 	logger *slog.Logger,
 	i18n I18n.I18nInterface,
-	tgCommands command.TgCommands,
 ) middlewares.TgMiddlewareHandler {
-	// Output commands in lexicographic order
-	commandNames := make([]string, 0, len(tgCommands)+1)
-	for name := range tgCommands {
-		commandNames = append(commandNames, name)
-	}
-	// Trick to add itself to the list of commands
-	commandNames = append(commandNames, CommandName)
-	sort.Strings(commandNames)
 	return func(ctx context.Context, b *gotgbot.Bot, ectx *ext.Context) error {
 		msg := ectx.EffectiveMessage
+		token := strings.Trim(msg.Text, " ")
 
 		logger.Debug(
-			"help command",
+			"subscribe command: request project name",
 			slog.Int64("chat_id", msg.Chat.Id),
-			slog.String("from", msg.From.Username),
+			slog.String("user", msg.From.Username),
+			slog.String("token", token),
 		)
 
 		lang, ok := ctx.Value(middleware.LangKey).(string)
@@ -45,17 +38,27 @@ func begin(
 			return middleware.ErrMissingSilenceMiddleware
 		}
 
-		messageBuilder := i18n.
-			Chain().
-			T(lang, "help_title")
-
-		for _, cmdName := range commandNames {
-			tgCommands[cmdName].ApplyDescription(lang, messageBuilder)
-		}
-
 		_, err := b.SendMessage(
 			msg.Chat.Id,
-			messageBuilder.String(),
+			i18n.
+				Chain().
+				T(
+					lang,
+					"mention",
+					I18n.WithArgs([]any{
+						msg.From.Id,
+						msg.From.Username,
+					}),
+				).
+				Append("\n").
+				T(
+					lang,
+					"subscribe_enter_project_name",
+					I18n.WithArgs([]any{
+						model.MaxProjectNameLength,
+					}),
+				).
+				String(),
 			&gotgbot.SendMessageOpts{
 				DisableNotification: isSilenced,
 				ParseMode:           "html",

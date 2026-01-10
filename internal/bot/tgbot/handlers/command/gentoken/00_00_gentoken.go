@@ -1,23 +1,18 @@
-package collapse
+package gentoken
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
-	"net/url"
-	"strconv"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares"
 	"github.com/chistyakoviv/logbot/internal/bot/tgbot/middlewares/middleware"
 	I18n "github.com/chistyakoviv/logbot/internal/i18n"
-	"github.com/chistyakoviv/logbot/internal/utils"
+	"github.com/google/uuid"
 )
 
-const columns = 2
-
-func begin(
+func gentoken(
 	logger *slog.Logger,
 	i18n I18n.I18nInterface,
 ) middlewares.TgMiddlewareHandler {
@@ -25,9 +20,10 @@ func begin(
 		msg := ectx.EffectiveMessage
 
 		logger.Debug(
-			"collapse command: initiate",
+			"generate UUID token command",
 			slog.Int64("chat_id", msg.Chat.Id),
 			slog.String("from", msg.From.Username),
+			slog.String("message", msg.Text),
 		)
 
 		lang, ok := ctx.Value(middleware.LangKey).(string)
@@ -40,37 +36,33 @@ func begin(
 			return middleware.ErrMissingSilenceMiddleware
 		}
 
-		var buttons []gotgbot.InlineKeyboardButton
-		for idx, period := range periods {
-			queryParams := url.Values{}
-			queryParams.Add(collapsePeriodParam, strconv.Itoa(idx))
-			buttons = append(buttons, gotgbot.InlineKeyboardButton{
-				Text:         period.Label,
-				CallbackData: fmt.Sprintf("%s?%s", collapseCbName, queryParams.Encode()),
-			})
-		}
+		token := uuid.New()
+		message := i18n.
+			Chain().
+			T(
+				lang,
+				"mention",
+				I18n.WithArgs([]any{
+					msg.From.Id,
+					msg.From.Username,
+				}),
+			).
+			Append("\n").
+			T(
+				lang,
+				"gentoken_generated",
+				I18n.WithArgs([]any{
+					token.String(),
+				}),
+			).
+			String()
 
 		_, err := b.SendMessage(
 			msg.Chat.Id,
-			i18n.
-				Chain().
-				T(
-					lang,
-					"mention",
-					I18n.WithArgs([]any{
-						msg.From.Id,
-						msg.From.Username,
-					}),
-				).
-				Append("\n").
-				T(lang, "collapse_select_period").
-				String(),
+			message,
 			&gotgbot.SendMessageOpts{
 				DisableNotification: isSilenced,
 				ParseMode:           "html",
-				ReplyMarkup: gotgbot.InlineKeyboardMarkup{
-					InlineKeyboard: utils.Chunk(buttons, columns),
-				},
 			},
 		)
 		return err

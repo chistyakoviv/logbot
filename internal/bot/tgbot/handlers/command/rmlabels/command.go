@@ -15,8 +15,9 @@ import (
 const CommandName = "rmlabels"
 
 const (
-	stageMentions = iota
-	stageLabels
+	stageStart = iota
+	stageAcceptUsers
+	stageRemoveLabels
 )
 
 type rmlabelsCommand struct {
@@ -33,10 +34,17 @@ func New(
 ) command.TgCommandInterface {
 	return &rmlabelsCommand{
 		TgCommand: command.TgCommand{
-			StartHandler: mw.Handler(ctx, begin(logger, i18n, commands)),
 			StageHandlers: []handlers.Response{
-				mw.Handler(ctx, stage0(logger, i18n, commands)),
-				mw.Handler(ctx, stage1(logger, i18n, labels, commands)),
+				mw.Handler(ctx, requestUsers(logger, i18n, commands)),
+				mw.Handler(
+					ctx,
+					command.
+						NewCommandChain().
+						Add(acceptUsers(logger, i18n, commands)).
+						Add(requestLabels(logger, i18n)).
+						Build(),
+				),
+				mw.Handler(ctx, removeLabels(logger, i18n, labels, commands)),
 			},
 		},
 	}

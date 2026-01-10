@@ -18,7 +18,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/service/user_settings"
 )
 
-func setlangCb(
+func setLangCb(
 	logger *slog.Logger,
 	i18n I18n.I18nInterface,
 	userSettings user_settings.ServiceInterface,
@@ -40,7 +40,7 @@ func setlangCb(
 		lang, currLangErr := userSettings.GetLang(ctx, cb.From.Id)
 		if currLangErr != nil && !errors.Is(currLangErr, db.ErrNotFound) {
 			logger.Error("error occurred while getting the user's language", slogger.Err(currLangErr))
-			_, err := b.SendMessage(
+			_, _ = b.SendMessage(
 				cb.Message.GetChat().Id,
 				i18n.T(lang, "callback_data_parse_error"),
 				&gotgbot.SendMessageOpts{
@@ -48,13 +48,13 @@ func setlangCb(
 					ParseMode:           "html",
 				},
 			)
-			return err
+			return currLangErr
 		}
 
 		query, err := url.Parse(cb.Data)
 		if err != nil {
 			logger.Error("error occurred while parsing the callback data", slogger.Err(err))
-			_, err := b.SendMessage(
+			_, _ = b.SendMessage(
 				cb.Message.GetChat().Id,
 				i18n.T(lang, "callback_data_parse_error"),
 				&gotgbot.SendMessageOpts{
@@ -73,7 +73,7 @@ func setlangCb(
 			})
 			if err != nil {
 				logger.Error("failed to answer callback", slogger.Err(err))
-				_, err := b.SendMessage(
+				_, _ = b.SendMessage(
 					cb.Message.GetChat().Id,
 					i18n.T(lang, "callback_failed_to_answer"),
 					&gotgbot.SendMessageOpts{
@@ -93,7 +93,7 @@ func setlangCb(
 			})
 			if err != nil {
 				logger.Error("failed to answer callback", slogger.Err(err))
-				_, err := b.SendMessage(
+				_, _ = b.SendMessage(
 					cb.Message.GetChat().Id,
 					i18n.T(lang, "callback_failed_to_answer"),
 					&gotgbot.SendMessageOpts{
@@ -111,7 +111,7 @@ func setlangCb(
 		})
 		if err != nil {
 			logger.Error("error occurred while setting the user's language", slogger.Err(err))
-			_, err := b.SendMessage(
+			_, _ = b.SendMessage(
 				cb.Message.GetChat().Id,
 				i18n.T(lang, "setlang_error"),
 				&gotgbot.SendMessageOpts{
@@ -127,7 +127,7 @@ func setlangCb(
 		})
 		if err != nil {
 			logger.Error("failed to answer callback", slogger.Err(err))
-			_, err := b.SendMessage(
+			_, _ = b.SendMessage(
 				cb.Message.GetChat().Id,
 				i18n.T(lang, "callback_failed_to_answer"),
 				&gotgbot.SendMessageOpts{

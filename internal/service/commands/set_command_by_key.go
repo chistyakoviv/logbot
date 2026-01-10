@@ -9,7 +9,7 @@ import (
 	"github.com/chistyakoviv/logbot/internal/model"
 )
 
-func (s *service) ResetByKey(
+func (s *service) SetCommandByKey(
 	ctx context.Context,
 	key *model.CommandKey,
 	name string,
@@ -19,7 +19,7 @@ func (s *service) ResetByKey(
 		Name:      name,
 		UserId:    key.UserId,
 		ChatId:    key.ChatId,
-		Stage:     0,
+		Stage:     1,
 		Data:      data,
 		UpdatedAt: time.Now(),
 	}

@@ -22,12 +22,6 @@ import (
 	"github.com/chistyakoviv/logbot/internal/di"
 )
 
-// TODO: Implement an abstraction for command handlers
-// so that the command can be split into multiple files
-// that define only one action (e. g. request users, validate users, etc.).
-// This abstractiom must allow to chain commands during command building.
-// Something like NewCommandChain().Add(requestUsers(deps)).Add(...).Build().
-// Move application logic from handlers to services.
 func BuildTgCommands(
 	ctx context.Context,
 	c di.Container,
@@ -55,6 +49,7 @@ func BuildTgCommands(
 		Pipe(mwRecoverer).
 		Pipe(mwLang).
 		Pipe(mwSilence)
+
 	tgCommands := command.TgCommands{
 		start.CommandName: start.New(
 			ctx,

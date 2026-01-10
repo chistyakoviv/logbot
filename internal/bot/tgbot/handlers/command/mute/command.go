@@ -49,7 +49,9 @@ func New(
 ) command.TgCommandInterface {
 	return &muteCommand{
 		TgCommand: command.TgCommand{
-			StartHandler: mw.Handler(ctx, begin(logger, i18n)),
+			StageHandlers: []handlers.Response{
+				mw.Handler(ctx, showMenu(logger, i18n)),
+			},
 			CallbackHandlers: map[string]handlers.Response{
 				muteCbName: mw.Handler(ctx, muteCb(logger, i18n, chatSettings)),
 			},
