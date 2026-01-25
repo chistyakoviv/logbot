@@ -53,6 +53,7 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+// TODO: move all singleton names to constants
 func bootstrap(ctx context.Context, c di.Container) {
 	c.RegisterSingleton("config", func(c di.Container) *config.Config {
 		cfg := config.MustLoad(nil)
