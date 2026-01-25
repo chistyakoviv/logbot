@@ -50,6 +50,12 @@ func BuildTgCommands(
 		Pipe(mwLang).
 		Pipe(mwSilence)
 
+	// TODO:
+	// !. Create an interface for commands
+	// so that each command can be added using a method.
+	// 2. Create a lazy wrapper for the help command
+	// to fix the circular dependency problem.
+	// (initialze the help command on the first method call)
 	tgCommands := command.TgCommands{
 		start.CommandName: start.New(
 			ctx,
