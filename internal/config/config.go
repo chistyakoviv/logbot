@@ -3,7 +3,6 @@ package config
 import (
 	"log"
 	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
@@ -60,10 +59,9 @@ func MustLoad(opts *ConfigOptions) *Config {
 		configPath = os.Getenv("CONFIG_PATH")
 	}
 
-	configPath = filepath.Clean(configPath)
-
 	if configPath != "" {
 		// check if file exists.
+		// #nosec G703 -- configPath comes from CLI flag
 		if _, err := os.Stat(configPath); os.IsNotExist(err) {
 			// #nosec G706 -- configPath comes from CLI flag
 			log.Fatalf("config file %q does not exist", configPath)
