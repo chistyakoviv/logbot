@@ -3,6 +3,7 @@ package config
 import (
 	"log"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
@@ -59,15 +60,19 @@ func MustLoad(opts *ConfigOptions) *Config {
 		configPath = os.Getenv("CONFIG_PATH")
 	}
 
+	configPath = filepath.Clean(configPath)
+
 	if configPath != "" {
 		// check if file exists.
 		if _, err := os.Stat(configPath); os.IsNotExist(err) {
-			log.Fatalf("config file %s does not exist", configPath)
+			// #nosec G706 -- configPath comes from CLI flag
+			log.Fatalf("config file %q does not exist", configPath)
 		}
 
 		// Read from file.
 		if err := cleanenv.ReadConfig(configPath, &cfg); err != nil {
-			log.Fatalf("failed to load config from %s: %v", configPath, err)
+			// #nosec G706 -- configPath comes from CLI flag
+			log.Fatalf("failed to load config from %q: %v", configPath, err)
 		}
 	}
 
