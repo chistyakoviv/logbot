@@ -4,7 +4,7 @@ FROM golang:1.26.1-alpine3.22
 ENV CGO_ENABLED=1
 
 # build-base allows to run programs with -race flag
-RUN apk add --no-cache build-base entr git openssl make
+RUN apk add --no-cache build-base git openssl make
 
 # Change working directory after installing dependencies
 # (in case some deps are needed to be dowlaoded, unpacked and copied to the right place)

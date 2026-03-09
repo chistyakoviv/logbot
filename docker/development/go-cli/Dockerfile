@@ -2,6 +2,7 @@ FROM golang:1.26.1-alpine3.22
 
 # Do not use MOCKERY_VERSION, as it causes mockery to fail with the version parsing error.
 ENV MOCKERY_INSTALL_VERSION=3.5.5
+ENV GOLANGCI_LINT_VERSION=2.11.2
 
 RUN apk add --no-cache \
     curl \
@@ -18,7 +19,7 @@ RUN mkdir -p /tmp/mockery && \
     rm -rf /tmp/mockery
 
 # See https://golangci-lint.run/welcome/install/
-RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.6.1
+RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b $(go env GOPATH)/bin v${GOLANGCI_LINT_VERSION}
 
 WORKDIR /go/src/github.com/chistyakoviv/logbot
 
@@ -30,7 +31,10 @@ RUN go mod download
 COPY ./docker/common/wait-for-it.sh /usr/local/bin/wait-for-it
 RUN chmod 555 /usr/local/bin/wait-for-it
 
-RUN addgroup -g 1000 app && adduser -u 1000 -G app -s /bin/sh -D app
+ARG UID=1000
+ARG GID=1000
+
+RUN addgroup -g "${GID}" app && adduser -u "${UID}" -G app -s /bin/sh -D app
 RUN chown -R app:app /go/pkg
 
 USER app
