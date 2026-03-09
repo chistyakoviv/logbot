@@ -71,9 +71,9 @@ build-logbot:
 	docker --log-level=info buildx build \
 	--pull \
 	--target builder \
-	--cache-from type=registry,ref=${REGISTRY}/logbot-builder:buildcache\
+	--cache-from type=registry,ref=${REGISTRY}/logbot-builder:buildcache \
 	--cache-to type=registry,ref=${REGISTRY}/logbot-builder:buildcache,mode=max \
-	--tag ${REGISTRY}/logbot-builder:${IMAGE_TAG}\
+	--tag ${REGISTRY}/logbot-builder:${IMAGE_TAG} \
 	--file docker/production/logbot/Dockerfile \
 	--push \
 	./
@@ -111,7 +111,7 @@ push: push-logbot
 push-logbot:
 	docker push ${REGISTRY}/logbot:${IMAGE_TAG}
 	docker push ${REGISTRY}/logbot-go-cli:${IMAGE_TAG}
-	docker push ${REGISTRY}/logbot:${IMAGE_TAG}-builder
+	docker push ${REGISTRY}/logbot-builder:${IMAGE_TAG}
 
 push-latest: push-logbot-latest
 
