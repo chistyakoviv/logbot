@@ -51,7 +51,7 @@ func BuildTgCommands(
 		Pipe(mwSilence)
 
 	// TODO:
-	// !. Create an interface for commands
+	// 1. Create an interface for commands
 	// so that each command can be added using a method.
 	// 2. Create a lazy wrapper for the help command
 	// to fix the circular dependency problem.
