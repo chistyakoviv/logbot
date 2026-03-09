@@ -68,23 +68,30 @@ domain:
 build: build-logbot
 
 build-logbot:
-	DOCKER_BUILDKIT=1 docker --log-level=info build --pull --build-arg BUILDKIT_INLINE_CACHE=1 \
+	docker --log-level=info buildx build \
+	--pull \
 	--target builder \
-	--cache-from ${REGISTRY}/logbot:${IMAGE_TAG}-builder \
+	--cache-from type=registry,ref=${REGISTRY}/logbot-builder:buildcache\
+	--cache-to type=registry,ref=${REGISTRY}/logbot-builder:buildcache,mode=max \
 	--tag ${REGISTRY}/logbot:${IMAGE_TAG}-builder \
 	--file docker/production/logbot/Dockerfile \
+	--push \
 	.
 
-	DOCKER_BUILDKIT=1 docker --log-level=info build --pull --build-arg BUILDKIT_INLINE_CACHE=1 \
-	--cache-from ${REGISTRY}/logbot:${IMAGE_TAG} \
+	docker --log-level=info buildx build \
+	--cache-from type=registry,ref=${REGISTRY}/logbot:buildcache \
+	--cache-to type=registry,ref=${REGISTRY}/logbot:buildcache,mode=max \
 	--tag ${REGISTRY}/logbot:${IMAGE_TAG} \
 	--file docker/production/logbot/Dockerfile \
+	--push \
 	.
 
-	DOCKER_BUILDKIT=1 docker --log-level=info build --pull --build-arg BUILDKIT_INLINE_CACHE=1 \
-	--cache-from ${REGISTRY}/logbot-go-cli:${IMAGE_TAG} \
+	docker --log-level=info buildx build \
+	--cache-from type=registry,ref=${REGISTRY}/logbot-go-cli:buildcache \
+	--cache-to type=registry,ref=${REGISTRY}/logbot-go-cli:buildcache,mode=max \
 	--tag ${REGISTRY}/logbot-go-cli:${IMAGE_TAG} \
 	--file docker/production/go-cli/Dockerfile \
+	--push \
 	.
 
 pull: pull-logbot
