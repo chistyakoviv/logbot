@@ -31,7 +31,6 @@ variables:
     - apk --update add make
     - docker context create gitlab-dind
     - docker buildx create gitlab-dind --driver docker-container --use
-    - docker buildx inspect --bootstrap
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
 build:
