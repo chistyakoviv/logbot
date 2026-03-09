@@ -73,7 +73,7 @@ build-logbot:
 	--target builder \
 	--cache-from type=registry,ref=${REGISTRY}/logbot-builder:buildcache\
 	--cache-to type=registry,ref=${REGISTRY}/logbot-builder:buildcache,mode=max \
-	--tag ${REGISTRY}/logbot:${IMAGE_TAG}-builder \
+	--tag ${REGISTRY}/logbot-builder:${IMAGE_TAG}\
 	--file docker/production/logbot/Dockerfile \
 	--push \
 	.
