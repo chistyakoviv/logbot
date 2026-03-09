@@ -1,9 +1,11 @@
 FROM golang:1.26.1-alpine3.22 AS builder
 
+ENV GOLANGCI_LINT_VERSION=2.11.2
+
 RUN apk add --no-cache curl make
 
 # See https://golangci-lint.run/welcome/install/
-RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.6.1
+RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b $(go env GOPATH)/bin v${GOLANGCI_LINT_VERSION}
 
 WORKDIR /app
 
