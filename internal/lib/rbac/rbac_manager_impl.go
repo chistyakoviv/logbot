@@ -66,7 +66,7 @@ func (r *manager) UserHasPermission(
 		return false
 	}
 
-	if !r.includeRolesInAccessChecks && IsRole(item) {
+	if !r.includeRolesInAccessChecks && IsItem[Role](item) {
 		return false
 	}
 
@@ -166,7 +166,7 @@ func (r *manager) Assign(userId any, itemName string, createdAt time.Time) error
 		return err
 	}
 
-	if !r.enableDirectPermissions && IsPermission(item) {
+	if !r.enableDirectPermissions && IsItem[Permission](item) {
 		return fmt.Errorf("assigning permissions directly is disabled. Prefer assigning roles only")
 	}
 
@@ -505,7 +505,7 @@ func (r *manager) assertFutureChild(parentName string, childName string) error {
 		return fmt.Errorf("child %s does not exist", childName)
 	}
 
-	if IsPermission(parent) && IsRole(child) {
+	if IsItem[Permission](parent) && IsItem[Role](child) {
 		return fmt.Errorf("can not add %s role as a child of %s permission", childName, parentName)
 	}
 

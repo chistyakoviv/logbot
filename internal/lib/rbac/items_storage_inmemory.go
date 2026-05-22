@@ -58,10 +58,11 @@ func (i *itemsStorageInMemory) RoleExists(name string) bool {
 
 func (i *itemsStorageInMemory) Add(item ItemInterface) {
 	i.items[item.GetName()] = item
-	switch item := item.(type) {
-	case *Permission:
+	t := item.GetType()
+	switch t.(type) {
+	case Permission:
 		i.permissions[item.GetName()] = item
-	case *Role:
+	case Role:
 		i.roles[item.GetName()] = item
 	}
 }
@@ -342,8 +343,8 @@ func (i *itemsStorageInMemory) fillChildrenRecursive(
 func (i *itemsStorageInMemory) filterRoles(items map[string]ItemInterface) map[string]ItemInterface {
 	result := make(map[string]ItemInterface, 0)
 	for name, item := range items {
-		if role, ok := item.(*Role); ok {
-			result[name] = role
+		if IsItem[Role](item) {
+			result[name] = item
 		}
 	}
 	return result
@@ -352,8 +353,8 @@ func (i *itemsStorageInMemory) filterRoles(items map[string]ItemInterface) map[s
 func (i *itemsStorageInMemory) filterPermissions(items map[string]ItemInterface) map[string]ItemInterface {
 	result := make(map[string]ItemInterface, 0)
 	for name, item := range items {
-		if permission, ok := item.(*Permission); ok {
-			result[name] = permission
+		if IsItem[Permission](item) {
+			result[name] = item
 		}
 	}
 	return result

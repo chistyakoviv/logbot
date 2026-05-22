@@ -16,77 +16,83 @@ type ItemInterface interface {
 	HasCreatedAt() bool
 	HasUpdatedAt() bool
 	GetAttributes() map[string]any
+	GetType() any
 }
 
-type Item struct {
+type Item[T Permission | Role] struct {
 	name        string
 	description string
 	ruleName    string
 	createdAt   time.Time
 	updatedAt   time.Time
+	kind        T
 }
 
-func NewItem(name string) ItemInterface {
-	return &Item{
+func NewItem[T Permission | Role](name string) ItemInterface {
+	return &Item[T]{
 		name: name,
 	}
 }
 
 // Use only value receivers for consistency
-func (i Item) GetName() string {
+func (i Item[T]) GetName() string {
 	return i.name
 }
 
-func (i Item) WithName(name string) ItemInterface {
+func (i Item[T]) WithName(name string) ItemInterface {
 	i.name = name
 	return &i
 }
 
-func (i Item) GetDescription() string {
+func (i Item[T]) GetDescription() string {
 	return i.description
 }
 
-func (i Item) WithDescription(description string) ItemInterface {
+func (i Item[T]) WithDescription(description string) ItemInterface {
 	i.description = description
 	return &i
 }
 
-func (i Item) GetRuleName() string {
+func (i Item[T]) GetRuleName() string {
 	return i.ruleName
 }
 
-func (i Item) WithRuleName(ruleName string) ItemInterface {
+func (i Item[T]) WithRuleName(ruleName string) ItemInterface {
 	i.ruleName = ruleName
 	return &i
 }
 
-func (i Item) GetUpdatedAt() time.Time {
+func (i Item[T]) GetUpdatedAt() time.Time {
 	return i.updatedAt
 }
 
-func (i Item) WithUpdatedAt(updatedAt time.Time) ItemInterface {
+func (i Item[T]) WithUpdatedAt(updatedAt time.Time) ItemInterface {
 	i.updatedAt = updatedAt
 	return &i
 }
 
-func (i Item) GetCreatedAt() time.Time {
+func (i Item[T]) GetCreatedAt() time.Time {
 	return i.createdAt
 }
 
-func (i Item) WithCreatedAt(createdAt time.Time) ItemInterface {
+func (i Item[T]) WithCreatedAt(createdAt time.Time) ItemInterface {
 	i.createdAt = createdAt
 	return &i
 }
 
-func (i Item) HasCreatedAt() bool {
+func (i Item[T]) HasCreatedAt() bool {
 	return !i.createdAt.IsZero()
 }
 
-func (i Item) HasUpdatedAt() bool {
+func (i Item[T]) HasUpdatedAt() bool {
 	return !i.updatedAt.IsZero()
 }
 
-func (i Item) GetAttributes() map[string]any {
+func (i Item[T]) GetType() any {
+	return i.kind
+}
+
+func (i Item[T]) GetAttributes() map[string]any {
 	return map[string]any{
 		"name":        i.name,
 		"description": i.description,
@@ -94,4 +100,9 @@ func (i Item) GetAttributes() map[string]any {
 		"created_at":  i.createdAt,
 		"updated_at":  i.updatedAt,
 	}
+}
+
+func IsItem[T Permission | Role](item ItemInterface) bool {
+	_, ok := item.GetType().(T)
+	return ok
 }
