@@ -3,12 +3,12 @@ package rbac
 import "time"
 
 type Permission struct {
-	*Item
+	Item
 }
 
 func NewPermission(name string) ItemInterface {
 	return &Permission{
-		Item: &Item{
+		Item: Item{
 			name: name,
 		},
 	}

@@ -3,12 +3,12 @@ package rbac
 import "time"
 
 type Role struct {
-	*Item
+	Item
 }
 
 func NewRole(name string) ItemInterface {
 	return &Role{
-		Item: &Item{
+		Item: Item{
 			name: name,
 		},
 	}
