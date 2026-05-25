@@ -2,10 +2,10 @@ package rbac
 
 type AssignmentsStorageInterface[T comparable] interface {
 	// Returns all role and permission assignment information.
-	GetAll() map[T]map[string]*Assignment[T]
+	GetAll() []*Assignment[T]
 
 	// Returns all role or permission assignment information for the specified user.
-	GetByUserId(userId T) map[string]*Assignment[T]
+	GetByUserId(userId T) []*Assignment[T]
 
 	// Returns all role or permission assignment information by the specified item names' list.
 	GetByItemNames(itemNames []string) []*Assignment[T]

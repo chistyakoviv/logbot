@@ -10,17 +10,27 @@ func NewAssignmentsStorageInMemory[T comparable]() AssignmentsStorageInterface[T
 	}
 }
 
-func (a *assignmentsStorageInMemory[T]) GetAll() map[T]map[string]*Assignment[T] {
-	return a.assignments
+func (a *assignmentsStorageInMemory[T]) GetAll() []*Assignment[T] {
+	res := make([]*Assignment[T], 0)
+	for _, userAssignments := range a.assignments {
+		for _, assignment := range userAssignments {
+			res = append(res, assignment)
+		}
+	}
+	return res
 }
 
-func (a *assignmentsStorageInMemory[T]) GetByUserId(userId T) map[string]*Assignment[T] {
-	_, ok := a.assignments[userId]
+func (a *assignmentsStorageInMemory[T]) GetByUserId(userId T) []*Assignment[T] {
+	userAssignments, ok := a.assignments[userId]
 	if !ok {
-		// Return empty map so that we don't have to check for nil
-		return make(map[string]*Assignment[T])
+		// Return empty slice so that we don't have to check for nil
+		return make([]*Assignment[T], 0)
 	}
-	return a.assignments[userId]
+	res := make([]*Assignment[T], 0, len(userAssignments))
+	for _, assignment := range userAssignments {
+		res = append(res, assignment)
+	}
+	return res
 }
 
 func (a *assignmentsStorageInMemory[T]) GetByItemNames(itemNames []string) []*Assignment[T] {
