@@ -234,7 +234,7 @@ func bootstrap(ctx context.Context, c di.Container) {
 		return i18n.New()
 	})
 
-	c.RegisterSingleton("rbac", func(c di.Container) rbac.ManagerInterface {
+	c.RegisterSingleton("rbac", func(c di.Container) rbac.ManagerInterface[int64] {
 		cfg := resolveConfig(c)
 
 		ruleFactory := rbac.NewRuleFactory()
@@ -243,7 +243,7 @@ func bootstrap(ctx context.Context, c di.Container) {
 		// })
 
 		itemsStorage := rbac.NewItemsStorageInMemory()
-		assignmentsStorage := rbac.NewAssignmentsStorageInMemory()
+		assignmentsStorage := rbac.NewAssignmentsStorageInMemory[int64]()
 		manager := rbac.NewManager(ruleFactory, itemsStorage, assignmentsStorage, nil)
 
 		// Set guest role name

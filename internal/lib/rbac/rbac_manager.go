@@ -4,9 +4,9 @@ import (
 	"time"
 )
 
-type ManagerInterface interface {
+type ManagerInterface[T comparable] interface {
 	// Checks whether the user has the specified permission.
-	UserHasPermission(userId any, permissionName string, parameters RuleContextParameters) bool
+	UserHasPermission(userId T, permissionName string, parameters RuleContextParameters) bool
 
 	// Checks the possibility of adding a child to a parent.
 	CanAddChild(parentName string, childName string) bool
@@ -27,19 +27,19 @@ type ManagerInterface interface {
 	HasChildren(name string) bool
 
 	// Assigns a role or permission to a user.
-	Assign(userId any, itemName string, createdAt time.Time) error
+	Assign(userId T, itemName string, createdAt time.Time) error
 
 	// Revokes a role or a permission from a user.
-	Revoke(userId any, itemName string)
+	Revoke(userId T, itemName string)
 
 	// Revokes all roles and permissions from a user.
-	RevokeAll(userId any)
+	RevokeAll(userId T)
 
 	// Returns the items that are assigned to the user via assign().
-	GetItemsByUserId(userId any) (map[string]ItemInterface, error)
+	GetItemsByUserId(userId T) (map[string]ItemInterface, error)
 
 	// Returns the roles that are assigned to the user via assign().
-	GetRolesByUserId(userId any) (map[string]ItemInterface, error)
+	GetRolesByUserId(userId T) (map[string]ItemInterface, error)
 
 	// Returns child roles of the role specified. Depth isn't limited.
 	GetChildRoles(name string) (map[string]ItemInterface, error)
@@ -48,7 +48,7 @@ type ManagerInterface interface {
 	GetPermissionsByRoleName(name string) map[string]ItemInterface
 
 	// Returns all permissions that the user has.
-	GetPermissionsByUserId(userId any) map[string]ItemInterface
+	GetPermissionsByUserId(userId T) map[string]ItemInterface
 
 	// Returns all user IDs assigned to the role specified.
 	GetUserIdsByRoleName(name string) []any

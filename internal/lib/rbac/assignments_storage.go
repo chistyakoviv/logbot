@@ -1,29 +1,29 @@
 package rbac
 
-type AssignmentsStorageInterface interface {
+type AssignmentsStorageInterface[T comparable] interface {
 	// Returns all role and permission assignment information.
-	GetAll() map[any]map[string]*Assignment
+	GetAll() map[T]map[string]*Assignment[T]
 
 	// Returns all role or permission assignment information for the specified user.
-	GetByUserId(userId any) map[string]*Assignment
+	GetByUserId(userId T) map[string]*Assignment[T]
 
 	// Returns all role or permission assignment information by the specified item names' list.
-	GetByItemNames(itemNames []string) []*Assignment
+	GetByItemNames(itemNames []string) []*Assignment[T]
 
 	// Returns role or permission assignment for the specified item name that belongs to user with the specified ID.
-	Get(userId any, itemName string) *Assignment
+	Get(userId T, itemName string) *Assignment[T]
 
 	// Whether assignment with a given item name and user id pair exists.
-	Exists(userId any, itemName string) bool
+	Exists(userId T, itemName string) bool
 
 	// Whether at least one item from the given list is assigned to the user.
-	UserHasItem(userId any, itemNames []string) bool
+	UserHasItem(userId T, itemNames []string) bool
 
 	// Filters item names leaving only the ones that are assigned to specific user.
-	FilterUserItemNames(userId any, itemNames []string) []string
+	FilterUserItemNames(userId T, itemNames []string) []string
 
 	// Adds assignment to the storage.
-	Add(assignment *Assignment)
+	Add(assignment *Assignment[T])
 
 	// Returns whether there is assignment for a named role or permission.
 	HasItem(itemName string) bool
@@ -32,10 +32,10 @@ type AssignmentsStorageInterface interface {
 	RenameItem(oldName string, newName string)
 
 	// Removes assignment of a role or a permission to the user with ID specified.
-	Remove(userId any, itemName string)
+	Remove(userId T, itemName string)
 
 	// Removes all role or permission assignments for a user with ID specified.
-	RemoveByUserId(userId any)
+	RemoveByUserId(userId T)
 
 	// Removes all assignments for role or permission.
 	RemoveByItemName(itemName string)

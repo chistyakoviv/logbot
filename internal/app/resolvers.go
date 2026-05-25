@@ -202,8 +202,8 @@ func resolveI18n(c di.Container) i18n.I18nInterface {
 	return i18n
 }
 
-func resolveRbac(c di.Container) rbac.ManagerInterface {
-	rbac, err := di.Resolve[rbac.ManagerInterface](c, "rbac")
+func resolveRbac(c di.Container) rbac.ManagerInterface[int64] {
+	rbac, err := di.Resolve[rbac.ManagerInterface[int64]](c, "rbac")
 
 	if err != nil {
 		log.Fatalf("Couldn't resolve rbac definition: %v", err)

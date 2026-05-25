@@ -10,14 +10,14 @@ import (
 	"github.com/chistyakoviv/logbot/internal/utils"
 )
 
-type manager struct {
+type manager[T comparable] struct {
 	ruleFactory RuleFactoryInterface
 
 	defaultRoleNames []string
 	guestRoleName    string
 
 	itemsStorage       ItemsStorageInterface
-	assignmentsStorage AssignmentsStorageInterface
+	assignmentsStorage AssignmentsStorageInterface[T]
 
 	enableDirectPermissions    bool
 	includeRolesInAccessChecks bool
@@ -34,13 +34,13 @@ type ManagerOpts struct {
 	includeRolesInAccessChecks bool
 }
 
-func NewManager(
+func NewManager[T comparable](
 	ruleFactory RuleFactoryInterface,
 	itemsStorage ItemsStorageInterface,
-	assignmentsStorage AssignmentsStorageInterface,
+	assignmentsStorage AssignmentsStorageInterface[T],
 	opts *ManagerOpts,
-) ManagerInterface {
-	rbac := &manager{
+) ManagerInterface[T] {
+	rbac := &manager[T]{
 		ruleFactory:        ruleFactory,
 		itemsStorage:       itemsStorage,
 		assignmentsStorage: assignmentsStorage,
@@ -54,8 +54,8 @@ func NewManager(
 	return rbac
 }
 
-func (r *manager) UserHasPermission(
-	userId any,
+func (r *manager[T]) UserHasPermission(
+	userId T,
 	permissionName string,
 	parameters RuleContextParameters,
 ) bool {
@@ -116,13 +116,13 @@ func (r *manager) UserHasPermission(
 	return false
 }
 
-func (r *manager) CanAddChild(parentName string, childName string) bool {
+func (r *manager[T]) CanAddChild(parentName string, childName string) bool {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	return r.assertFutureChild(parentName, childName) == nil
 }
 
-func (r *manager) AddChild(parentName string, childName string) error {
+func (r *manager[T]) AddChild(parentName string, childName string) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	err := r.assertFutureChild(parentName, childName)
@@ -134,31 +134,31 @@ func (r *manager) AddChild(parentName string, childName string) error {
 	return nil
 }
 
-func (r *manager) RemoveChild(parentName string, childName string) {
+func (r *manager[T]) RemoveChild(parentName string, childName string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.itemsStorage.RemoveChild(parentName, childName)
 }
 
-func (r *manager) RemoveChildren(parentName string) {
+func (r *manager[T]) RemoveChildren(parentName string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.itemsStorage.RemoveChildren(parentName)
 }
 
-func (r *manager) HasChild(parentName string, childName string) bool {
+func (r *manager[T]) HasChild(parentName string, childName string) bool {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	return r.itemsStorage.HasDirectChild(parentName, childName)
 }
 
-func (r *manager) HasChildren(parentName string) bool {
+func (r *manager[T]) HasChildren(parentName string) bool {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	return r.itemsStorage.HasChildren(parentName)
 }
 
-func (r *manager) Assign(userId any, itemName string, createdAt time.Time) error {
+func (r *manager[T]) Assign(userId T, itemName string, createdAt time.Time) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	item, err := r.itemsStorage.Get(itemName)
@@ -183,19 +183,19 @@ func (r *manager) Assign(userId any, itemName string, createdAt time.Time) error
 	return nil
 }
 
-func (r *manager) Revoke(userId any, itemName string) {
+func (r *manager[T]) Revoke(userId T, itemName string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.assignmentsStorage.Remove(userId, itemName)
 }
 
-func (r *manager) RevokeAll(userId any) {
+func (r *manager[T]) RevokeAll(userId T) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.assignmentsStorage.RemoveByUserId(userId)
 }
 
-func (r *manager) GetItemsByUserId(userId any) (map[string]ItemInterface, error) {
+func (r *manager[T]) GetItemsByUserId(userId T) (map[string]ItemInterface, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	assignments := r.assignmentsStorage.GetByUserId(userId)
@@ -226,7 +226,7 @@ func (r *manager) GetItemsByUserId(userId any) (map[string]ItemInterface, error)
 	return result, nil
 }
 
-func (r *manager) GetRolesByUserId(userId any) (map[string]ItemInterface, error) {
+func (r *manager[T]) GetRolesByUserId(userId T) (map[string]ItemInterface, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	assignments := r.assignmentsStorage.GetByUserId(userId)
@@ -257,7 +257,7 @@ func (r *manager) GetRolesByUserId(userId any) (map[string]ItemInterface, error)
 	return result, nil
 }
 
-func (r *manager) GetChildRoles(roleName string) (map[string]ItemInterface, error) {
+func (r *manager[T]) GetChildRoles(roleName string) (map[string]ItemInterface, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	if !r.itemsStorage.RoleExists(roleName) {
@@ -267,13 +267,13 @@ func (r *manager) GetChildRoles(roleName string) (map[string]ItemInterface, erro
 	return r.itemsStorage.GetAllChildRoles([]string{roleName}), nil
 }
 
-func (r *manager) GetPermissionsByRoleName(name string) map[string]ItemInterface {
+func (r *manager[T]) GetPermissionsByRoleName(name string) map[string]ItemInterface {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	return r.itemsStorage.GetAllChildPermissions([]string{name})
 }
 
-func (r *manager) GetPermissionsByUserId(userId any) map[string]ItemInterface {
+func (r *manager[T]) GetPermissionsByUserId(userId T) map[string]ItemInterface {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	assignments := r.assignmentsStorage.GetByUserId(userId)
@@ -300,7 +300,7 @@ func (r *manager) GetPermissionsByUserId(userId any) map[string]ItemInterface {
 	return result
 }
 
-func (r *manager) GetUserIdsByRoleName(roleName string) []any {
+func (r *manager[T]) GetUserIdsByRoleName(roleName string) []any {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	parents := r.itemsStorage.GetParents(roleName)
@@ -322,19 +322,19 @@ func (r *manager) GetUserIdsByRoleName(roleName string) []any {
 	return userIds
 }
 
-func (r *manager) AddRole(role ItemInterface) error {
+func (r *manager[T]) AddRole(role ItemInterface) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	return r.addItem(role)
 }
 
-func (r *manager) GetRole(name string) (ItemInterface, error) {
+func (r *manager[T]) GetRole(name string) (ItemInterface, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	return r.itemsStorage.GetRole(name)
 }
 
-func (r *manager) UpdateRole(name string, role ItemInterface) error {
+func (r *manager[T]) UpdateRole(name string, role ItemInterface) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	err := r.assertItemNameForUpdate(name, role)
@@ -348,25 +348,25 @@ func (r *manager) UpdateRole(name string, role ItemInterface) error {
 	return nil
 }
 
-func (r *manager) RemoveRole(name string) {
+func (r *manager[T]) RemoveRole(name string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.removeItem(name)
 }
 
-func (r *manager) AddPermission(permission ItemInterface) error {
+func (r *manager[T]) AddPermission(permission ItemInterface) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	return r.addItem(permission)
 }
 
-func (r *manager) GetPermission(name string) (ItemInterface, error) {
+func (r *manager[T]) GetPermission(name string) (ItemInterface, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	return r.itemsStorage.GetPermission(name)
 }
 
-func (r *manager) UpdatePermission(name string, permission ItemInterface) error {
+func (r *manager[T]) UpdatePermission(name string, permission ItemInterface) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	err := r.assertItemNameForUpdate(name, permission)
@@ -380,13 +380,13 @@ func (r *manager) UpdatePermission(name string, permission ItemInterface) error 
 	return nil
 }
 
-func (r *manager) RemovePermission(name string) {
+func (r *manager[T]) RemovePermission(name string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.removeItem(name)
 }
 
-func (r *manager) SetDefaultRoleNames(roleNames []string) {
+func (r *manager[T]) SetDefaultRoleNames(roleNames []string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	// Copy the original slice to avoid modifying it outside
@@ -395,7 +395,7 @@ func (r *manager) SetDefaultRoleNames(roleNames []string) {
 	r.defaultRoleNames = roleNamesCopy
 }
 
-func (r *manager) GetDefaultRoleNames() []string {
+func (r *manager[T]) GetDefaultRoleNames() []string {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	// Copy the original slice to avoid modifying it outside
@@ -404,25 +404,25 @@ func (r *manager) GetDefaultRoleNames() []string {
 	return roleNames
 }
 
-func (r *manager) SetGuestRoleName(guestRoleName string) {
+func (r *manager[T]) SetGuestRoleName(guestRoleName string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.guestRoleName = guestRoleName
 }
 
-func (r *manager) GetGuestRoleName() string {
+func (r *manager[T]) GetGuestRoleName() string {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	return r.guestRoleName
 }
 
-func (r *manager) GetDefaultRoles() (map[string]ItemInterface, error) {
+func (r *manager[T]) GetDefaultRoles() (map[string]ItemInterface, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	return r.filterStoredRoles(r.defaultRoleNames)
 }
 
-func (r *manager) GetGuestRole() (ItemInterface, error) {
+func (r *manager[T]) GetGuestRole() (ItemInterface, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	if r.guestRoleName == "" {
@@ -438,14 +438,14 @@ func (r *manager) GetGuestRole() (ItemInterface, error) {
 	return role, nil
 }
 
-func (r *manager) removeItem(name string) {
+func (r *manager[T]) removeItem(name string) {
 	if r.itemsStorage.Exists(name) {
 		r.itemsStorage.Remove(name)
 		r.assignmentsStorage.RemoveByItemName(name)
 	}
 }
 
-func (r *manager) assertItemNameForUpdate(name string, item ItemInterface) error {
+func (r *manager[T]) assertItemNameForUpdate(name string, item ItemInterface) error {
 	if name == item.GetName() || !r.itemsStorage.Exists(item.GetName()) {
 		return nil
 	}
@@ -456,7 +456,7 @@ func (r *manager) assertItemNameForUpdate(name string, item ItemInterface) error
 	)
 }
 
-func (r *manager) addItem(item ItemInterface) error {
+func (r *manager[T]) addItem(item ItemInterface) error {
 	if r.itemsStorage.Exists(item.GetName()) {
 		return fmt.Errorf("Item %s already exists", item.GetName())
 	}
@@ -474,7 +474,7 @@ func (r *manager) addItem(item ItemInterface) error {
 	return nil
 }
 
-func (r *manager) filterStoredRoles(roleNames []string) (map[string]ItemInterface, error) {
+func (r *manager[T]) filterStoredRoles(roleNames []string) (map[string]ItemInterface, error) {
 	storedRoles := r.itemsStorage.GetRolesByNames(roleNames)
 	missingRoles := make([]string, 0)
 	for _, roleName := range roleNames {
@@ -490,7 +490,7 @@ func (r *manager) filterStoredRoles(roleNames []string) (map[string]ItemInterfac
 	return storedRoles, nil
 }
 
-func (r *manager) assertFutureChild(parentName string, childName string) error {
+func (r *manager[T]) assertFutureChild(parentName string, childName string) error {
 	if parentName == childName {
 		return fmt.Errorf("cannot add %s as a child of itself", parentName)
 	}
@@ -520,7 +520,7 @@ func (r *manager) assertFutureChild(parentName string, childName string) error {
 	return nil
 }
 
-func (r *manager) executeRule(userId any, item ItemInterface, parameters RuleContextParameters) bool {
+func (r *manager[T]) executeRule(userId T, item ItemInterface, parameters RuleContextParameters) bool {
 	if item.GetRuleName() == "" {
 		return true
 	}
@@ -529,7 +529,7 @@ func (r *manager) executeRule(userId any, item ItemInterface, parameters RuleCon
 		Execute(userId, item, NewRuleContext(r.ruleFactory, parameters))
 }
 
-func (r *manager) filterUserItemNames(userId any, itemNames []string) []string {
+func (r *manager[T]) filterUserItemNames(userId T, itemNames []string) []string {
 	names := r.assignmentsStorage.FilterUserItemNames(userId, itemNames)
 	for _, roleName := range r.defaultRoleNames {
 		if slices.Contains(names, roleName) {
