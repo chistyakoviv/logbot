@@ -1,5 +1,7 @@
 package rbac
 
+import "maps"
+
 type itemsStorageInMemory struct {
 	items map[string]ItemInterface
 	// For faster access, but doubles the memory
@@ -140,6 +142,16 @@ func (i *itemsStorageInMemory) fillParentsRecursive(name string, result []ItemIn
 
 func (i *itemsStorageInMemory) GetHierarchy(name string) map[string]TreeNode {
 	result := make(map[string]TreeNode, 0)
+
+	if _, ok := i.items[name]; ok {
+		return result
+	}
+
+	result[name] = TreeNode{
+		Item:     i.items[name],
+		Children: make(map[string]ItemInterface, 0),
+	}
+
 	addedChildItems := make(map[string]ItemInterface, 0)
 	i.fillHierarchyRecursive(name, result, addedChildItems)
 	return result
@@ -165,7 +177,10 @@ func (i *itemsStorageInMemory) fillHierarchyRecursive(
 				addedChildItems[childName] = child
 			}
 
-			i.fillHierarchyRecursive(parentName, result, addedChildItems)
+			addedChildItemsCopy := make(map[string]ItemInterface, len(addedChildItems))
+			maps.Copy(addedChildItemsCopy, addedChildItems)
+
+			i.fillHierarchyRecursive(parentName, result, addedChildItemsCopy)
 		}
 	}
 }
