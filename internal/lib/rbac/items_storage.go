@@ -10,10 +10,10 @@ type ItemsStorageInterface interface {
 	Clear()
 
 	// Returns all roles and permissions in the system.
-	GetAll() map[string]ItemInterface
+	GetAll() []ItemInterface
 
 	// Returns roles and permission by the given names' list.
-	GetByNames(names []string) map[string]ItemInterface
+	GetByNames(names []string) []ItemInterface
 
 	// Returns the named role or permission.
 	Get(name string) (ItemInterface, error)
@@ -34,10 +34,10 @@ type ItemsStorageInterface interface {
 	Remove(name string)
 
 	// Returns all roles in the system.
-	GetRoles() map[string]ItemInterface
+	GetRoles() []ItemInterface
 
 	// Returns roles by the given names' list.
-	GetRolesByNames(names []string) map[string]ItemInterface
+	GetRolesByNames(names []string) []ItemInterface
 
 	// Returns the named role.
 	GetRole(name string) (ItemInterface, error)
@@ -46,10 +46,10 @@ type ItemsStorageInterface interface {
 	ClearRoles()
 
 	// Returns all permissions in the system.
-	GetPermissions() map[string]ItemInterface
+	GetPermissions() []ItemInterface
 
 	// Returns permissions by the given names' list.
-	GetPermissionsByNames(names []string) map[string]ItemInterface
+	GetPermissionsByNames(names []string) []ItemInterface
 
 	// Returns the named permission.
 	GetPermission(name string) (ItemInterface, error)
@@ -58,23 +58,23 @@ type ItemsStorageInterface interface {
 	ClearPermissions()
 
 	// Returns the parent permissions and/or roles.
-	GetParents(name string) map[string]ItemInterface
+	GetParents(name string) []ItemInterface
 
 	// Returns the parents tree for a single item which additionally contains children for each parent (only among the
 	// found items). The base item is included too, its children list is always empty.
 	GetHierarchy(name string) map[string]TreeNode
 
 	// Returns direct child permissions and/or roles.
-	GetDirectChildren(name string) map[string]ItemInterface
+	GetDirectChildren(name string) []ItemInterface
 
 	// Returns all child permissions and/or roles.
-	GetAllChildren(names []string) map[string]ItemInterface
+	GetAllChildren(names []string) []ItemInterface
 
 	// Returns all child roles.
-	GetAllChildRoles(names []string) map[string]ItemInterface
+	GetAllChildRoles(names []string) []ItemInterface
 
 	// Returns all child permissions.
-	GetAllChildPermissions(names []string) map[string]ItemInterface
+	GetAllChildPermissions(names []string) []ItemInterface
 
 	// Returns whether named parent has children.
 	HasChildren(name string) bool

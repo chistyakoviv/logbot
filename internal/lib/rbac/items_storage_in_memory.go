@@ -1,7 +1,5 @@
 package rbac
 
-import "slices"
-
 type itemsStorageInMemory struct {
 	items map[string]ItemInterface
 	// For faster access, but doubles the memory
@@ -21,19 +19,19 @@ func NewItemsStorageInMemory() ItemsStorageInterface {
 	}
 }
 
-func (i *itemsStorageInMemory) GetAll() map[string]ItemInterface {
-	result := make(map[string]ItemInterface, len(i.items))
-	for name, item := range i.items {
-		result[name] = item
+func (i *itemsStorageInMemory) GetAll() []ItemInterface {
+	result := make([]ItemInterface, 0, len(i.items))
+	for _, item := range i.items {
+		result = append(result, item)
 	}
 	return result
 }
 
-func (i *itemsStorageInMemory) GetByNames(names []string) map[string]ItemInterface {
-	result := make(map[string]ItemInterface, 0)
+func (i *itemsStorageInMemory) GetByNames(names []string) []ItemInterface {
+	result := make([]ItemInterface, 0)
 	for _, name := range names {
 		if item, ok := i.items[name]; ok {
-			result[name] = item
+			result = append(result, item)
 		}
 	}
 	return result
@@ -74,19 +72,19 @@ func (i *itemsStorageInMemory) GetRole(name string) (ItemInterface, error) {
 	return nil, ErrItemNotFound
 }
 
-func (i *itemsStorageInMemory) GetRoles() map[string]ItemInterface {
-	result := make(map[string]ItemInterface, len(i.roles))
-	for name, item := range i.roles {
-		result[name] = item
+func (i *itemsStorageInMemory) GetRoles() []ItemInterface {
+	result := make([]ItemInterface, 0, len(i.roles))
+	for _, item := range i.roles {
+		result = append(result, item)
 	}
 	return result
 }
 
-func (i *itemsStorageInMemory) GetRolesByNames(names []string) map[string]ItemInterface {
-	result := make(map[string]ItemInterface, 0)
+func (i *itemsStorageInMemory) GetRolesByNames(names []string) []ItemInterface {
+	result := make([]ItemInterface, 0)
 	for _, name := range names {
 		if item, ok := i.roles[name]; ok {
-			result[name] = item
+			result = append(result, item)
 		}
 	}
 	return result
@@ -99,31 +97,31 @@ func (i *itemsStorageInMemory) GetPermission(name string) (ItemInterface, error)
 	return nil, ErrItemNotFound
 }
 
-func (i *itemsStorageInMemory) GetPermissions() map[string]ItemInterface {
-	result := make(map[string]ItemInterface, len(i.permissions))
-	for name, item := range i.permissions {
-		result[name] = item
+func (i *itemsStorageInMemory) GetPermissions() []ItemInterface {
+	result := make([]ItemInterface, 0, len(i.permissions))
+	for _, item := range i.permissions {
+		result = append(result, item)
 	}
 	return result
 }
 
-func (i *itemsStorageInMemory) GetPermissionsByNames(names []string) map[string]ItemInterface {
-	result := make(map[string]ItemInterface, 0)
+func (i *itemsStorageInMemory) GetPermissionsByNames(names []string) []ItemInterface {
+	result := make([]ItemInterface, 0)
 	for _, name := range names {
 		if item, ok := i.permissions[name]; ok {
-			result[name] = item
+			result = append(result, item)
 		}
 	}
 	return result
 }
 
-func (i *itemsStorageInMemory) GetParents(name string) map[string]ItemInterface {
-	result := make(map[string]ItemInterface, 0)
+func (i *itemsStorageInMemory) GetParents(name string) []ItemInterface {
+	result := make([]ItemInterface, 0)
 	i.fillParentsRecursive(name, result)
 	return result
 }
 
-func (i *itemsStorageInMemory) fillParentsRecursive(name string, result map[string]ItemInterface) {
+func (i *itemsStorageInMemory) fillParentsRecursive(name string, result []ItemInterface) {
 	for parentName, children := range i.children {
 		for _, child := range children {
 			if child.GetName() != name {
@@ -132,7 +130,7 @@ func (i *itemsStorageInMemory) fillParentsRecursive(name string, result map[stri
 
 			parent, err := i.Get(parentName)
 			if err != nil {
-				result[parentName] = parent
+				result = append(result, parent)
 			}
 
 			i.fillParentsRecursive(parentName, result)
@@ -172,27 +170,31 @@ func (i *itemsStorageInMemory) fillHierarchyRecursive(
 	}
 }
 
-func (i *itemsStorageInMemory) GetDirectChildren(name string) map[string]ItemInterface {
+func (i *itemsStorageInMemory) GetDirectChildren(name string) []ItemInterface {
+	result := make([]ItemInterface, 0)
 	if children, ok := i.children[name]; ok {
-		return children
+		result = make([]ItemInterface, len(children))
+		for _, child := range result {
+			result = append(result, child)
+		}
 	}
-	return make(map[string]ItemInterface, 0)
+	return result
 }
 
-func (i *itemsStorageInMemory) GetAllChildren(names []string) map[string]ItemInterface {
-	result := make(map[string]ItemInterface, 0)
+func (i *itemsStorageInMemory) GetAllChildren(names []string) []ItemInterface {
+	result := make([]ItemInterface, 0)
 	i.getAllChildrenInternal(names, result)
 	return result
 }
 
-func (i *itemsStorageInMemory) GetAllChildRoles(names []string) map[string]ItemInterface {
-	result := make(map[string]ItemInterface, 0)
+func (i *itemsStorageInMemory) GetAllChildRoles(names []string) []ItemInterface {
+	result := make([]ItemInterface, 0)
 	i.getAllChildrenInternal(names, result)
 	return i.filterRoles(result)
 }
 
-func (i *itemsStorageInMemory) GetAllChildPermissions(names []string) map[string]ItemInterface {
-	result := make(map[string]ItemInterface, 0)
+func (i *itemsStorageInMemory) GetAllChildPermissions(names []string) []ItemInterface {
+	result := make([]ItemInterface, 0)
 	i.getAllChildrenInternal(names, result)
 	return i.filterPermissions(result)
 }
@@ -314,47 +316,51 @@ func (i *itemsStorageInMemory) clearChildrenFromItem(name string) {
 
 func (i *itemsStorageInMemory) getAllChildrenInternal(
 	names []string,
-	result map[string]ItemInterface,
-) map[string]ItemInterface {
+	result []ItemInterface,
+) []ItemInterface {
+	baseNames := make(map[string]bool, len(names))
 	for _, name := range names {
-		i.fillChildrenRecursive(name, result, names)
+		baseNames[name] = true
+	}
+	for _, name := range names {
+		i.fillChildrenRecursive(name, result, baseNames)
 	}
 	return result
 }
 
 func (i *itemsStorageInMemory) fillChildrenRecursive(
 	name string,
-	result map[string]ItemInterface,
-	baseNames []string,
+	result []ItemInterface,
+	baseNames map[string]bool,
 ) {
 	for childName := range i.children[name] {
-		if slices.Contains(baseNames, childName) {
+		if baseNames[childName] {
 			continue
 		}
 		child, err := i.Get(childName)
 		if err != nil {
-			result[childName] = child
+			result = append(result, child)
 		}
 
 		i.fillChildrenRecursive(child.GetName(), result, baseNames)
 	}
 }
 
-func (i *itemsStorageInMemory) filterRoles(items map[string]ItemInterface) map[string]ItemInterface {
-	result := make(map[string]ItemInterface, 0)
-	for name, item := range items {
+func (i *itemsStorageInMemory) filterRoles(items []ItemInterface) []ItemInterface {
+	result := make([]ItemInterface, 0)
+	for _, item := range items {
 		if IsItem[Role](item) {
-			result[name] = item
+			result = append(result, item)
 		}
 	}
 	return result
 }
 
-func (i *itemsStorageInMemory) filterPermissions(items map[string]ItemInterface) map[string]ItemInterface {
-	result := make(map[string]ItemInterface, 0)
-	for name, item := range items {
+func (i *itemsStorageInMemory) filterPermissions(items []ItemInterface) []ItemInterface {
+	result := make([]ItemInterface, 0)
+	for _, item := range items {
 		if IsItem[Permission](item) {
-			result[name] = item
+			result = append(result, item)
 		}
 	}
 	return result

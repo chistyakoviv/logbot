@@ -36,19 +36,19 @@ type ManagerInterface[T comparable] interface {
 	RevokeAll(userId T)
 
 	// Returns the items that are assigned to the user via assign().
-	GetItemsByUserId(userId T) (map[string]ItemInterface, error)
+	GetItemsByUserId(userId T) ([]ItemInterface, error)
 
 	// Returns the roles that are assigned to the user via assign().
-	GetRolesByUserId(userId T) (map[string]ItemInterface, error)
+	GetRolesByUserId(userId T) ([]ItemInterface, error)
 
 	// Returns child roles of the role specified. Depth isn't limited.
-	GetChildRoles(name string) (map[string]ItemInterface, error)
+	GetChildRoles(name string) ([]ItemInterface, error)
 
 	// Returns all permissions that the specified role represents.
-	GetPermissionsByRoleName(name string) map[string]ItemInterface
+	GetPermissionsByRoleName(name string) []ItemInterface
 
 	// Returns all permissions that the user has.
-	GetPermissionsByUserId(userId T) map[string]ItemInterface
+	GetPermissionsByUserId(userId T) []ItemInterface
 
 	// Returns all user IDs assigned to the role specified.
 	GetUserIdsByRoleName(name string) []any
@@ -86,7 +86,7 @@ type ManagerInterface[T comparable] interface {
 	GetDefaultRoleNames() []string
 
 	// Returns default roles.
-	GetDefaultRoles() (map[string]ItemInterface, error)
+	GetDefaultRoles() ([]ItemInterface, error)
 
 	// Set guest role name.
 	SetGuestRoleName(roleName string)
