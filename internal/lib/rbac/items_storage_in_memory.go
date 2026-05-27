@@ -21,7 +21,7 @@ func NewItemsStorageInMemory() ItemsStorageInterface {
 		permissions: make(map[string]ItemInterface),
 		roles:       make(map[string]ItemInterface),
 		children:    make(map[string]map[string]ItemInterface),
-		parents:     make(map[string]map[string]bool, 0),
+		parents:     make(map[string]map[string]bool),
 	}
 }
 
