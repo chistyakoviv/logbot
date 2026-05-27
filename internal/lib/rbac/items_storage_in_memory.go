@@ -119,23 +119,28 @@ func (i *itemsStorageInMemory) GetPermissionsByNames(names []string) []ItemInter
 
 func (i *itemsStorageInMemory) GetParents(name string) []ItemInterface {
 	result := make([]ItemInterface, 0)
-	i.fillParentsRecursive(name, &result)
+	i.fillParentsRecursive(name, &result, make(map[string]bool))
 	return result
 }
 
-func (i *itemsStorageInMemory) fillParentsRecursive(name string, result *[]ItemInterface) {
+func (i *itemsStorageInMemory) fillParentsRecursive(name string, result *[]ItemInterface, visited map[string]bool) {
 	for parentName, children := range i.children {
 		for _, child := range children {
 			if child.GetName() != name {
 				continue
 			}
 
+			if visited[parentName] {
+				continue
+			}
+
 			parent, err := i.Get(parentName)
 			if err == nil {
+				visited[parentName] = true
 				*result = append(*result, parent)
 			}
 
-			i.fillParentsRecursive(parentName, result)
+			i.fillParentsRecursive(parentName, result, visited)
 		}
 	}
 }
@@ -152,15 +157,15 @@ func (i *itemsStorageInMemory) GetHierarchy(name string) map[string]TreeNode {
 		Children: make(map[string]ItemInterface, 0),
 	}
 
-	addedChildItems := make(map[string]ItemInterface, 0)
-	i.fillHierarchyRecursive(name, result, addedChildItems)
+	i.fillHierarchyRecursive(name, result, make(map[string]ItemInterface), map[string]bool{name: true})
 	return result
 }
 
 func (i *itemsStorageInMemory) fillHierarchyRecursive(
 	name string,
 	result map[string]TreeNode,
-	addedChildItems map[string]ItemInterface,
+	descendants map[string]ItemInterface,
+	path map[string]bool,
 ) {
 	for parentName, children := range i.children {
 		for childName, child := range children {
@@ -168,16 +173,31 @@ func (i *itemsStorageInMemory) fillHierarchyRecursive(
 				continue
 			}
 
-			_, err := i.Get(parentName)
-			if err == nil {
-				addedChildItems[childName] = child
-				result[parentName] = TreeNode{
-					Item:     i.items[parentName],
-					Children: maps.Clone(addedChildItems),
-				}
+			if path[parentName] {
+				continue
 			}
 
-			i.fillHierarchyRecursive(parentName, result, maps.Clone(addedChildItems))
+			nextDescendants := maps.Clone(descendants)
+			nextDescendants[childName] = child
+
+			_, err := i.Get(parentName)
+			if err == nil {
+				node := result[parentName]
+				if node.Children == nil {
+					node = TreeNode{
+						Item:     i.items[parentName],
+						Children: make(map[string]ItemInterface, len(nextDescendants)),
+					}
+				}
+				for descendantName, descendant := range nextDescendants {
+					node.Children[descendantName] = descendant
+				}
+				result[parentName] = node
+			}
+
+			nextPath := maps.Clone(path)
+			nextPath[parentName] = true
+			i.fillHierarchyRecursive(parentName, result, nextDescendants, nextPath)
 		}
 	}
 }

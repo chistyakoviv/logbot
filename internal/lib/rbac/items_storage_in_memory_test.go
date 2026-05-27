@@ -52,6 +52,38 @@ func TestItemsStorageInMemoryChildTraversalAndHierarchy(t *testing.T) {
 	assertMapItemNamesMatch(t, adminNode.Children, []string{"editor", "read"})
 }
 
+func TestItemsStorageInMemoryGetHierarchyFindsParentsAndChildrenForEachParentNode(t *testing.T) {
+	storage := NewItemsStorageInMemory()
+	root := NewRole("root")
+	admin := NewRole("admin")
+	auditor := NewRole("auditor")
+	editor := NewRole("editor")
+	read := NewPermission("read")
+
+	for _, item := range []ItemInterface{root, admin, auditor, editor, read} {
+		storage.Add(item)
+	}
+
+	storage.AddChild("root", "admin")
+	storage.AddChild("root", "auditor")
+	storage.AddChild("admin", "editor")
+	storage.AddChild("editor", "read")
+	storage.AddChild("auditor", "read")
+
+	assertItemNamesMatch(t, storage.GetParents("read"), []string{"admin", "auditor", "editor", "root"})
+
+	hierarchy := storage.GetHierarchy("read")
+	if len(hierarchy) != 5 {
+		t.Fatalf("expected 5 hierarchy nodes, got %d", len(hierarchy))
+	}
+
+	assertHierarchyNodeChildren(t, hierarchy, "read", []string{})
+	assertHierarchyNodeChildren(t, hierarchy, "editor", []string{"read"})
+	assertHierarchyNodeChildren(t, hierarchy, "admin", []string{"editor", "read"})
+	assertHierarchyNodeChildren(t, hierarchy, "auditor", []string{"read"})
+	assertHierarchyNodeChildren(t, hierarchy, "root", []string{"admin", "auditor", "editor", "read"})
+}
+
 func TestItemsStorageInMemoryUpdateRenamesItemAndPreservesRelations(t *testing.T) {
 	storage := NewItemsStorageInMemory()
 	admin := NewRole("admin")
@@ -78,4 +110,18 @@ func TestItemsStorageInMemoryUpdateRenamesItemAndPreservesRelations(t *testing.T
 	if !storage.HasDirectChild("author", "read") {
 		t.Fatalf("expected child relation to be preserved")
 	}
+}
+
+func assertHierarchyNodeChildren(t *testing.T, hierarchy map[string]TreeNode, nodeName string, expectedChildren []string) {
+	t.Helper()
+
+	node, ok := hierarchy[nodeName]
+	if !ok {
+		t.Fatalf("expected hierarchy to contain %q node", nodeName)
+	}
+	if node.Item == nil || node.Item.GetName() != nodeName {
+		t.Fatalf("expected hierarchy node %q to contain matching item", nodeName)
+	}
+
+	assertMapItemNamesMatch(t, node.Children, expectedChildren)
 }
