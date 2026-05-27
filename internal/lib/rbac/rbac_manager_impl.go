@@ -302,7 +302,7 @@ func (r *manager[T]) GetPermissionsByUserId(userId T) []ItemInterface {
 	return result
 }
 
-func (r *manager[T]) GetUserIdsByRoleName(roleName string) []any {
+func (r *manager[T]) GetUserIdsByRoleName(roleName string) []T {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	parents := r.itemsStorage.GetParents(roleName)
@@ -316,7 +316,7 @@ func (r *manager[T]) GetUserIdsByRoleName(roleName string) []any {
 	roleNames = append(roleNames, parentNames...)
 
 	assignments := r.assignmentsStorage.GetByItemNames(roleNames)
-	userIds := make([]any, 0, len(assignments))
+	userIds := make([]T, 0, len(assignments))
 	for _, assignment := range assignments {
 		userIds = append(userIds, assignment.GetUserId())
 	}

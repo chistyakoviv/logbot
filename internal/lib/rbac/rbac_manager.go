@@ -51,7 +51,7 @@ type ManagerInterface[T comparable] interface {
 	GetPermissionsByUserId(userId T) []ItemInterface
 
 	// Returns all user IDs assigned to the role specified.
-	GetUserIdsByRoleName(name string) []any
+	GetUserIdsByRoleName(name string) []T
 
 	// Adds role or permission to RBAC system.
 	// Panics if the permission already exists.
