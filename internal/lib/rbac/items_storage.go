@@ -60,6 +60,9 @@ type ItemsStorageInterface interface {
 	// Returns the parent permissions and/or roles.
 	GetParents(name string) []ItemInterface
 
+	// Returns direct parent permissions and/or roles.
+	GetDirectParents(name string) []ItemInterface
+
 	// Returns the parents tree for a single item which additionally contains children for each parent (only among the
 	// found items). The base item is included too, its children list is always empty.
 	GetHierarchy(name string) map[string]TreeNode

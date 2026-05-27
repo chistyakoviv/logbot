@@ -6,12 +6,26 @@ import (
 	"time"
 )
 
-// Before optimization
+// Before optimization (1)
 // BenchmarkManagerUserHasPermissionDeepHierarchy-16                    762           1511110 ns/op         1465244 B/op       1527 allocs/op
 // BenchmarkManagerUserHasPermissionMultiParentHierarchy-16          254254              4542 ns/op            5152 B/op         36 allocs/op
 // BenchmarkManagerUserHasPermissionGuestRole-16                       2740            396286 ns/op          384418 B/op        752 allocs/op
 // PASS
 // ok      github.com/chistyakoviv/logbot/internal/lib/rbac        3.654s
+
+// With building direct parents (2)
+// BenchmarkManagerUserHasPermissionDeepHierarchy-16                   3620            322262 ns/op           15304 B/op        139 allocs/op
+// BenchmarkManagerUserHasPermissionMultiParentHierarchy-16         1680080               723.2 ns/op            78 B/op          3 allocs/op
+// BenchmarkManagerUserHasPermissionGuestRole-16                      13634             92673 ns/op            7720 B/op         73 allocs/op
+// PASS
+// ok      github.com/chistyakoviv/logbot/internal/lib/rbac        5.303s
+
+// Witch cached direct parents (3)
+// BenchmarkManagerUserHasPermissionDeepHierarchy-16                  35102             34431 ns/op           15304 B/op        139 allocs/op
+// BenchmarkManagerUserHasPermissionMultiParentHierarchy-16         2295321               530.0 ns/op            62 B/op          2 allocs/op
+// BenchmarkManagerUserHasPermissionGuestRole-16                      73736             16209 ns/op            7720 B/op         73 allocs/op
+// PASS
+// ok      github.com/chistyakoviv/logbot/internal/lib/rbac        4.673s
 
 func BenchmarkManagerUserHasPermissionDeepHierarchy(b *testing.B) {
 	manager, permissionName := buildBenchmarkManagerWithRoleChain(b, 128)

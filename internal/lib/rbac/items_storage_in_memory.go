@@ -10,6 +10,9 @@ type itemsStorageInMemory struct {
 
 	// children[parentName][childName] = Item
 	children map[string]map[string]ItemInterface
+
+	// parents[nodeName][parentName]
+	parents map[string]map[string]bool
 }
 
 func NewItemsStorageInMemory() ItemsStorageInterface {
@@ -18,6 +21,7 @@ func NewItemsStorageInMemory() ItemsStorageInterface {
 		permissions: make(map[string]ItemInterface),
 		roles:       make(map[string]ItemInterface),
 		children:    make(map[string]map[string]ItemInterface),
+		parents:     make(map[string]map[string]bool, 0),
 	}
 }
 
@@ -120,6 +124,17 @@ func (i *itemsStorageInMemory) GetPermissionsByNames(names []string) []ItemInter
 func (i *itemsStorageInMemory) GetParents(name string) []ItemInterface {
 	result := make([]ItemInterface, 0)
 	i.fillParentsRecursive(name, &result, make(map[string]bool))
+	return result
+}
+
+func (i *itemsStorageInMemory) GetDirectParents(name string) []ItemInterface {
+	result := make([]ItemInterface, 0, len(i.parents[name]))
+	for parentName := range i.parents[name] {
+		parent, err := i.Get(parentName)
+		if err == nil {
+			result = append(result, parent)
+		}
+	}
 	return result
 }
 
@@ -235,11 +250,15 @@ func (i *itemsStorageInMemory) AddChild(parentName string, childName string) {
 	if _, ok := i.children[parentName]; !ok {
 		i.children[parentName] = make(map[string]ItemInterface, 0)
 	}
+	if _, ok := i.parents[childName]; !ok {
+		i.parents[childName] = make(map[string]bool, 0)
+	}
 	child, err := i.Get(childName)
 	if err != nil {
 		return
 	}
 	i.children[parentName][childName] = child
+	i.parents[childName][parentName] = true
 }
 
 func (i *itemsStorageInMemory) HasChildren(name string) bool {
@@ -271,15 +290,18 @@ func (i *itemsStorageInMemory) HasDirectChild(parentName string, childName strin
 }
 
 func (i *itemsStorageInMemory) RemoveChild(parentName string, childName string) {
+	delete(i.parents[childName], parentName)
 	delete(i.children[parentName], childName)
 }
 
 func (i *itemsStorageInMemory) RemoveChildren(parentName string) {
+	for childName, _ := range i.children[parentName] {
+		delete(i.parents[childName], parentName)
+	}
 	delete(i.children, parentName)
 }
 
 func (i *itemsStorageInMemory) Remove(name string) {
-	i.clearChildrenFromItem(name)
 	i.removeItemByName(name)
 }
 
@@ -296,34 +318,42 @@ func (i *itemsStorageInMemory) Clear() {
 	i.roles = make(map[string]ItemInterface, 0)
 	i.permissions = make(map[string]ItemInterface, 0)
 	i.children = make(map[string]map[string]ItemInterface, 0)
+	i.parents = make(map[string]map[string]bool, 0)
 }
 
 func (i *itemsStorageInMemory) ClearPermissions() {
 	for permName := range i.permissions {
-		delete(i.items, permName)
+		i.removeItemByName(permName)
 	}
 	i.permissions = make(map[string]ItemInterface, 0)
 }
 
 func (i *itemsStorageInMemory) ClearRoles() {
 	for roleName := range i.roles {
-		delete(i.items, roleName)
+		i.removeItemByName(roleName)
 	}
 	i.roles = make(map[string]ItemInterface, 0)
 }
 
 func (i *itemsStorageInMemory) updateItemName(name string, item ItemInterface) {
-	i.updateChildrenForItemName(name, item)
-}
-
-func (i *itemsStorageInMemory) updateChildrenForItemName(name string, item ItemInterface) {
-	// If old item has children, move them to new item
+	// If old item has children, move them to new item and update the parent
 	if i.HasChildren(name) {
+		for childName := range i.children[name] {
+			if _, ok := i.parents[childName]; !ok {
+				i.parents[childName] = make(map[string]bool, 0)
+			}
+			delete(i.parents[childName], name)
+			i.parents[childName][item.GetName()] = true
+		}
 		i.children[item.GetName()] = i.children[name]
 		delete(i.children, name)
 	}
 
 	// if old item has parents, link them to new item
+	if oldParents, ok := i.parents[name]; ok {
+		i.parents[item.GetName()] = oldParents
+		delete(i.parents, name)
+	}
 	for _, children := range i.children {
 		if _, ok := children[name]; ok {
 			children[item.GetName()] = item
@@ -337,12 +367,18 @@ func (i *itemsStorageInMemory) removeItemByName(name string) {
 	delete(i.permissions, name)
 	delete(i.items, name)
 
+	// remove item from children
 	for _, children := range i.children {
 		delete(children, name)
 	}
-}
 
-func (i *itemsStorageInMemory) clearChildrenFromItem(name string) {
+	// remove item from parents
+	for _, parents := range i.parents {
+		delete(parents, name)
+	}
+	delete(i.parents, name)
+
+	// remove children of item
 	delete(i.children, name)
 }
 

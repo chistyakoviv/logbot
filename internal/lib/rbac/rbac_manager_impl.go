@@ -79,41 +79,7 @@ func (r *manager[T]) UserHasPermission(
 		}
 	}
 
-	hierarchy := r.itemsStorage.GetHierarchy(item.GetName())
-	itemNames := make([]string, 0, len(hierarchy))
-	for _, treeNode := range hierarchy {
-		itemNames = append(itemNames, treeNode.Item.GetName())
-	}
-	userItemNames := make([]string, 0)
-	if guestRole != nil {
-		userItemNames = append(userItemNames, guestRole.GetName())
-	} else {
-		userItemNames = r.filterUserItemNames(userId, itemNames)
-	}
-	userItemNamesMap := make(map[string]bool, len(userItemNames))
-	for _, userItemName := range userItemNames {
-		userItemNamesMap[userItemName] = true
-	}
-
-	for _, data := range hierarchy {
-		if !userItemNamesMap[data.Item.GetName()] || !r.executeRule(userId, data.Item, parameters) {
-			continue
-		}
-
-		hasPermission := true
-		for _, child := range data.Children {
-			if !r.executeRule(userId, child, parameters) {
-				hasPermission = false
-				break
-			}
-		}
-
-		if hasPermission {
-			return true
-		}
-	}
-
-	return false
+	return r.userHasPermissionViaPath(userId, item, guestRole, parameters, make(map[string]bool))
 }
 
 func (r *manager[T]) CanAddChild(parentName string, childName string) bool {
@@ -535,6 +501,47 @@ func (r *manager[T]) executeRule(userId T, item ItemInterface, parameters RuleCo
 	return r.ruleFactory.
 		Create(item.GetRuleName()).
 		Execute(userId, item, NewRuleContext(r.ruleFactory, parameters))
+}
+
+func (r *manager[T]) userHasPermissionViaPath(
+	userId T,
+	item ItemInterface,
+	guestRole ItemInterface,
+	parameters RuleContextParameters,
+	visited map[string]bool,
+) bool {
+	if visited[item.GetName()] {
+		return false
+	}
+	visited[item.GetName()] = true
+
+	if !r.executeRule(userId, item, parameters) {
+		return false
+	}
+
+	if guestRole != nil && guestRole.GetName() == item.GetName() {
+		return true
+	}
+
+	if guestRole == nil && r.userHasItem(userId, item.GetName()) {
+		return true
+	}
+
+	for _, parent := range r.itemsStorage.GetDirectParents(item.GetName()) {
+		if r.userHasPermissionViaPath(userId, parent, guestRole, parameters, visited) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (r *manager[T]) userHasItem(userId T, itemName string) bool {
+	if r.assignmentsStorage.Exists(userId, itemName) {
+		return true
+	}
+
+	return slices.Contains(r.defaultRoleNames, itemName)
 }
 
 func (r *manager[T]) filterUserItemNames(userId T, itemNames []string) []string {

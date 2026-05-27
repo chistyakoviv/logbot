@@ -19,6 +19,12 @@ func (denyByContextRule) Execute(userId any, item ItemInterface, context RuleCon
 	return value
 }
 
+type denyRule struct{}
+
+func (denyRule) Execute(userId any, item ItemInterface, context RuleContext) bool {
+	return false
+}
+
 func TestManagerAssignAndResolveUserItems(t *testing.T) {
 	manager := NewManager[string](
 		NewRuleFactory(),
@@ -118,6 +124,52 @@ func TestManagerUserHasPermissionSupportsGuestAndRules(t *testing.T) {
 	}
 	if !manager.UserHasPermission("u1", "publish", RuleContextParameters{"allow": true}) {
 		t.Fatalf("expected rule-gated permission to be allowed")
+	}
+}
+
+func TestManagerUserHasPermissionAllowsAlternativeParentBranchWhenRuleFails(t *testing.T) {
+	ruleFactory := NewRuleFactory().
+		Add("allow", func() RuleInterface { return allowRule{} }).
+		Add("deny", func() RuleInterface { return denyRule{} })
+
+	manager := NewManager[string](
+		ruleFactory,
+		NewItemsStorageInMemory(),
+		NewAssignmentsStorageInMemory[string](),
+		nil,
+	)
+
+	for _, role := range []ItemInterface{
+		NewRole("root"),
+		NewRole("admin").WithRuleName("deny"),
+		NewRole("auditor").WithRuleName("allow"),
+	} {
+		if err := manager.AddRole(role); err != nil {
+			t.Fatalf("add role %q: %v", role.GetName(), err)
+		}
+	}
+
+	if err := manager.AddPermission(NewPermission("read")); err != nil {
+		t.Fatalf("add permission: %v", err)
+	}
+
+	for _, edge := range [][2]string{
+		{"root", "admin"},
+		{"root", "auditor"},
+		{"admin", "read"},
+		{"auditor", "read"},
+	} {
+		if err := manager.AddChild(edge[0], edge[1]); err != nil {
+			t.Fatalf("add child %q -> %q: %v", edge[0], edge[1], err)
+		}
+	}
+
+	if err := manager.Assign("u1", "root", time.Time{}); err != nil {
+		t.Fatalf("assign root: %v", err)
+	}
+
+	if !manager.UserHasPermission("u1", "read", nil) {
+		t.Fatalf("expected access to be granted via the alternative valid parent branch")
 	}
 }
 

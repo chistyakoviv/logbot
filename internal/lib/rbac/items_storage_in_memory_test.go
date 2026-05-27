@@ -110,6 +110,74 @@ func TestItemsStorageInMemoryUpdateRenamesItemAndPreservesRelations(t *testing.T
 	if !storage.HasDirectChild("author", "read") {
 		t.Fatalf("expected child relation to be preserved")
 	}
+	assertItemNamesMatch(t, storage.GetDirectParents("author"), []string{"admin"})
+	assertItemNamesMatch(t, storage.GetDirectParents("read"), []string{"author"})
+	assertItemNamesMatch(t, storage.GetDirectParents("editor"), nil)
+}
+
+func TestItemsStorageInMemoryParentCacheStaysInSyncAfterRemoveAndClear(t *testing.T) {
+	storage := NewItemsStorageInMemory()
+	admin := NewRole("admin")
+	editor := NewRole("editor")
+	read := NewPermission("read")
+
+	for _, item := range []ItemInterface{admin, editor, read} {
+		storage.Add(item)
+	}
+
+	storage.AddChild("admin", "editor")
+	storage.AddChild("editor", "read")
+	storage.Remove("editor")
+
+	assertItemNamesMatch(t, storage.GetDirectParents("read"), nil)
+	assertItemNamesMatch(t, storage.GetDirectParents("editor"), nil)
+	if storage.HasDirectChild("admin", "editor") {
+		t.Fatalf("expected removed item to be removed from child relations")
+	}
+
+	storage.Add(NewRole("editor"))
+	assertItemNamesMatch(t, storage.GetDirectParents("editor"), nil)
+
+	storage.AddChild("admin", "editor")
+	storage.Clear()
+	storage.Add(NewRole("admin"))
+	storage.Add(NewRole("editor"))
+
+	assertItemNamesMatch(t, storage.GetDirectParents("editor"), nil)
+}
+
+func TestItemsStorageInMemoryParentCacheStaysInSyncAfterPartialClears(t *testing.T) {
+	storage := NewItemsStorageInMemory()
+	admin := NewRole("admin")
+	editor := NewRole("editor")
+	read := NewPermission("read")
+	write := NewPermission("write")
+
+	for _, item := range []ItemInterface{admin, editor, read, write} {
+		storage.Add(item)
+	}
+
+	storage.AddChild("admin", "editor")
+	storage.AddChild("editor", "read")
+	storage.AddChild("admin", "write")
+	storage.ClearPermissions()
+
+	assertItemNamesMatch(t, storage.GetDirectParents("read"), nil)
+	assertItemNamesMatch(t, storage.GetDirectParents("write"), nil)
+	if storage.HasDirectChild("editor", "read") {
+		t.Fatalf("expected cleared permission to be removed from child relations")
+	}
+
+	storage.Add(NewPermission("read"))
+	assertItemNamesMatch(t, storage.GetDirectParents("read"), nil)
+
+	storage.AddChild("editor", "read")
+	storage.ClearRoles()
+
+	assertItemNamesMatch(t, storage.GetDirectParents("read"), nil)
+	if storage.HasDirectChild("editor", "read") {
+		t.Fatalf("expected cleared role to be removed from child relations")
+	}
 }
 
 func assertHierarchyNodeChildren(t *testing.T, hierarchy map[string]TreeNode, nodeName string, expectedChildren []string) {
