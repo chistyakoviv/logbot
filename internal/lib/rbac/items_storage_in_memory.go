@@ -119,11 +119,11 @@ func (i *itemsStorageInMemory) GetPermissionsByNames(names []string) []ItemInter
 
 func (i *itemsStorageInMemory) GetParents(name string) []ItemInterface {
 	result := make([]ItemInterface, 0)
-	i.fillParentsRecursive(name, result)
+	i.fillParentsRecursive(name, &result)
 	return result
 }
 
-func (i *itemsStorageInMemory) fillParentsRecursive(name string, result []ItemInterface) {
+func (i *itemsStorageInMemory) fillParentsRecursive(name string, result *[]ItemInterface) {
 	for parentName, children := range i.children {
 		for _, child := range children {
 			if child.GetName() != name {
@@ -131,8 +131,8 @@ func (i *itemsStorageInMemory) fillParentsRecursive(name string, result []ItemIn
 			}
 
 			parent, err := i.Get(parentName)
-			if err != nil {
-				result = append(result, parent)
+			if err == nil {
+				*result = append(*result, parent)
 			}
 
 			i.fillParentsRecursive(parentName, result)
@@ -143,7 +143,7 @@ func (i *itemsStorageInMemory) fillParentsRecursive(name string, result []ItemIn
 func (i *itemsStorageInMemory) GetHierarchy(name string) map[string]TreeNode {
 	result := make(map[string]TreeNode, 0)
 
-	if _, ok := i.items[name]; ok {
+	if _, ok := i.items[name]; !ok {
 		return result
 	}
 
@@ -188,8 +188,8 @@ func (i *itemsStorageInMemory) fillHierarchyRecursive(
 func (i *itemsStorageInMemory) GetDirectChildren(name string) []ItemInterface {
 	result := make([]ItemInterface, 0)
 	if children, ok := i.children[name]; ok {
-		result = make([]ItemInterface, len(children))
-		for _, child := range result {
+		result = make([]ItemInterface, 0, len(children))
+		for _, child := range children {
 			result = append(result, child)
 		}
 	}
@@ -198,19 +198,19 @@ func (i *itemsStorageInMemory) GetDirectChildren(name string) []ItemInterface {
 
 func (i *itemsStorageInMemory) GetAllChildren(names []string) []ItemInterface {
 	result := make([]ItemInterface, 0)
-	i.getAllChildrenInternal(names, result)
+	result = i.getAllChildrenInternal(names, result)
 	return result
 }
 
 func (i *itemsStorageInMemory) GetAllChildRoles(names []string) []ItemInterface {
 	result := make([]ItemInterface, 0)
-	i.getAllChildrenInternal(names, result)
+	result = i.getAllChildrenInternal(names, result)
 	return i.filterRoles(result)
 }
 
 func (i *itemsStorageInMemory) GetAllChildPermissions(names []string) []ItemInterface {
 	result := make([]ItemInterface, 0)
-	i.getAllChildrenInternal(names, result)
+	result = i.getAllChildrenInternal(names, result)
 	return i.filterPermissions(result)
 }
 
@@ -269,7 +269,7 @@ func (i *itemsStorageInMemory) Remove(name string) {
 func (i *itemsStorageInMemory) Update(name string, item ItemInterface) {
 	if item.GetName() != name {
 		i.updateItemName(name, item)
-		i.removeItemByName(item.GetName())
+		i.removeItemByName(name)
 	}
 	i.Add(item)
 }
@@ -338,7 +338,7 @@ func (i *itemsStorageInMemory) getAllChildrenInternal(
 		baseNames[name] = true
 	}
 	for _, name := range names {
-		i.fillChildrenRecursive(name, result, baseNames)
+		result = i.fillChildrenRecursive(name, result, baseNames)
 	}
 	return result
 }
@@ -347,18 +347,20 @@ func (i *itemsStorageInMemory) fillChildrenRecursive(
 	name string,
 	result []ItemInterface,
 	baseNames map[string]bool,
-) {
+) []ItemInterface {
 	for childName := range i.children[name] {
 		if baseNames[childName] {
 			continue
 		}
-		child, err := i.Get(childName)
-		if err != nil {
-			result = append(result, child)
-		}
+		baseNames[childName] = true
 
-		i.fillChildrenRecursive(child.GetName(), result, baseNames)
+		child, err := i.Get(childName)
+		if err == nil {
+			result = append(result, child)
+			result = i.fillChildrenRecursive(child.GetName(), result, baseNames)
+		}
 	}
+	return result
 }
 
 func (i *itemsStorageInMemory) filterRoles(items []ItemInterface) []ItemInterface {

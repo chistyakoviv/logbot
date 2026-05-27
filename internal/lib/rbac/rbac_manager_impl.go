@@ -291,7 +291,7 @@ func (r *manager[T]) GetPermissionsByUserId(userId T) []ItemInterface {
 	permissionsByNames := r.itemsStorage.GetPermissionsByNames(assignmentNames)
 	childPermissions := r.itemsStorage.GetAllChildPermissions(assignmentNames)
 
-	result = make([]ItemInterface, len(permissionsByNames)+len(childPermissions))
+	result = make([]ItemInterface, 0, len(permissionsByNames)+len(childPermissions))
 	for _, permission := range permissionsByNames {
 		result = append(result, permission)
 	}
