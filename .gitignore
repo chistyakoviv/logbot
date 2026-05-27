@@ -9,3 +9,6 @@
 
 # local config
 /config
+
+# go cache
+/.gocache
