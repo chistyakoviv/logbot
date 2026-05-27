@@ -170,17 +170,14 @@ func (i *itemsStorageInMemory) fillHierarchyRecursive(
 
 			_, err := i.Get(parentName)
 			if err == nil {
+				addedChildItems[childName] = child
 				result[parentName] = TreeNode{
 					Item:     i.items[parentName],
-					Children: addedChildItems,
+					Children: maps.Clone(addedChildItems),
 				}
-				addedChildItems[childName] = child
 			}
 
-			addedChildItemsCopy := make(map[string]ItemInterface, len(addedChildItems))
-			maps.Copy(addedChildItemsCopy, addedChildItems)
-
-			i.fillHierarchyRecursive(parentName, result, addedChildItemsCopy)
+			i.fillHierarchyRecursive(parentName, result, maps.Clone(addedChildItems))
 		}
 	}
 }
