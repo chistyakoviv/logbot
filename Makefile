@@ -118,3 +118,9 @@ push-latest: push-logbot-latest
 push-logbot-latest:
 	docker push ${REGISTRY}/logbot:${IMAGE_TAG}
 	docker push ${REGISTRY}/logbot-go-cli:${IMAGE_TAG}
+
+test-rbac:
+	go test -v ./internal/lib/rbac
+
+test-bench-rbac:
+	go test -bench=. ./internal/lib/rbac
