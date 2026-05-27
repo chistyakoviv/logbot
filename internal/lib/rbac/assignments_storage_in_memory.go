@@ -68,8 +68,7 @@ func (a *assignmentsStorageInMemory[T]) UserHasItem(userId T, itemNames []string
 		return false
 	}
 	for _, itemName := range itemNames {
-		_, ok = assigments[itemName]
-		if ok {
+		if _, ok = assigments[itemName]; ok {
 			return true
 		}
 	}
@@ -83,8 +82,7 @@ func (a *assignmentsStorageInMemory[T]) FilterUserItemNames(userId T, itemNames 
 		return result
 	}
 	for _, itemName := range itemNames {
-		_, ok = assigments[itemName]
-		if ok {
+		if _, ok = assigments[itemName]; ok {
 			result = append(result, itemName)
 		}
 	}
@@ -92,8 +90,7 @@ func (a *assignmentsStorageInMemory[T]) FilterUserItemNames(userId T, itemNames 
 }
 
 func (a *assignmentsStorageInMemory[T]) Add(assignment *Assignment[T]) {
-	_, ok := a.assignments[assignment.GetUserId()]
-	if !ok {
+	if _, ok := a.assignments[assignment.GetUserId()]; !ok {
 		a.assignments[assignment.GetUserId()] = make(map[string]*Assignment[T])
 	}
 	a.assignments[assignment.GetUserId()][assignment.GetItemName()] = assignment
@@ -101,8 +98,7 @@ func (a *assignmentsStorageInMemory[T]) Add(assignment *Assignment[T]) {
 
 func (a *assignmentsStorageInMemory[T]) HasItem(itemName string) bool {
 	for _, assigments := range a.assignments {
-		_, ok := assigments[itemName]
-		if ok {
+		if _, ok := assigments[itemName]; ok {
 			return true
 		}
 	}
