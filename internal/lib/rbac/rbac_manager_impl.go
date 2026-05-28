@@ -54,6 +54,15 @@ func NewManager[T comparable](
 	return rbac
 }
 
+/**
+ * Starting from the `permissionName` node, traverse upward through the hierarchy,
+ * evaluating rules on each visited node.
+ *
+ * If a rule evaluation fails, terminate traversal of the current branch and continue
+ * with the next available branch.
+ *
+ * If traversal reaches a node owned by the user, the permission is considered granted.
+ */
 func (r *manager[T]) UserHasPermission(
 	userId T,
 	permissionName string,
@@ -542,16 +551,4 @@ func (r *manager[T]) userHasItem(userId T, itemName string) bool {
 	}
 
 	return slices.Contains(r.defaultRoleNames, itemName)
-}
-
-func (r *manager[T]) filterUserItemNames(userId T, itemNames []string) []string {
-	names := r.assignmentsStorage.FilterUserItemNames(userId, itemNames)
-	for _, roleName := range r.defaultRoleNames {
-		if slices.Contains(names, roleName) {
-			continue
-		}
-		names = append(names, roleName)
-	}
-
-	return names
 }

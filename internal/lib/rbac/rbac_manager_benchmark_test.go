@@ -20,7 +20,7 @@ import (
 // PASS
 // ok      github.com/chistyakoviv/logbot/internal/lib/rbac        5.303s
 
-// Witch cached direct parents (3)
+// With cached direct parents (3)
 // BenchmarkManagerUserHasPermissionDeepHierarchy-16                  35102             34431 ns/op           15304 B/op        139 allocs/op
 // BenchmarkManagerUserHasPermissionMultiParentHierarchy-16         2295321               530.0 ns/op            62 B/op          2 allocs/op
 // BenchmarkManagerUserHasPermissionGuestRole-16                      73736             16209 ns/op            7720 B/op         73 allocs/op

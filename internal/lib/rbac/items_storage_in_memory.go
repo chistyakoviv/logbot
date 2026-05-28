@@ -11,7 +11,7 @@ type itemsStorageInMemory struct {
 	// children[parentName][childName] = Item
 	children map[string]map[string]ItemInterface
 
-	// parents[nodeName][parentName]
+	// parents[childName][parentName]
 	parents map[string]map[string]bool
 }
 
@@ -295,7 +295,7 @@ func (i *itemsStorageInMemory) RemoveChild(parentName string, childName string) 
 }
 
 func (i *itemsStorageInMemory) RemoveChildren(parentName string) {
-	for childName, _ := range i.children[parentName] {
+	for childName := range i.children[parentName] {
 		delete(i.parents[childName], parentName)
 	}
 	delete(i.children, parentName)
