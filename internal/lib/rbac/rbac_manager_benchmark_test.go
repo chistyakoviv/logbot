@@ -27,6 +27,13 @@ import (
 // PASS
 // ok      github.com/chistyakoviv/logbot/internal/lib/rbac        4.673s
 
+// With optimized default roles check
+// BenchmarkManagerUserHasPermissionDeepHierarchy-16                  38882             30842 ns/op           15304 B/op        139 allocs/op
+// BenchmarkManagerUserHasPermissionMultiParentHierarchy-16         2424536               492.9 ns/op            62 B/op          2 allocs/op
+// BenchmarkManagerUserHasPermissionGuestRole-16                      81712             14517 ns/op            7720 B/op         73 allocs/op
+// PASS
+// ok      github.com/chistyakoviv/logbot/internal/lib/rbac        4.554s
+
 func BenchmarkManagerUserHasPermissionDeepHierarchy(b *testing.B) {
 	manager, permissionName := buildBenchmarkManagerWithRoleChain(b, 128)
 

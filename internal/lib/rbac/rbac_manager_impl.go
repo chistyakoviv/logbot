@@ -2,7 +2,6 @@ package rbac
 
 import (
 	"fmt"
-	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -13,8 +12,9 @@ import (
 type manager[T comparable] struct {
 	ruleFactory RuleFactoryInterface
 
-	defaultRoleNames []string
-	guestRoleName    string
+	defaultRoleNames    []string
+	defaultRoleNamesMap map[string]bool
+	guestRoleName       string
 
 	itemsStorage       ItemsStorageInterface
 	assignmentsStorage AssignmentsStorageInterface[T]
@@ -41,9 +41,11 @@ func NewManager[T comparable](
 	opts *ManagerOpts,
 ) ManagerInterface[T] {
 	rbac := &manager[T]{
-		ruleFactory:        ruleFactory,
-		itemsStorage:       itemsStorage,
-		assignmentsStorage: assignmentsStorage,
+		ruleFactory:         ruleFactory,
+		itemsStorage:        itemsStorage,
+		assignmentsStorage:  assignmentsStorage,
+		defaultRoleNames:    make([]string, 0),
+		defaultRoleNamesMap: make(map[string]bool),
 	}
 
 	if opts != nil {
@@ -366,9 +368,13 @@ func (r *manager[T]) RemovePermission(name string) {
 func (r *manager[T]) SetDefaultRoleNames(roleNames []string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	r.defaultRoleNamesMap = make(map[string]bool, len(roleNames))
 	// Copy the original slice to avoid modifying it outside
-	roleNamesCopy := make([]string, len(roleNames))
-	copy(roleNamesCopy, roleNames)
+	roleNamesCopy := make([]string, 0, len(roleNames))
+	for _, roleName := range roleNames {
+		roleNamesCopy = append(roleNamesCopy, roleName)
+		r.defaultRoleNamesMap[roleName] = true
+	}
 	r.defaultRoleNames = roleNamesCopy
 }
 
@@ -550,5 +556,5 @@ func (r *manager[T]) userHasItem(userId T, itemName string) bool {
 		return true
 	}
 
-	return slices.Contains(r.defaultRoleNames, itemName)
+	return r.defaultRoleNamesMap[itemName]
 }
