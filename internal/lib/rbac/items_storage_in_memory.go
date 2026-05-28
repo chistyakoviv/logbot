@@ -1,7 +1,5 @@
 package rbac
 
-import "maps"
-
 type itemsStorageInMemory struct {
 	items map[string]ItemInterface
 	// For faster access, but doubles the memory
@@ -180,20 +178,15 @@ func (i *itemsStorageInMemory) fillHierarchyRecursive(
 	name string,
 	result map[string]TreeNode,
 	descendants map[string]ItemInterface,
-	path map[string]bool,
+	visited map[string]bool,
 ) {
 	for parentName, children := range i.children {
-		for childName, child := range children {
-			if child.GetName() != name {
+		if child, ok := children[name]; ok {
+			if visited[parentName] {
 				continue
 			}
 
-			if path[parentName] {
-				continue
-			}
-
-			nextDescendants := maps.Clone(descendants)
-			nextDescendants[childName] = child
+			descendants[child.GetName()] = child
 
 			_, err := i.Get(parentName)
 			if err == nil {
@@ -201,18 +194,19 @@ func (i *itemsStorageInMemory) fillHierarchyRecursive(
 				if node.Children == nil {
 					node = TreeNode{
 						Item:     i.items[parentName],
-						Children: make(map[string]ItemInterface, len(nextDescendants)),
+						Children: make(map[string]ItemInterface, len(descendants)),
 					}
 				}
-				for descendantName, descendant := range nextDescendants {
+				for descendantName, descendant := range descendants {
 					node.Children[descendantName] = descendant
 				}
 				result[parentName] = node
 			}
 
-			nextPath := maps.Clone(path)
-			nextPath[parentName] = true
-			i.fillHierarchyRecursive(parentName, result, nextDescendants, nextPath)
+			visited[parentName] = true
+			i.fillHierarchyRecursive(parentName, result, descendants, visited)
+			visited[parentName] = false
+			delete(descendants, child.GetName())
 		}
 	}
 }
