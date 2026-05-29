@@ -279,6 +279,7 @@ func (i *itemsStorageInMemory) HasChild(parentName string, childName string) boo
 }
 
 func (i *itemsStorageInMemory) HasDirectChild(parentName string, childName string) bool {
+	// nil map allows reads
 	_, ok := i.children[parentName][childName]
 	return ok
 }
