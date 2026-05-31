@@ -5,7 +5,7 @@ type RuleContext struct {
 	parameters  RuleContextParameters
 }
 
-type RuleContextParameters map[string]any
+type RuleContextParameters = map[string]any
 
 func NewRuleContext(ruleFactory RuleFactoryInterface, parameters RuleContextParameters) RuleContext {
 	return RuleContext{
