@@ -53,8 +53,7 @@ type ManagerInterface[T comparable] interface {
 	// Returns all user IDs assigned to the role specified.
 	GetUserIdsByRoleName(name string) []T
 
-	// Adds role or permission to RBAC system.
-	// Panics if the permission already exists.
+	// Adds role to RBAC system.
 	AddRole(role ItemInterface) error
 
 	// Gets role by name.
@@ -67,7 +66,6 @@ type ManagerInterface[T comparable] interface {
 	RemoveRole(name string)
 
 	// Adds permission to RBAC system.
-	// Panics if the permission already exists.
 	AddPermission(permission ItemInterface) error
 
 	// Gets permission by name.

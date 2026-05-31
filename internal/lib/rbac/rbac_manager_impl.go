@@ -302,8 +302,13 @@ func (r *manager[T]) GetUserIdsByRoleName(roleName string) []T {
 }
 
 func (r *manager[T]) AddRole(role ItemInterface) error {
+	if !IsItem[Role](role) {
+		return fmt.Errorf("%s is not a role", role.GetName())
+	}
+
 	r.mu.Lock()
 	defer r.mu.Unlock()
+
 	return r.addItem(role)
 }
 
@@ -314,6 +319,10 @@ func (r *manager[T]) GetRole(name string) (ItemInterface, error) {
 }
 
 func (r *manager[T]) UpdateRole(name string, role ItemInterface) error {
+	if !IsItem[Role](role) {
+		return fmt.Errorf("%s is not a role", role.GetName())
+	}
+
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	err := r.assertItemNameForUpdate(name, role)
@@ -334,8 +343,13 @@ func (r *manager[T]) RemoveRole(name string) {
 }
 
 func (r *manager[T]) AddPermission(permission ItemInterface) error {
+	if !IsItem[Permission](permission) {
+		return fmt.Errorf("%s is not a permission", permission.GetName())
+	}
+
 	r.mu.Lock()
 	defer r.mu.Unlock()
+
 	return r.addItem(permission)
 }
 
@@ -346,6 +360,10 @@ func (r *manager[T]) GetPermission(name string) (ItemInterface, error) {
 }
 
 func (r *manager[T]) UpdatePermission(name string, permission ItemInterface) error {
+	if !IsItem[Permission](permission) {
+		return fmt.Errorf("%s is not a permission", permission.GetName())
+	}
+
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	err := r.assertItemNameForUpdate(name, permission)
