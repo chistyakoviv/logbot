@@ -172,7 +172,7 @@ func (r *manager[T]) RevokeAll(userId T) {
 	r.assignmentsStorage.RemoveByUserId(userId)
 }
 
-func (r *manager[T]) GetItemsByUserId(userId T) ([]ItemInterface, error) {
+func (r *manager[T]) GetItemsByUserId(userId T) []ItemInterface {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	assignments := r.assignmentsStorage.GetByUserId(userId)
@@ -184,7 +184,7 @@ func (r *manager[T]) GetItemsByUserId(userId T) ([]ItemInterface, error) {
 
 	defaultRoles, err := r.GetDefaultRoles()
 	if err != nil {
-		return nil, err
+		return make([]ItemInterface, 0)
 	}
 
 	itemsByNames := r.itemsStorage.GetByNames(assignmentNames)
@@ -200,10 +200,10 @@ func (r *manager[T]) GetItemsByUserId(userId T) ([]ItemInterface, error) {
 		result = append(result, item)
 	}
 
-	return result, nil
+	return result
 }
 
-func (r *manager[T]) GetRolesByUserId(userId T) ([]ItemInterface, error) {
+func (r *manager[T]) GetRolesByUserId(userId T) []ItemInterface {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	assignments := r.assignmentsStorage.GetByUserId(userId)
@@ -215,7 +215,7 @@ func (r *manager[T]) GetRolesByUserId(userId T) ([]ItemInterface, error) {
 
 	defaultRoles, err := r.GetDefaultRoles()
 	if err != nil {
-		return nil, err
+		return make([]ItemInterface, 0)
 	}
 
 	rolesByNames := r.itemsStorage.GetRolesByNames(assignmentNames)
@@ -231,17 +231,17 @@ func (r *manager[T]) GetRolesByUserId(userId T) ([]ItemInterface, error) {
 		result = append(result, role)
 	}
 
-	return result, nil
+	return result
 }
 
-func (r *manager[T]) GetChildRoles(roleName string) ([]ItemInterface, error) {
+func (r *manager[T]) GetChildRoles(roleName string) []ItemInterface {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	if !r.itemsStorage.RoleExists(roleName) {
-		return nil, fmt.Errorf("Role %s not found", roleName)
+		return make([]ItemInterface, 0)
 	}
 
-	return r.itemsStorage.GetAllChildRoles([]string{roleName}), nil
+	return r.itemsStorage.GetAllChildRoles([]string{roleName})
 }
 
 func (r *manager[T]) GetPermissionsByRoleName(name string) []ItemInterface {

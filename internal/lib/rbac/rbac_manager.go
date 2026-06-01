@@ -36,13 +36,13 @@ type ManagerInterface[T comparable] interface {
 	RevokeAll(userId T)
 
 	// Returns the items that are assigned to the user via assign().
-	GetItemsByUserId(userId T) ([]ItemInterface, error)
+	GetItemsByUserId(userId T) []ItemInterface
 
 	// Returns the roles that are assigned to the user via assign().
-	GetRolesByUserId(userId T) ([]ItemInterface, error)
+	GetRolesByUserId(userId T) []ItemInterface
 
 	// Returns child roles of the role specified. Depth isn't limited.
-	GetChildRoles(name string) ([]ItemInterface, error)
+	GetChildRoles(name string) []ItemInterface
 
 	// Returns all permissions that the specified role represents.
 	GetPermissionsByRoleName(name string) []ItemInterface
