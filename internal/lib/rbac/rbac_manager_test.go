@@ -59,16 +59,10 @@ func TestManagerAssignAndResolveUserItems(t *testing.T) {
 		t.Fatalf("assign: %v", err)
 	}
 
-	items, err := manager.GetItemsByUserId("u1")
-	if err != nil {
-		t.Fatalf("get items: %v", err)
-	}
+	items := manager.GetItemsByUserId("u1")
 	assertItemNamesMatch(t, items, []string{"member", "admin", "read", "write"})
 
-	roles, err := manager.GetRolesByUserId("u1")
-	if err != nil {
-		t.Fatalf("get roles: %v", err)
-	}
+	roles := manager.GetRolesByUserId("u1")
 	assertItemNamesMatch(t, roles, []string{"member", "admin"})
 
 	permissions := manager.GetPermissionsByUserId("u1")
@@ -222,10 +216,7 @@ func TestManagerUpdateRoleRenamesAssignmentsAndHierarchy(t *testing.T) {
 		t.Fatalf("update role: %v", err)
 	}
 
-	items, err := manager.GetItemsByUserId("u1")
-	if err != nil {
-		t.Fatalf("get items: %v", err)
-	}
+	items := manager.GetItemsByUserId("u1")
 	assertItemNamesMatch(t, items, []string{"author", "publish"})
 
 	if !manager.UserHasPermission("u1", "publish", nil) {
@@ -289,10 +280,7 @@ func TestManagerRemoveChildAndRevokeAccess(t *testing.T) {
 	}
 
 	manager.Revoke("u1", "admin")
-	items, err := manager.GetItemsByUserId("u1")
-	if err != nil {
-		t.Fatalf("get items after revoke: %v", err)
-	}
+	items := manager.GetItemsByUserId("u1")
 	assertItemNamesMatch(t, items, nil)
 }
 

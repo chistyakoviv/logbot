@@ -12,6 +12,7 @@ type ManagerInterface[T comparable] interface {
 	CanAddChild(parentName string, childName string) bool
 
 	// Adds an item as a child of another item.
+	// Can return ErrChildAssertFailed.
 	AddChild(parentName string, childName string) error
 
 	// Removes a child from its parent.
@@ -27,6 +28,7 @@ type ManagerInterface[T comparable] interface {
 	HasChildren(name string) bool
 
 	// Assigns a role or permission to a user.
+	// Can return ErrItemNotFound or ErrAssignForbidden.
 	Assign(userId T, itemName string, createdAt time.Time) error
 
 	// Revokes a role or a permission from a user.
@@ -54,24 +56,30 @@ type ManagerInterface[T comparable] interface {
 	GetUserIdsByRoleName(name string) []T
 
 	// Adds role to RBAC system.
+	// Can return ErrWrongItem or ErrItemAlreadyExists.
 	AddRole(role ItemInterface) error
 
 	// Gets role by name.
+	// Can return ErrItemNotFound.
 	GetRole(name string) (ItemInterface, error)
 
 	// Updates role in RBAC system.
+	// Can return ErrWrongItem or ErrItemModificationConflict.
 	UpdateRole(name string, role ItemInterface) error
 
 	// Removes role from RBAC system.
 	RemoveRole(name string)
 
 	// Adds permission to RBAC system.
+	// Can return ErrWrongItem or ErrItemAlreadyExists.
 	AddPermission(permission ItemInterface) error
 
 	// Gets permission by name.
+	// Can return ErrItemNotFound.
 	GetPermission(name string) (ItemInterface, error)
 
 	// Updates permission in RBAC system.
+	// Can return ErrWrongItem or ErrItemModificationConflict.
 	UpdatePermission(name string, permission ItemInterface) error
 
 	// Removes permission from RBAC system.
@@ -84,6 +92,7 @@ type ManagerInterface[T comparable] interface {
 	GetDefaultRoleNames() []string
 
 	// Returns default roles.
+	// Can return ErrDefaultRolesNotFound.
 	GetDefaultRoles() ([]ItemInterface, error)
 
 	// Set guest role name.
@@ -93,5 +102,6 @@ type ManagerInterface[T comparable] interface {
 	GetGuestRoleName() string
 
 	// Get a guest role.
+	// Can return ErrNoGuestUser or ErrGuestRoleNameNotExist.
 	GetGuestRole() (ItemInterface, error)
 }

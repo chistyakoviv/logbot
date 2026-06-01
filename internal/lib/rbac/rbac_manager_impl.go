@@ -99,6 +99,7 @@ func (r *manager[T]) CanAddChild(parentName string, childName string) bool {
 	return r.assertFutureChild(parentName, childName) == nil
 }
 
+// AddChild can return ErrChildAssertFailed.
 func (r *manager[T]) AddChild(parentName string, childName string) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -135,6 +136,7 @@ func (r *manager[T]) HasChildren(parentName string) bool {
 	return r.itemsStorage.HasChildren(parentName)
 }
 
+// Assign can return ErrItemNotFound or ErrAssignForbidden.
 func (r *manager[T]) Assign(userId T, itemName string, createdAt time.Time) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -144,7 +146,7 @@ func (r *manager[T]) Assign(userId T, itemName string, createdAt time.Time) erro
 	}
 
 	if !r.enableDirectPermissions && IsItem[Permission](item) {
-		return fmt.Errorf("assigning permissions directly is disabled. Prefer assigning roles only")
+		return fmt.Errorf("assigning permissions directly is disabled, prefer assigning roles only: %w", ErrAssignForbidden)
 	}
 
 	if r.assignmentsStorage.Exists(userId, itemName) {
@@ -301,9 +303,10 @@ func (r *manager[T]) GetUserIdsByRoleName(roleName string) []T {
 	return userIds
 }
 
+// AddRole can return ErrWrongItem or ErrItemAlreadyExists.
 func (r *manager[T]) AddRole(role ItemInterface) error {
 	if !IsItem[Role](role) {
-		return fmt.Errorf("%s is not a role", role.GetName())
+		return fmt.Errorf("%s is not a role: %w", role.GetName(), ErrWrongItem)
 	}
 
 	r.mu.Lock()
@@ -312,15 +315,17 @@ func (r *manager[T]) AddRole(role ItemInterface) error {
 	return r.addItem(role)
 }
 
+// GetRole can return ErrItemNotFound.
 func (r *manager[T]) GetRole(name string) (ItemInterface, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	return r.itemsStorage.GetRole(name)
 }
 
+// UpdateRole can return ErrWrongItem or ErrItemModificationConflict.
 func (r *manager[T]) UpdateRole(name string, role ItemInterface) error {
 	if !IsItem[Role](role) {
-		return fmt.Errorf("%s is not a role", role.GetName())
+		return fmt.Errorf("%s is not a role: %w", role.GetName(), ErrWrongItem)
 	}
 
 	r.mu.Lock()
@@ -342,9 +347,10 @@ func (r *manager[T]) RemoveRole(name string) {
 	r.removeItem(name)
 }
 
+// AddPermission can return ErrWrongItem or ErrItemAlreadyExists.
 func (r *manager[T]) AddPermission(permission ItemInterface) error {
 	if !IsItem[Permission](permission) {
-		return fmt.Errorf("%s is not a permission", permission.GetName())
+		return fmt.Errorf("%s is not a permission: %w", permission.GetName(), ErrWrongItem)
 	}
 
 	r.mu.Lock()
@@ -353,15 +359,17 @@ func (r *manager[T]) AddPermission(permission ItemInterface) error {
 	return r.addItem(permission)
 }
 
+// GetPermission can return ErrItemNotFound.
 func (r *manager[T]) GetPermission(name string) (ItemInterface, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	return r.itemsStorage.GetPermission(name)
 }
 
+// UpdatePermission can return ErrWrongItem or ErrItemModificationConflict.
 func (r *manager[T]) UpdatePermission(name string, permission ItemInterface) error {
 	if !IsItem[Permission](permission) {
-		return fmt.Errorf("%s is not a permission", permission.GetName())
+		return fmt.Errorf("%s is not a permission: %w", permission.GetName(), ErrWrongItem)
 	}
 
 	r.mu.Lock()
@@ -417,12 +425,14 @@ func (r *manager[T]) GetGuestRoleName() string {
 	return r.guestRoleName
 }
 
+// GetDefaultRoles can return ErrDefaultRolesNotFound.
 func (r *manager[T]) GetDefaultRoles() ([]ItemInterface, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	return r.filterStoredRoles(r.defaultRoleNames)
 }
 
+// GetGuestRole can return ErrNoGuestUser or ErrGuestRoleNameNotExist.
 func (r *manager[T]) GetGuestRole() (ItemInterface, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -452,14 +462,15 @@ func (r *manager[T]) assertItemNameForUpdate(name string, item ItemInterface) er
 	}
 
 	return fmt.Errorf(
-		"unable to change the role or the permission name, the name %s is already used by another role or permission",
+		"unable to change the role or the permission name, the name %s is already used by another role or permission: %w",
 		item.GetName(),
+		ErrItemModificationConflict,
 	)
 }
 
 func (r *manager[T]) addItem(item ItemInterface) error {
 	if r.itemsStorage.Exists(item.GetName()) {
-		return fmt.Errorf("Item %s already exists", item.GetName())
+		return fmt.Errorf("%w: %s", ErrItemAlreadyExists, item.GetName())
 	}
 
 	time := time.Now()
@@ -491,7 +502,7 @@ func (r *manager[T]) filterStoredRoles(roleNames []string) ([]ItemInterface, err
 	}
 
 	if len(missingRoles) > 0 {
-		return nil, fmt.Errorf("the following default roles were not found: %s", strings.Join(missingRoles, ", "))
+		return nil, fmt.Errorf("%w: %s", ErrDefaultRolesNotFound, strings.Join(missingRoles, ", "))
 	}
 
 	return roles, nil
@@ -499,29 +510,29 @@ func (r *manager[T]) filterStoredRoles(roleNames []string) ([]ItemInterface, err
 
 func (r *manager[T]) assertFutureChild(parentName string, childName string) error {
 	if parentName == childName {
-		return fmt.Errorf("cannot add %s as a child of itself", parentName)
+		return fmt.Errorf("cannot add %s as a child of itself: %w", parentName, ErrChildAssertFailed)
 	}
 
 	parent, err := r.itemsStorage.Get(parentName)
 	if err != nil {
-		return fmt.Errorf("parent %s does not exist", parentName)
+		return fmt.Errorf("parent %s does not exist: %w", parentName, ErrChildAssertFailed)
 	}
 
 	child, err := r.itemsStorage.Get(childName)
 	if err != nil {
-		return fmt.Errorf("child %s does not exist", childName)
+		return fmt.Errorf("child %s does not exist: %w", childName, ErrChildAssertFailed)
 	}
 
 	if IsItem[Permission](parent) && IsItem[Role](child) {
-		return fmt.Errorf("can not add %s role as a child of %s permission", childName, parentName)
+		return fmt.Errorf("cannot add %s role as a child of %s permission: %w", childName, parentName, ErrChildAssertFailed)
 	}
 
 	if r.itemsStorage.HasDirectChild(parentName, childName) {
-		return fmt.Errorf("the item %s already has a child %s", parentName, childName)
+		return fmt.Errorf("the item %s already has a child %s: %w", parentName, childName, ErrChildAssertFailed)
 	}
 
 	if r.itemsStorage.HasChild(parentName, childName) {
-		return fmt.Errorf("cannot add %s as a child of %s. A loop has been detected", childName, parentName)
+		return fmt.Errorf("cannot add %s as a child of %s, a loop has been detected: %w", childName, parentName, ErrChildAssertFailed)
 	}
 
 	return nil
