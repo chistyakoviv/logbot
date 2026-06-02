@@ -99,7 +99,7 @@ func (r *manager[T]) CanAddChild(parentName string, childName string) bool {
 	return r.assertFutureChild(parentName, childName) == nil
 }
 
-// AddChild can return ErrChildAssertFailed.
+// AddChild may return ErrChildAssertFailed.
 func (r *manager[T]) AddChild(parentName string, childName string) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -136,7 +136,7 @@ func (r *manager[T]) HasChildren(parentName string) bool {
 	return r.itemsStorage.HasChildren(parentName)
 }
 
-// Assign can return ErrItemNotFound or ErrAssignForbidden.
+// Assign may return ErrItemNotFound or ErrAssignForbidden.
 func (r *manager[T]) Assign(userId T, itemName string, createdAt time.Time) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -303,7 +303,7 @@ func (r *manager[T]) GetUserIdsByRoleName(roleName string) []T {
 	return userIds
 }
 
-// AddRole can return ErrWrongItem or ErrItemAlreadyExists.
+// AddRole may return ErrWrongItem or ErrItemAlreadyExists.
 func (r *manager[T]) AddRole(role ItemInterface) error {
 	if !IsItem[Role](role) {
 		return fmt.Errorf("%s is not a role: %w", role.GetName(), ErrWrongItem)
@@ -315,14 +315,14 @@ func (r *manager[T]) AddRole(role ItemInterface) error {
 	return r.addItem(role)
 }
 
-// GetRole can return ErrItemNotFound.
+// GetRole may return ErrItemNotFound.
 func (r *manager[T]) GetRole(name string) (ItemInterface, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	return r.itemsStorage.GetRole(name)
 }
 
-// UpdateRole can return ErrWrongItem or ErrItemModificationConflict.
+// UpdateRole may return ErrWrongItem or ErrItemModificationConflict.
 func (r *manager[T]) UpdateRole(name string, role ItemInterface) error {
 	if !IsItem[Role](role) {
 		return fmt.Errorf("%s is not a role: %w", role.GetName(), ErrWrongItem)
@@ -347,7 +347,7 @@ func (r *manager[T]) RemoveRole(name string) {
 	r.removeItem(name)
 }
 
-// AddPermission can return ErrWrongItem or ErrItemAlreadyExists.
+// AddPermission may return ErrWrongItem or ErrItemAlreadyExists.
 func (r *manager[T]) AddPermission(permission ItemInterface) error {
 	if !IsItem[Permission](permission) {
 		return fmt.Errorf("%s is not a permission: %w", permission.GetName(), ErrWrongItem)
@@ -359,14 +359,14 @@ func (r *manager[T]) AddPermission(permission ItemInterface) error {
 	return r.addItem(permission)
 }
 
-// GetPermission can return ErrItemNotFound.
+// GetPermission may return ErrItemNotFound.
 func (r *manager[T]) GetPermission(name string) (ItemInterface, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	return r.itemsStorage.GetPermission(name)
 }
 
-// UpdatePermission can return ErrWrongItem or ErrItemModificationConflict.
+// UpdatePermission may return ErrWrongItem or ErrItemModificationConflict.
 func (r *manager[T]) UpdatePermission(name string, permission ItemInterface) error {
 	if !IsItem[Permission](permission) {
 		return fmt.Errorf("%s is not a permission: %w", permission.GetName(), ErrWrongItem)
@@ -425,14 +425,14 @@ func (r *manager[T]) GetGuestRoleName() string {
 	return r.guestRoleName
 }
 
-// GetDefaultRoles can return ErrDefaultRolesNotFound.
+// GetDefaultRoles may return ErrDefaultRolesNotFound.
 func (r *manager[T]) GetDefaultRoles() ([]ItemInterface, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	return r.filterStoredRoles(r.defaultRoleNames)
 }
 
-// GetGuestRole can return ErrNoGuestUser or ErrGuestRoleNameNotExist.
+// GetGuestRole may return ErrNoGuestUser or ErrGuestRoleNameNotExist.
 func (r *manager[T]) GetGuestRole() (ItemInterface, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
